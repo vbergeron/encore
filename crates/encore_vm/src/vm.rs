@@ -10,6 +10,7 @@ pub struct Vm<'a> {
     globals: &'a [Value],
     arena: Arena<'a>,
     self_ref: Value,
+    arg: Value,
 }
 
 impl<'a> Vm<'a> {
@@ -24,17 +25,22 @@ impl<'a> Vm<'a> {
             arity_table,
             globals,
             arena: Arena::new(mem),
-            self_ref: Value::from_u32(0),
+            self_ref: Value::closure(0, HeapAddress::NULL),
+            arg: Value::from_u32(0),
         }
     }
 
+    fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
+        self.arena.alloc(n, &mut self.self_ref, &mut self.arg)
+    }
+
     pub fn call(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
-        let addr = self.arena.alloc(2)?;
+        let addr = self.alloc(2)?;
         self.arena.heap_write(addr, 0, Value::gc_header(2));
         self.arena.heap_write(addr, 1, Value::closure_header(entry));
         self.self_ref = Value::closure(0, addr);
         self.arena.stack_reset();
-        self.arena.stack_push(arg);
+        self.arg = arg;
         self.code.jump(entry);
         self.run()
     }
@@ -43,19 +49,33 @@ impl<'a> Vm<'a> {
         loop {
             let op = self.code.read_u8();
             match op {
-                opcode::LOAD => {
+                opcode::GLOBAL => {
                     self.arena.stack_ensure(1)?;
                     let idx = self.code.read_u8();
-                    let val = if idx & 0x80 != 0 {
-                        self.globals[(idx & 0x7F) as usize]
-                    } else {
-                        let addr = self.self_ref.closure_addr();
-                        self.arena.heap_read(addr, 2 + idx as usize)
-                    };
+                    self.arena.stack_push(self.globals[idx as usize]);
+                }
+
+                opcode::CAPTURE => {
+                    self.arena.stack_ensure(1)?;
+                    let idx = self.code.read_u8();
+                    let addr = self.self_ref.closure_addr();
+                    let val = self.arena.heap_read(addr, 2 + idx as usize);
                     self.arena.stack_push(val);
                 }
 
-                opcode::FIX => {
+                opcode::LOCAL => {
+                    self.arena.stack_ensure(1)?;
+                    let idx = self.code.read_u8();
+                    let val = self.arena.stack_local(idx);
+                    self.arena.stack_push(val);
+                }
+
+                opcode::ARG => {
+                    self.arena.stack_ensure(1)?;
+                    self.arena.stack_push(self.arg);
+                }
+
+                opcode::SELF => {
                     self.arena.stack_ensure(1)?;
                     self.arena.stack_push(self.self_ref);
                 }
@@ -64,7 +84,7 @@ impl<'a> Vm<'a> {
                     let code_ptr = self.code.read_address();
                     let ncap = self.code.read_u8();
                     let size = 2 + ncap as usize;
-                    let addr = self.arena.alloc(size)?;
+                    let addr = self.alloc(size)?;
                     self.arena.heap_write(addr, 0, Value::gc_header(size as u8));
                     self.arena.heap_write(addr, 1, Value::closure_header(code_ptr));
                     for i in 0..ncap as usize {
@@ -82,7 +102,7 @@ impl<'a> Vm<'a> {
                         self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
                     } else {
                         let size = 1 + arity;
-                        let addr = self.arena.alloc(size)?;
+                        let addr = self.alloc(size)?;
                         self.arena.heap_write(addr, 0, Value::gc_header(size as u8));
                         for i in 0..arity {
                             let val = self.arena.stack_pop();
@@ -118,8 +138,8 @@ impl<'a> Vm<'a> {
                     let addr = clo.closure_addr();
                     let code_ptr = self.arena.heap_read(addr, 1).header_code_ptr();
                     self.self_ref = clo;
+                    self.arg = arg;
                     self.arena.stack_reset();
-                    self.arena.stack_push(arg);
                     self.code.jump(code_ptr);
                 }
 

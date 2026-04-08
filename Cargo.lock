@@ -3,5 +3,12 @@
 version = 4
 
 [[package]]
+name = "encore_compile"
+version = "0.1.0"
+dependencies = [
+ "encore_vm",
+]
+
+[[package]]
 name = "encore_vm"
 version = "0.1.0"

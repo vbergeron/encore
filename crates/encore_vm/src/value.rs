@@ -79,8 +79,6 @@ impl Value {
 
     pub fn gc_set_mark(self) -> Self { Self(self.0 | GC_MARK_BIT) }
 
-    pub fn gc_clear_mark(self) -> Self { Self(self.0 & !GC_MARK_BIT) }
-
     pub fn gc_fwd(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
 
     pub fn gc_set_fwd(self, addr: HeapAddress) -> Self {

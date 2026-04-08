@@ -1,4 +1,5 @@
 use crate::error::VmError;
+use crate::gc;
 use crate::value::{HeapAddress, Value};
 
 pub struct Arena<'a> {
@@ -13,11 +14,20 @@ impl<'a> Arena<'a> {
         Self { mem, hp: 0, sp }
     }
 
+    pub fn hp(&self) -> usize { self.hp }
+
+    fn overflowing(&self, n: usize) -> bool {
+        self.hp + n > self.sp
+    }
+
     // -- Heap (grows up from 0) --
 
-    pub fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
-        if self.hp + n > self.sp {
-            return Err(VmError::HeapOverflow);
+    pub fn alloc(&mut self, n: usize, self_ref: &mut Value, arg: &mut Value) -> Result<HeapAddress, VmError> {
+        if self.overflowing(n) {
+            gc::collect(self, self_ref, arg);
+            if self.overflowing(n) {
+                return Err(VmError::HeapOverflow);
+            }
         }
         let addr = HeapAddress::new(self.hp as u16);
         self.hp += n;
@@ -54,6 +64,10 @@ impl<'a> Arena<'a> {
 
     pub fn stack_peek(&self) -> Value {
         self.mem[self.sp]
+    }
+
+    pub fn stack_local(&self, idx: u8) -> Value {
+        self.mem[self.mem.len() - 1 - idx as usize]
     }
 
     pub fn stack_reset(&mut self) {
