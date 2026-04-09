@@ -1,6 +1,8 @@
 # Fleche
 
-Fleche is the surface language for the Encore compiler. It provides a direct-style functional syntax that is compiled through CPS transformation into bytecode for the Encore VM.
+Fleche is the surface language for the Encore system. It provides a direct-style functional syntax that is compiled through CPS transformation into bytecode for the Encore VM.
+
+The Fleche frontend lives in the `encore_fleche` crate (lexer, parser). The IR types and compiler passes live in `encore_compiler`.
 
 ## Syntax
 
@@ -159,14 +161,19 @@ define main as
 
 ## Compiler pipeline
 
+The frontend (`encore_fleche`) parses source text into a `ds::Module`. The backend (`encore_compiler`) transforms it through several IR layers into bytecode:
+
 ```
 Source text
-    │  fleche::parse
+    │  encore_fleche::parse
     ▼
 ds::Module       direct-style AST with named binders
     │  cps_transform::transform_module
     ▼
 cps::Module      continuation-passing style, ANF
+    │  cps_optimize::optimize_module
+    ▼
+cps::Module      optimized CPS (shrinking + rewrite passes)
     │  resolver::resolve_module
     ▼
 asm::Module      resolved locations (no names)
@@ -177,23 +184,31 @@ Vec<u8>          ENCR binary for encore_vm
 
 ### IR layers
 
+All IR types are defined in `encore_compiler::ir`.
+
 **`ds` (direct style)** — what the parser produces. Nested expressions, string-named binders. Variants: `Var`, `Lam`, `App`, `Let`, `Letrec`, `Ctor`, `Field`, `Match`, `Int`, `Prim`.
 
 **`cps` (continuation-passing style)** — administrative normal form. Every subexpression is named by a `Let` binding. Calls are `App(name, name)` (both operands are names). Functions receive a pair `(argument, continuation)` packed as `Ctor(255, [arg, k])`. `Fin(name)` halts with a result. Values (`Val`) include `Var`, `Lambda`, `Ctor`, `Field`, `Int`, `Prim` — all operating on names, not nested expressions.
 
 **`asm` (assembly)** — names erased, replaced by `Loc`: `Arg`, `Local(i)`, `Capture(i)`, `Global(i)`, `SelfRef`. Lambdas carry an explicit `captures: Vec<Loc>`. Ready for direct bytecode emission.
 
+**`prim`** — the `PrimOp` enum shared across all IR layers.
+
 ### Passes
 
-**CPS transform** — converts `ds::Expr` into `cps::Expr` using meta-continuations (Rust closures). Each ds-level function becomes a cps-level function that receives a `(arg, continuation)` pair via a reserved constructor tag `255`. The transform ensures all calls are in tail position.
+All passes are in `encore_compiler::pass`.
 
-**Resolver** — performs closure conversion and name resolution. Computes free variables of each lambda, determines which are captured vs. global, and assigns `Local`/`Capture`/`Global`/`Arg`/`SelfRef` locations. Recursive bindings (`Letrec`) get `SelfRef` access.
+**CPS transform** (`cps_transform`) — converts `ds::Expr` into `cps::Expr` using meta-continuations (Rust closures). Each ds-level function becomes a cps-level function that receives a `(arg, continuation)` pair via a reserved constructor tag `255`. The transform ensures all calls are in tail position.
 
-**Emitter** — walks the `asm` tree and outputs VM opcodes. Closure bodies are emitted via a deferred patching mechanism: a `CLOSURE` instruction writes a placeholder code pointer that is filled in once the body is emitted after the current top-level define. The emitter also tracks constructor arities for the binary's arity table.
+**CPS optimizer** (`cps_optimize`) — iterates shrinking reductions (dead code, copy propagation, constant folding, beta contraction, eta reduction) to a fixed point, interleaved with growth-enabling passes (inlining, hoisting, CSE). Configurable per-pass via `OptimizeConfig`. See [OPTIMIZER.md](OPTIMIZER.md).
+
+**Resolver** (`resolver`) — performs closure conversion and name resolution. Computes free variables of each lambda, determines which are captured vs. global, and assigns `Local`/`Capture`/`Global`/`Arg`/`SelfRef` locations. Recursive bindings (`Letrec`) get `SelfRef` access.
+
+**Emitter** (`emit`) — walks the `asm` tree and outputs VM opcodes. Closure bodies are emitted via a deferred patching mechanism: a `CLOSURE` instruction writes a placeholder code pointer that is filled in once the body is emitted after the current top-level define. The emitter also tracks constructor arities for the binary's arity table.
 
 ## Primitive operations
 
-Defined in `ir/prim.rs`, shared across all IR layers:
+Defined in `ir::prim`, shared across all IR layers:
 
 | `PrimOp` | Fleche syntax | VM opcode |
 |----------|--------------|-----------|
