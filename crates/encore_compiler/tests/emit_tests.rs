@@ -1,14 +1,14 @@
-use encore_compile::emit::Emitter;
-use encore_compile::ir::*;
+use encore_compiler::pass::emit::Emitter;
+use encore_compiler::ir::asm::*;
 use encore_vm::program::Program;
 use encore_vm::value::{CodeAddress, HeapAddress, Value};
 use encore_vm::vm::Vm;
 
-// -- Test 1: Halt(Global(0)) via run() --
+// -- Test 1: Fin(Global(0)) via run() --
 
 #[test]
 fn test_halt_global() {
-    let expr = Expr::Halt(Loc::Global(0));
+    let expr = Expr::Fin(Loc::Global(0));
 
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
@@ -27,7 +27,7 @@ fn test_halt_global() {
 
 #[test]
 fn test_call_lambda_body() {
-    let body = Expr::Halt(Loc::Global(0));
+    let body = Expr::Fin(Loc::Global(0));
 
     let mut emitter = Emitter::new();
     emitter.emit_expr(&body);
@@ -51,8 +51,8 @@ fn test_match_branch0() {
         Loc::Global(0),
         0,
         vec![
-            Case { arity: 0, body: Expr::Halt(Loc::Global(1)) },
-            Case { arity: 0, body: Expr::Halt(Loc::Global(2)) },
+            Case { arity: 0, body: Expr::Fin(Loc::Global(1)) },
+            Case { arity: 0, body: Expr::Fin(Loc::Global(2)) },
         ],
     );
 
@@ -77,8 +77,8 @@ fn test_match_branch1() {
         Loc::Global(0),
         0,
         vec![
-            Case { arity: 0, body: Expr::Halt(Loc::Global(1)) },
-            Case { arity: 0, body: Expr::Halt(Loc::Global(2)) },
+            Case { arity: 0, body: Expr::Fin(Loc::Global(1)) },
+            Case { arity: 0, body: Expr::Fin(Loc::Global(2)) },
         ],
     );
 
@@ -104,9 +104,9 @@ fn test_letrec_deferred_body() {
     let expr = Expr::Letrec(
         Lambda {
             captures: vec![Loc::Global(0)],
-            body: Box::new(Expr::Halt(Loc::Capture(0))),
+            body: Box::new(Expr::Fin(Loc::Capture(0))),
         },
-        Box::new(Expr::Halt(Loc::Global(1))),
+        Box::new(Expr::Fin(Loc::Global(1))),
     );
 
     let mut emitter = Emitter::new();
@@ -118,9 +118,9 @@ fn test_letrec_deferred_body() {
     // 0: GLOBAL 0             (push Global(0) as capture)
     // 2: CLOSURE <addr> 1     (ncap=1, body deferred)
     // 6: GLOBAL 1             (push Global(1))
-    // 8: HALT
+    // 8: FIN
     // 9: CAPTURE 0            (deferred body: push Capture(0))
-    // 11: HALT
+    // 11: FIN
     assert_eq!(code[0], opcode::GLOBAL);
     assert_eq!(code[1], 0);
     assert_eq!(code[2], opcode::CLOSURE);
@@ -128,11 +128,11 @@ fn test_letrec_deferred_body() {
     assert_eq!(code[5], 1);
     assert_eq!(code[6], opcode::GLOBAL);
     assert_eq!(code[7], 1);
-    assert_eq!(code[8], opcode::HALT);
+    assert_eq!(code[8], opcode::FIN);
     assert_eq!(body_addr, 9);
     assert_eq!(code[9], opcode::CAPTURE);
     assert_eq!(code[10], 0);
-    assert_eq!(code[11], opcode::HALT);
+    assert_eq!(code[11], opcode::FIN);
 }
 
 #[test]
@@ -140,9 +140,9 @@ fn test_letrec_run() {
     let expr = Expr::Letrec(
         Lambda {
             captures: vec![Loc::Global(0)],
-            body: Box::new(Expr::Halt(Loc::Capture(0))),
+            body: Box::new(Expr::Fin(Loc::Capture(0))),
         },
-        Box::new(Expr::Halt(Loc::Global(1))),
+        Box::new(Expr::Fin(Loc::Global(1))),
     );
 
     let mut emitter = Emitter::new();

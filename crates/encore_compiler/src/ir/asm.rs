@@ -1,3 +1,5 @@
+use super::prim::PrimOp;
+
 pub type Tag = u8;
 
 #[derive(Debug, Clone, Copy)]
@@ -24,6 +26,8 @@ pub enum Val {
     Lambda(Lambda),
     Ctor(Tag, Vec<Loc>),
     Field(Loc, u8),
+    Int(i32),
+    Prim(PrimOp, Vec<Loc>),
 }
 
 pub enum Expr {
@@ -31,7 +35,7 @@ pub enum Expr {
     Letrec(Lambda, Box<Expr>),
     App(Loc, Loc),
     Match(Loc, Tag, Vec<Case>),
-    Halt(Loc),
+    Fin(Loc),
 }
 
 pub struct Define {

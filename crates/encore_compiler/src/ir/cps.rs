@@ -1,3 +1,5 @@
+use super::prim::PrimOp;
+
 pub type Name = String;
 pub type Tag = u8;
 
@@ -16,6 +18,8 @@ pub enum Val {
     Lambda(Lambda),
     Ctor(Tag, Vec<Name>),
     Field(Name, u8),
+    Int(i32),
+    Prim(PrimOp, Vec<Name>),
 }
 
 pub enum Expr {
@@ -23,7 +27,7 @@ pub enum Expr {
     Letrec(Name, Lambda, Box<Expr>),
     App(Name, Name),
     Match(Name, Tag, Vec<Case>),
-    Halt(Name),
+    Fin(Name),
 }
 
 pub struct Define {

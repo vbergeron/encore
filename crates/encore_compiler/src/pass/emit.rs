@@ -1,13 +1,14 @@
 use encore_vm::opcode;
-use crate::ir::{Expr, Lambda, Loc, Val};
+use crate::ir::asm::{Expr, Lambda, Loc, Module, Val};
+use crate::ir::prim::PrimOp;
 
-pub struct Emitter {
+pub struct Emitter<'a> {
     buf: Vec<u8>,
     arity_table: Vec<u8>,
-    deferred: Vec<(usize, *const Expr)>,
+    deferred: Vec<(usize, &'a Expr)>,
 }
 
-impl Emitter {
+impl<'a> Emitter<'a> {
     pub fn new() -> Self {
         Self { buf: Vec::new(), arity_table: Vec::new(), deferred: Vec::new() }
     }
@@ -67,17 +68,17 @@ impl Emitter {
         }
     }
 
-    fn emit_lambda(&mut self, lam: &Lambda) {
+    fn emit_lambda(&mut self, lam: &'a Lambda) {
         for cap in &lam.captures {
             self.emit_loc(cap);
         }
         self.emit_u8(opcode::CLOSURE);
         let hole = self.emit_u16_placeholder();
         self.emit_u8(lam.captures.len() as u8);
-        self.deferred.push((hole, &*lam.body as *const Expr));
+        self.deferred.push((hole, &lam.body));
     }
 
-    fn emit_val(&mut self, val: &Val) {
+    fn emit_val(&mut self, val: &'a Val) {
         match val {
             Val::Loc(loc) => {
                 self.emit_loc(loc);
@@ -98,10 +99,29 @@ impl Emitter {
                 self.emit_u8(opcode::FIELD);
                 self.emit_u8(*idx);
             }
+            Val::Int(n) => {
+                self.emit_u8(opcode::INT);
+                let bits = *n as u32;
+                self.emit_u8(bits as u8);
+                self.emit_u8((bits >> 8) as u8);
+                self.emit_u8((bits >> 16) as u8);
+            }
+            Val::Prim(op, locs) => {
+                for loc in locs {
+                    self.emit_loc(loc);
+                }
+                match op {
+                    PrimOp::Add => self.emit_u8(opcode::INT_ADD),
+                    PrimOp::Sub => self.emit_u8(opcode::INT_SUB),
+                    PrimOp::Mul => self.emit_u8(opcode::INT_MUL),
+                    PrimOp::Eq  => self.emit_u8(opcode::INT_EQ),
+                    PrimOp::Lt  => self.emit_u8(opcode::INT_LT),
+                }
+            }
         }
     }
 
-    pub fn emit_expr(&mut self, expr: &Expr) {
+    pub fn emit_expr(&mut self, expr: &'a Expr) {
         match expr {
             Expr::Let(val, body) => {
                 self.emit_val(val);
@@ -130,6 +150,7 @@ impl Emitter {
                 for (i, case) in cases.iter().enumerate() {
                     self.patch_u16(holes[i], self.pos() as u16);
                     for f in 0..case.arity {
+                        self.emit_loc(loc);
                         self.emit_u8(opcode::FIELD);
                         self.emit_u8(f);
                     }
@@ -137,24 +158,32 @@ impl Emitter {
                 }
             }
 
-            Expr::Halt(loc) => {
+            Expr::Fin(loc) => {
                 self.emit_loc(loc);
-                self.emit_u8(opcode::HALT);
+                self.emit_u8(opcode::FIN);
             }
         }
     }
 
-    pub fn emit_toplevel(&mut self, expr: &Expr) {
+    pub fn emit_toplevel(&mut self, expr: &'a Expr) {
         self.emit_expr(expr);
-        while let Some((hole, body_ptr)) = self.deferred.pop() {
+        while let Some((hole, body)) = self.deferred.pop() {
             self.patch_u16(hole, self.pos() as u16);
-            let body = unsafe { &*body_ptr };
             self.emit_expr(body);
         }
     }
 
     pub fn into_bytes(self) -> Vec<u8> {
         self.buf
+    }
+
+    pub fn emit_module(module: &Module) -> Vec<u8> {
+        let n_globals = module.defines.len() as u16;
+        let mut emitter = Self::new();
+        for define in &module.defines {
+            emitter.emit_toplevel(&define.body);
+        }
+        emitter.serialize(n_globals)
     }
 
     pub fn serialize(self, n_globals: u16) -> Vec<u8> {

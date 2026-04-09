@@ -1,5 +1,5 @@
 [package]
-name = "encore_compile"
+name = "encore_compiler"
 version = "0.1.0"
 edition = "2024"
 
