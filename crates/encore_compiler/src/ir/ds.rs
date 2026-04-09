@@ -3,6 +3,7 @@ use super::prim::PrimOp;
 pub type Name = String;
 pub type Tag = u8;
 
+#[derive(Clone)]
 pub enum Expr {
     Var(Name),
     Lam(Name, Box<Expr>),
@@ -16,6 +17,7 @@ pub enum Expr {
     Prim(PrimOp, Vec<Expr>),
 }
 
+#[derive(Clone)]
 pub struct Case {
     pub binds: Vec<Name>,
     pub body: Expr,

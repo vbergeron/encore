@@ -186,10 +186,7 @@ impl Parser {
             let (_, case) = cases.iter()
                 .find(|(t, _)| *t == tag)
                 .unwrap_or_else(|| panic!("missing case for tag {tag}"));
-            sorted_cases.push(ds::Case {
-                binds: case.binds.clone(),
-                body: clone_expr(&case.body),
-            });
+            sorted_cases.push(case.clone());
         }
 
         ds::Expr::Match(Box::new(scrutinee), base_tag, sorted_cases)
@@ -299,20 +296,4 @@ impl Parser {
     }
 }
 
-fn clone_expr(expr: &ds::Expr) -> ds::Expr {
-    match expr {
-        ds::Expr::Var(n) => ds::Expr::Var(n.clone()),
-        ds::Expr::Lam(n, b) => ds::Expr::Lam(n.clone(), Box::new(clone_expr(b))),
-        ds::Expr::App(f, x) => ds::Expr::App(Box::new(clone_expr(f)), Box::new(clone_expr(x))),
-        ds::Expr::Let(n, e1, e2) => ds::Expr::Let(n.clone(), Box::new(clone_expr(e1)), Box::new(clone_expr(e2))),
-        ds::Expr::Letrec(f, x, b, r) => ds::Expr::Letrec(f.clone(), x.clone(), Box::new(clone_expr(b)), Box::new(clone_expr(r))),
-        ds::Expr::Ctor(t, fs) => ds::Expr::Ctor(*t, fs.iter().map(clone_expr).collect()),
-        ds::Expr::Field(e, i) => ds::Expr::Field(Box::new(clone_expr(e)), *i),
-        ds::Expr::Match(e, b, cs) => ds::Expr::Match(
-            Box::new(clone_expr(e)), *b,
-            cs.iter().map(|c| ds::Case { binds: c.binds.clone(), body: clone_expr(&c.body) }).collect(),
-        ),
-        ds::Expr::Int(n) => ds::Expr::Int(*n),
-        ds::Expr::Prim(op, fs) => ds::Expr::Prim(*op, fs.iter().map(clone_expr).collect()),
-    }
-}
+
