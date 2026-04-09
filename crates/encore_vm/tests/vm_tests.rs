@@ -13,7 +13,7 @@ fn run(code: &[u8], arity_table: &[u8], globals: &[Value]) -> Result<Value, VmEr
 
 #[test]
 fn test_pack_nullary() {
-    let code = [PACK, 0, HALT];
+    let code = [PACK, 0, FIN];
     let arity_table = [0];
     let result = run(&code, &arity_table, &[]).unwrap();
     assert!(result.is_ctor());
@@ -27,7 +27,7 @@ fn test_pack_and_field() {
         PACK, 2,
         PACK, 0,
         FIELD, 0,
-        HALT,
+        FIN,
     ];
     let arity_table = [2, 0, 0];
     let result = run(&code, &arity_table, &[]).unwrap();
@@ -39,13 +39,13 @@ fn test_pack_and_field() {
 
 #[test]
 fn test_closure_and_enter() {
-    // Build arg (ctor tag=0), build closure whose body is ARG HALT, ENCORE.
+    // Build arg (ctor tag=0), build closure whose body is ARG FIN, ENCORE.
     let code = [
         PACK, 0,                    // arg = ctor(0)
         CLOSURE, 7, 0, 0,           // closure with code_ptr=7, ncap=0
         ENCORE,                     // pop clo, pop arg, enter
         ARG,                        // closure body: push arg register
-        HALT,
+        FIN,
     ];
     let arity_table = [0];
     let result = run(&code, &arity_table, &[]).unwrap();
@@ -56,7 +56,7 @@ fn test_closure_and_enter() {
 #[test]
 fn test_load_capture() {
     // Build arg (ctor tag=0), value to capture (ctor tag=1), closure capturing it.
-    // Closure body: CAPTURE 0, HALT. Should return ctor(1).
+    // Closure body: CAPTURE 0, FIN. Should return ctor(1).
     let code = [
         PACK, 0,                    // arg = ctor(0)
         PACK, 1,                    // value to capture = ctor(1)
@@ -64,7 +64,7 @@ fn test_load_capture() {
         ENCORE,                     // pop clo, pop arg=ctor(0), enter
         // closure body at byte 9:
         CAPTURE, 0,                 // push capture 0 = ctor(1)
-        HALT,
+        FIN,
     ];
     let arity_table = [0, 0];
     let result = run(&code, &arity_table, &[]).unwrap();
@@ -75,7 +75,7 @@ fn test_load_capture() {
 #[test]
 fn test_load_global() {
     let global = Value::ctor(42, HeapAddress::new(0));
-    let code = [GLOBAL, 0, HALT];
+    let code = [GLOBAL, 0, FIN];
     let result = run(&code, &[], &[global]).unwrap();
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 42);
@@ -92,10 +92,10 @@ fn test_match() {
         12, 0,                      // off[1] = 12 (branch tag=1)
         // byte 9: branch tag=0
         PACK, 2,
-        HALT,
+        FIN,
         // byte 12: branch tag=1
         PACK, 3,
-        HALT,
+        FIN,
     ];
     let arity_table = [0, 0, 0, 0];
     let result = run(&code, &arity_table, &[]).unwrap();
@@ -128,7 +128,7 @@ fn test_self_recursive() {
         21, 0,                      // off[1] = 21 (Succ branch)
         // byte 19: Zero branch
         ARG,
-        HALT,
+        FIN,
         // byte 21: Succ branch
         ARG,                        // push arg (the Succ ctor)
         FIELD, 0,                   // peek Succ(pred), push pred
@@ -139,6 +139,116 @@ fn test_self_recursive() {
     let result = run(&code, &arity_table, &[]).unwrap();
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 0); // Zero
+}
+
+// -- Integer tests --
+
+#[test]
+fn test_int_const() {
+    let code = [INT, 42, 0, 0, FIN];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
+#[test]
+fn test_int_const_negative() {
+    // -1 in 24-bit two's complement: 0xFF_FFFF
+    let code = [INT, 0xFF, 0xFF, 0xFF, FIN];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), -1);
+}
+
+#[test]
+fn test_int_add() {
+    let code = [
+        INT, 3, 0, 0,
+        INT, 4, 0, 0,
+        INT_ADD,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 7);
+}
+
+#[test]
+fn test_int_sub() {
+    let code = [
+        INT, 10, 0, 0,
+        INT, 3, 0, 0,
+        INT_SUB,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 7);
+}
+
+#[test]
+fn test_int_mul() {
+    let code = [
+        INT, 6, 0, 0,
+        INT, 7, 0, 0,
+        INT_MUL,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
+#[test]
+fn test_int_eq_true() {
+    let code = [
+        INT, 5, 0, 0,
+        INT, 5, 0, 0,
+        INT_EQ,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 1);
+}
+
+#[test]
+fn test_int_eq_false() {
+    let code = [
+        INT, 5, 0, 0,
+        INT, 6, 0, 0,
+        INT_EQ,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 0);
+}
+
+#[test]
+fn test_int_lt_true() {
+    let code = [
+        INT, 3, 0, 0,
+        INT, 5, 0, 0,
+        INT_LT,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 1);
+}
+
+#[test]
+fn test_int_lt_false() {
+    let code = [
+        INT, 5, 0, 0,
+        INT, 3, 0, 0,
+        INT_LT,
+        FIN,
+    ];
+    let result = run(&code, &[], &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 0);
 }
 
 // -- Error tests --
@@ -180,7 +290,7 @@ fn test_invalid_opcode() {
 
 #[test]
 fn test_gc_reclaims_dead_closures() {
-    let code = [ARG, HALT];
+    let code = [ARG, FIN];
     let mut mem = [Value::from_u32(0); 10];
     let mut vm = Vm::new(&code, &[], &[], &mut mem);
     let arg = Value::ctor(0, HeapAddress::NULL);
@@ -213,7 +323,7 @@ fn test_gc_preserves_live_data() {
         ARG,                        // byte 15: push arg = ctor(0)
         PACK, 2,                    // byte 16: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
         CAPTURE, 0,                 // byte 18: push capture 0 — should be ctor(1)
-        HALT,                       // byte 20
+        FIN,                       // byte 20
     ];
     let arity_table = [0, 0, 1];
     let mut mem = [Value::from_u32(0); 7];
@@ -235,10 +345,10 @@ fn test_call() {
         8, 0,                       // off[0] = 8 (Zero branch)
         10, 0,                      // off[1] = 10 (Succ branch)
         ARG,                        // byte 8: Zero -> push arg
-        HALT,                       // byte 9
+        FIN,                       // byte 9
         ARG,                        // byte 10: Succ -> push arg
         FIELD, 0,                   // push pred
-        HALT,
+        FIN,
     ];
     let arity_table = [0, 1];
 

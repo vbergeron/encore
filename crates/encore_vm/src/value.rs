@@ -2,6 +2,7 @@ const TYP_CLOS: u32 = 0;
 const TYP_CTOR: u32 = 1;
 const TYP_HDR: u32 = 2;
 const TYP_GC: u32 = 3;
+const TYP_INT: u32 = 4;
 
 const GC_MARK_BIT: u32 = 0x80 << 8;
 
@@ -44,11 +45,16 @@ impl Value {
         Self(TYP_HDR | (code_ptr.raw() as u32) << 16)
     }
 
+    pub fn int(n: i32) -> Self {
+        Self(TYP_INT | ((n as u32 & 0x00FF_FFFF) << 8))
+    }
+
     // -- Type discrimination --
 
     pub fn is_closure(self) -> bool { self.0 & 0xFF == TYP_CLOS }
     pub fn is_ctor(self) -> bool { self.0 & 0xFF == TYP_CTOR }
     pub fn is_header(self) -> bool { self.0 & 0xFF == TYP_HDR }
+    pub fn is_int(self) -> bool { self.0 & 0xFF == TYP_INT }
 
     // -- Closure accessors --
 
@@ -59,6 +65,12 @@ impl Value {
 
     pub fn ctor_tag(self) -> u8 { (self.0 >> 8) as u8 }
     pub fn ctor_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
+
+    // -- Integer accessors --
+
+    pub fn int_value(self) -> i32 {
+        (self.0 as i32) >> 8
+    }
 
     // -- Header accessors --
 

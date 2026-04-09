@@ -113,9 +113,8 @@ impl<'a> Vm<'a> {
                 }
 
                 opcode::FIELD => {
-                    self.arena.stack_ensure(1)?;
                     let i = self.code.read_u8();
-                    let ctor = self.arena.stack_peek();
+                    let ctor = self.arena.stack_pop();
                     let val = self.arena.heap_read(ctor.ctor_addr(), 1 + i as usize);
                     self.arena.stack_push(val);
                 }
@@ -125,7 +124,7 @@ impl<'a> Vm<'a> {
                     let n = self.code.read_u8();
                     let table = self.code.pc();
                     self.code.skip(n as usize * 2);
-                    let ctor = self.arena.stack_peek();
+                    let ctor = self.arena.stack_pop();
                     let branch = ctor.ctor_tag().wrapping_sub(base) as usize;
                     debug_assert!(branch < n as usize);
                     let off = self.code.read_address_at(table + branch * 2);
@@ -143,7 +142,49 @@ impl<'a> Vm<'a> {
                     self.code.jump(code_ptr);
                 }
 
-                opcode::HALT => {
+                opcode::INT => {
+                    self.arena.stack_ensure(1)?;
+                    let b0 = self.code.read_u8() as u32;
+                    let b1 = self.code.read_u8() as u32;
+                    let b2 = self.code.read_u8() as u32;
+                    let raw = b0 | (b1 << 8) | (b2 << 16);
+                    let n = ((raw as i32) << 8) >> 8;
+                    self.arena.stack_push(Value::int(n));
+                }
+
+                opcode::INT_ADD => {
+                    let b = self.arena.stack_pop().int_value();
+                    let a = self.arena.stack_pop().int_value();
+                    self.arena.stack_push(Value::int(a.wrapping_add(b)));
+                }
+
+                opcode::INT_SUB => {
+                    let b = self.arena.stack_pop().int_value();
+                    let a = self.arena.stack_pop().int_value();
+                    self.arena.stack_push(Value::int(a.wrapping_sub(b)));
+                }
+
+                opcode::INT_MUL => {
+                    let b = self.arena.stack_pop().int_value();
+                    let a = self.arena.stack_pop().int_value();
+                    self.arena.stack_push(Value::int(a.wrapping_mul(b)));
+                }
+
+                opcode::INT_EQ => {
+                    let b = self.arena.stack_pop().int_value();
+                    let a = self.arena.stack_pop().int_value();
+                    let tag = if a == b { 1 } else { 0 };
+                    self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
+                }
+
+                opcode::INT_LT => {
+                    let b = self.arena.stack_pop().int_value();
+                    let a = self.arena.stack_pop().int_value();
+                    let tag = if a < b { 1 } else { 0 };
+                    self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
+                }
+
+                opcode::FIN => {
                     return Ok(self.arena.stack_peek());
                 }
 
