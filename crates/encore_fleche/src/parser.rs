@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::ir::ds;
-use crate::ir::prim::PrimOp;
-use super::lexer::{Lexer, Token};
+use crate::ds;
+use crate::prim::PrimOp;
+use crate::lexer::{Lexer, Token};
 
 struct CtorInfo {
     tag: u8,

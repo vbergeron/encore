@@ -1,0 +1,7 @@
+[package]
+name = "encore_fleche"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+encore_compiler = { path = "../encore_compiler" }

@@ -5,3 +5,6 @@ edition = "2024"
 
 [dependencies]
 encore_vm = { path = "../encore_vm" }
+
+[dev-dependencies]
+encore_fleche = { path = "../encore_fleche" }

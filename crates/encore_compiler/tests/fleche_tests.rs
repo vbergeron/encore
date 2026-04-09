@@ -1,11 +1,11 @@
-use encore_compiler::fleche;
 use encore_compiler::pipeline;
+use encore_fleche;
 use encore_vm::program::Program;
 use encore_vm::value::Value;
 use encore_vm::vm::Vm;
 
 fn run(source: &str) -> Value {
-    let module = fleche::parse(source);
+    let module = encore_fleche::parse(source);
     let binary = pipeline::compile_module(module);
     let prog = Program::parse(&binary).unwrap();
     let mut mem = [Value::from_u32(0); 4096];
