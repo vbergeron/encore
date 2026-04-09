@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 
 use crate::ir::cps::{self, Expr, Lambda, Val};
+use crate::pass::subst::subst_expr;
 
 pub fn inlining(expr: Expr, threshold: usize) -> Expr {
     inline_expr(expr, threshold, &HashMap::new())
@@ -94,65 +95,3 @@ fn inline_val(val: Val, threshold: usize, env: &Env) -> Val {
     }
 }
 
-fn subst_name(from: &str, to: &str, name: &mut String) {
-    if name == from {
-        *name = to.to_string();
-    }
-}
-
-fn subst_val(from: &str, to: &str, val: &mut Val) {
-    match val {
-        Val::Var(n) => subst_name(from, to, n),
-        Val::Lambda(lam) => {
-            if lam.param != from {
-                subst_expr(from, to, &mut lam.body);
-            }
-        }
-        Val::Ctor(_, fields) => {
-            for f in fields {
-                subst_name(from, to, f);
-            }
-        }
-        Val::Field(n, _) => subst_name(from, to, n),
-        Val::Int(_) => {}
-        Val::Prim(_, args) => {
-            for a in args {
-                subst_name(from, to, a);
-            }
-        }
-    }
-}
-
-fn subst_expr(from: &str, to: &str, expr: &mut Expr) {
-    match expr {
-        Expr::Let(binder, val, body) => {
-            subst_val(from, to, val);
-            if binder != from {
-                subst_expr(from, to, body);
-            }
-        }
-        Expr::Letrec(binder, lam, body) => {
-            if binder != from {
-                if lam.param != from {
-                    subst_expr(from, to, &mut lam.body);
-                }
-                subst_expr(from, to, body);
-            }
-        }
-        Expr::App(f, x) => {
-            subst_name(from, to, f);
-            subst_name(from, to, x);
-        }
-        Expr::Match(n, _, cases) => {
-            subst_name(from, to, n);
-            for case in cases {
-                if !case.binds.contains(&from.to_string()) {
-                    subst_expr(from, to, &mut case.body);
-                }
-            }
-        }
-        Expr::Fin(n) => {
-            subst_name(from, to, n);
-        }
-    }
-}

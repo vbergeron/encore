@@ -4,3 +4,4 @@ pub mod emit;
 pub mod resolver;
 pub mod rewrite;
 pub mod simplify;
+pub mod subst;
