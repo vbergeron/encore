@@ -1,7 +1,5 @@
 use crate::ir::{cps, ds, prim::PrimOp};
 
-pub const CONT_TAG: u8 = 255;
-
 struct FreshGen {
     counter: usize,
 }
@@ -46,25 +44,17 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
 
         ds::Expr::Lam(x, body) => {
             let f = fg.fresh("f");
-            let p = fg.fresh("p");
             let kv = fg.fresh("k");
             let kv2 = kv.clone();
-            cps::Expr::Let(
+            cps::Expr::Letrec(
                 f.clone(),
-                cps::Val::Lambda(cps::Lambda {
-                    param: p.clone(),
-                    body: Box::new(cps::Expr::Let(
-                        x,
-                        cps::Val::Field(p.clone(), 0),
-                        Box::new(cps::Expr::Let(
-                            kv,
-                            cps::Val::Field(p, 1),
-                            Box::new(transform(fg, *body, Box::new(move |_fg, r| {
-                                cps::Expr::App(kv2, r)
-                            }))),
-                        )),
-                    )),
-                }),
+                cps::Fun {
+                    arg: x,
+                    cont: kv,
+                    body: Box::new(transform(fg, *body, Box::new(move |_fg, r| {
+                        cps::Expr::Return(kv2, r)
+                    }))),
+                },
                 Box::new(k(fg, f)),
             )
         }
@@ -74,19 +64,14 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
                 transform(fg, *e2, Box::new(move |fg, x| {
                     let kn = fg.fresh("k");
                     let r = fg.fresh("r");
-                    let pair = fg.fresh("pair");
                     let r2 = r.clone();
                     cps::Expr::Let(
                         kn.clone(),
-                        cps::Val::Lambda(cps::Lambda {
+                        cps::Val::Cont(cps::Cont {
                             param: r,
                             body: Box::new(k(fg, r2)),
                         }),
-                        Box::new(cps::Expr::Let(
-                            pair.clone(),
-                            cps::Val::Ctor(CONT_TAG, vec![x, kn]),
-                            Box::new(cps::Expr::App(f, pair)),
-                        )),
+                        Box::new(cps::Expr::Encore(f, x, kn)),
                     )
                 }))
             }))
@@ -103,24 +88,16 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
         }
 
         ds::Expr::Letrec(f, x, body, rest) => {
-            let p = fg.fresh("p");
             let kv = fg.fresh("k");
             let kv2 = kv.clone();
             cps::Expr::Letrec(
                 f,
-                cps::Lambda {
-                    param: p.clone(),
-                    body: Box::new(cps::Expr::Let(
-                        x,
-                        cps::Val::Field(p.clone(), 0),
-                        Box::new(cps::Expr::Let(
-                            kv,
-                            cps::Val::Field(p, 1),
-                            Box::new(transform(fg, *body, Box::new(move |_fg, r| {
-                                cps::Expr::App(kv2, r)
-                            }))),
-                        )),
-                    )),
+                cps::Fun {
+                    arg: x,
+                    cont: kv,
+                    body: Box::new(transform(fg, *body, Box::new(move |_fg, r| {
+                        cps::Expr::Return(kv2, r)
+                    }))),
                 },
                 Box::new(transform(fg, *rest, k)),
             )
@@ -161,7 +138,7 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
             let kn2 = kn.clone();
             cps::Expr::Let(
                 kn,
-                cps::Val::Lambda(cps::Lambda {
+                cps::Val::Cont(cps::Cont {
                     param: r,
                     body: Box::new(k(fg, r2)),
                 }),
@@ -173,7 +150,7 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
                             cps::Case {
                                 binds: c.binds,
                                 body: transform(fg, c.body, Box::new(move |_fg, r| {
-                                    cps::Expr::App(kn_ref, r)
+                                    cps::Expr::Return(kn_ref, r)
                                 })),
                             }
                         })

@@ -6,7 +6,7 @@ mod simpl_05_eta_reduction;
 
 use std::collections::HashMap;
 
-use crate::ir::cps::{Expr, Lambda, Val};
+use crate::ir::cps::{Expr, Fun, Cont, Val};
 
 // ── Infrastructure ──────────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ pub(crate) fn census_name(census: &mut Census, name: &str) {
 pub(crate) fn census_val(census: &mut Census, val: &Val) {
     match val {
         Val::Var(n) => census_name(census, n),
-        Val::Lambda(lam) => census_lambda(census, lam),
+        Val::Cont(cont) => census_cont(census, cont),
         Val::Ctor(_, fields) => {
             for f in fields {
                 census_name(census, f);
@@ -35,8 +35,12 @@ pub(crate) fn census_val(census: &mut Census, val: &Val) {
     }
 }
 
-pub(crate) fn census_lambda(census: &mut Census, lam: &Lambda) {
-    census_expr(census, &lam.body);
+pub(crate) fn census_fun(census: &mut Census, fun: &Fun) {
+    census_expr(census, &fun.body);
+}
+
+pub(crate) fn census_cont(census: &mut Census, cont: &Cont) {
+    census_expr(census, &cont.body);
 }
 
 pub(crate) fn census_expr(census: &mut Census, expr: &Expr) {
@@ -45,12 +49,17 @@ pub(crate) fn census_expr(census: &mut Census, expr: &Expr) {
             census_val(census, val);
             census_expr(census, body);
         }
-        Expr::Letrec(_, lam, body) => {
-            census_lambda(census, lam);
+        Expr::Letrec(_, fun, body) => {
+            census_fun(census, fun);
             census_expr(census, body);
         }
-        Expr::App(f, x) => {
+        Expr::Encore(f, x, k) => {
             census_name(census, f);
+            census_name(census, x);
+            census_name(census, k);
+        }
+        Expr::Return(k, x) => {
+            census_name(census, k);
             census_name(census, x);
         }
         Expr::Match(n, _, cases) => {
@@ -71,7 +80,7 @@ pub(crate) fn count(census: &Census, name: &str) -> usize {
 
 pub(crate) fn is_pure(val: &Val) -> bool {
     match val {
-        Val::Var(_) | Val::Int(_) | Val::Lambda(_) => true,
+        Val::Var(_) | Val::Int(_) | Val::Cont(_) => true,
         Val::Ctor(_, _) | Val::Field(_, _) | Val::Prim(_, _) => true,
     }
 }

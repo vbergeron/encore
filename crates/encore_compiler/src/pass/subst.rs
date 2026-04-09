@@ -9,9 +9,9 @@ pub fn subst_name(from: &str, to: &str, name: &mut String) {
 pub fn subst_val(from: &str, to: &str, val: &mut Val) {
     match val {
         Val::Var(n) => subst_name(from, to, n),
-        Val::Lambda(lam) => {
-            if lam.param != from {
-                subst_expr(from, to, &mut lam.body);
+        Val::Cont(cont) => {
+            if cont.param != from {
+                subst_expr(from, to, &mut cont.body);
             }
         }
         Val::Ctor(_, fields) => {
@@ -37,16 +37,21 @@ pub fn subst_expr(from: &str, to: &str, expr: &mut Expr) {
                 subst_expr(from, to, body);
             }
         }
-        Expr::Letrec(binder, lam, body) => {
+        Expr::Letrec(binder, fun, body) => {
             if binder != from {
-                if lam.param != from {
-                    subst_expr(from, to, &mut lam.body);
+                if fun.arg != from && fun.cont != from {
+                    subst_expr(from, to, &mut fun.body);
                 }
                 subst_expr(from, to, body);
             }
         }
-        Expr::App(f, x) => {
+        Expr::Encore(f, x, k) => {
             subst_name(from, to, f);
+            subst_name(from, to, x);
+            subst_name(from, to, k);
+        }
+        Expr::Return(k, x) => {
+            subst_name(from, to, k);
             subst_name(from, to, x);
         }
         Expr::Match(n, _, cases) => {

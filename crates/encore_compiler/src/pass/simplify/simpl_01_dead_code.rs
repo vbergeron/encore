@@ -3,7 +3,7 @@
 //   let unused = Succ(x) in unused     ──►   unused
 //
 
-use crate::ir::cps::{self, Expr, Lambda, Val};
+use crate::ir::cps::{self, Expr, Fun, Cont, Val};
 
 use super::{count, census_expr, is_pure, Census};
 
@@ -20,15 +20,15 @@ pub fn dead_code(expr: Expr) -> Expr {
                 Expr::Let(name, val, Box::new(body))
             }
         }
-        Expr::Letrec(name, lam, body) => {
+        Expr::Letrec(name, fun, body) => {
             let body = dead_code(*body);
-            let lam = dead_code_lambda(lam);
+            let fun = dead_code_fun(fun);
             let mut census = Census::new();
             census_expr(&mut census, &body);
             if count(&census, &name) == 0 {
                 body
             } else {
-                Expr::Letrec(name, lam, Box::new(body))
+                Expr::Letrec(name, fun, Box::new(body))
             }
         }
         Expr::Match(name, base, cases) => {
@@ -44,11 +44,15 @@ pub fn dead_code(expr: Expr) -> Expr {
 
 fn dead_code_val(val: Val) -> Val {
     match val {
-        Val::Lambda(lam) => Val::Lambda(dead_code_lambda(lam)),
+        Val::Cont(cont) => Val::Cont(dead_code_cont(cont)),
         other => other,
     }
 }
 
-fn dead_code_lambda(lam: Lambda) -> Lambda {
-    Lambda { param: lam.param, body: Box::new(dead_code(*lam.body)) }
+fn dead_code_fun(fun: Fun) -> Fun {
+    Fun { arg: fun.arg, cont: fun.cont, body: Box::new(dead_code(*fun.body)) }
+}
+
+fn dead_code_cont(cont: Cont) -> Cont {
+    Cont { param: cont.param, body: Box::new(dead_code(*cont.body)) }
 }

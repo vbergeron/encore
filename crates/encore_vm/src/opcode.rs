@@ -9,6 +9,8 @@ pub const PACK: u8 = 0x07;
 pub const FIELD: u8 = 0x08;
 pub const MATCH: u8 = 0x09;
 pub const ENCORE: u8 = 0x0A;
+pub const CONT: u8 = 0x0B;
+pub const RETURN: u8 = 0x0C;
 
 pub const INT: u8 = 0x10;
 pub const INT_ADD: u8 = 0x11;

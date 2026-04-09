@@ -3,7 +3,7 @@
 //   let y = x in f y     ──►   f x
 //
 
-use crate::ir::cps::{self, Expr, Lambda, Val};
+use crate::ir::cps::{self, Expr, Fun, Cont, Val};
 
 use super::subst_expr;
 
@@ -19,10 +19,10 @@ pub fn copy_propagation(expr: Expr) -> Expr {
             let body = copy_propagation(*body);
             Expr::Let(name, val, Box::new(body))
         }
-        Expr::Letrec(name, lam, body) => {
-            let lam = copy_propagation_lambda(lam);
+        Expr::Letrec(name, fun, body) => {
+            let fun = copy_propagation_fun(fun);
             let body = copy_propagation(*body);
-            Expr::Letrec(name, lam, Box::new(body))
+            Expr::Letrec(name, fun, Box::new(body))
         }
         Expr::Match(name, base, cases) => {
             let cases = cases
@@ -37,11 +37,15 @@ pub fn copy_propagation(expr: Expr) -> Expr {
 
 fn copy_propagation_val(val: Val) -> Val {
     match val {
-        Val::Lambda(lam) => Val::Lambda(copy_propagation_lambda(lam)),
+        Val::Cont(cont) => Val::Cont(copy_propagation_cont(cont)),
         other => other,
     }
 }
 
-fn copy_propagation_lambda(lam: Lambda) -> Lambda {
-    Lambda { param: lam.param, body: Box::new(copy_propagation(*lam.body)) }
+fn copy_propagation_fun(fun: Fun) -> Fun {
+    Fun { arg: fun.arg, cont: fun.cont, body: Box::new(copy_propagation(*fun.body)) }
+}
+
+fn copy_propagation_cont(cont: Cont) -> Cont {
+    Cont { param: cont.param, body: Box::new(copy_propagation(*cont.body)) }
 }

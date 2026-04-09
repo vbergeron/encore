@@ -11,6 +11,7 @@ pub struct Vm<'a> {
     arena: Arena<'a>,
     self_ref: Value,
     arg: Value,
+    cont: Value,
 }
 
 impl<'a> Vm<'a> {
@@ -27,11 +28,12 @@ impl<'a> Vm<'a> {
             arena: Arena::new(mem),
             self_ref: Value::closure(0, HeapAddress::NULL),
             arg: Value::from_u32(0),
+            cont: Value::from_u32(0),
         }
     }
 
     fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
-        self.arena.alloc(n, &mut self.self_ref, &mut self.arg)
+        self.arena.alloc(n, &mut self.self_ref, &mut self.arg, &mut self.cont)
     }
 
     pub fn call(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
@@ -41,6 +43,7 @@ impl<'a> Vm<'a> {
         self.self_ref = Value::closure(0, addr);
         self.arena.stack_reset();
         self.arg = arg;
+        self.cont = Value::from_u32(0);
         self.code.jump(entry);
         self.run()
     }
@@ -78,6 +81,11 @@ impl<'a> Vm<'a> {
                 opcode::SELF => {
                     self.arena.stack_ensure(1)?;
                     self.arena.stack_push(self.self_ref);
+                }
+
+                opcode::CONT => {
+                    self.arena.stack_ensure(1)?;
+                    self.arena.stack_push(self.cont);
                 }
 
                 opcode::CLOSURE => {
@@ -134,10 +142,23 @@ impl<'a> Vm<'a> {
                 opcode::ENCORE => {
                     let clo = self.arena.stack_pop();
                     let arg = self.arena.stack_pop();
+                    let cont = self.arena.stack_pop();
                     let addr = clo.closure_addr();
                     let code_ptr = self.arena.heap_read(addr, 1).header_code_ptr();
                     self.self_ref = clo;
                     self.arg = arg;
+                    self.cont = cont;
+                    self.arena.stack_reset();
+                    self.code.jump(code_ptr);
+                }
+
+                opcode::RETURN => {
+                    let clo = self.arena.stack_pop();
+                    let result = self.arena.stack_pop();
+                    let addr = clo.closure_addr();
+                    let code_ptr = self.arena.heap_read(addr, 1).header_code_ptr();
+                    self.self_ref = clo;
+                    self.arg = result;
                     self.arena.stack_reset();
                     self.code.jump(code_ptr);
                 }

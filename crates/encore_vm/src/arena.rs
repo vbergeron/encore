@@ -22,9 +22,15 @@ impl<'a> Arena<'a> {
 
     // -- Heap (grows up from 0) --
 
-    pub fn alloc(&mut self, n: usize, self_ref: &mut Value, arg: &mut Value) -> Result<HeapAddress, VmError> {
+    pub fn alloc(
+        &mut self,
+        n: usize,
+        self_ref: &mut Value,
+        arg: &mut Value,
+        cont: &mut Value,
+    ) -> Result<HeapAddress, VmError> {
         if self.overflowing(n) {
-            gc::collect(self, self_ref, arg);
+            gc::collect(self, self_ref, arg, cont);
             if self.overflowing(n) {
                 return Err(VmError::HeapOverflow);
             }

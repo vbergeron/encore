@@ -8,10 +8,11 @@ use crate::value::{HeapAddress, Value};
 ///   2. Forward — assign new (compacted) addresses to marked objects
 ///   3. Update — rewrite all heap pointers to use forwarding addresses
 ///   4. Compact — slide live objects down, reset heap pointer
-pub fn collect(arena: &mut Arena, self_ref: &mut Value, arg: &mut Value) {
+pub fn collect(arena: &mut Arena, self_ref: &mut Value, arg: &mut Value, cont: &mut Value) {
     // Phase 1: Mark
     mark(arena, *self_ref);
     mark(arena, *arg);
+    mark(arena, *cont);
     let end = arena.mem.len();
     for i in arena.sp..end {
         mark(arena, arena.mem[i]);
@@ -23,6 +24,7 @@ pub fn collect(arena: &mut Arena, self_ref: &mut Value, arg: &mut Value) {
     // Phase 3: Update references
     *self_ref = update_value(arena.mem, *self_ref);
     *arg = update_value(arena.mem, *arg);
+    *cont = update_value(arena.mem, *cont);
     for i in arena.sp..end {
         arena.mem[i] = update_value(arena.mem, arena.mem[i]);
     }

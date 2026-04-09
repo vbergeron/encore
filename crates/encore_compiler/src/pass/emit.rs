@@ -1,5 +1,5 @@
 use encore_vm::opcode;
-use crate::ir::asm::{Expr, Lambda, Loc, Module, Val};
+use crate::ir::asm::{ContLam, Expr, Fun, Loc, Module, Val};
 use crate::ir::prim::PrimOp;
 
 pub struct Emitter<'a> {
@@ -50,6 +50,9 @@ impl<'a> Emitter<'a> {
             Loc::Arg => {
                 self.emit_u8(opcode::ARG);
             }
+            Loc::Cont => {
+                self.emit_u8(opcode::CONT);
+            }
             Loc::Local(idx) => {
                 self.emit_u8(opcode::LOCAL);
                 self.emit_u8(*idx);
@@ -68,14 +71,24 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    fn emit_lambda(&mut self, lam: &'a Lambda) {
-        for cap in &lam.captures {
+    fn emit_fun(&mut self, fun: &'a Fun) {
+        for cap in &fun.captures {
             self.emit_loc(cap);
         }
         self.emit_u8(opcode::CLOSURE);
         let hole = self.emit_u16_placeholder();
-        self.emit_u8(lam.captures.len() as u8);
-        self.deferred.push((hole, &lam.body));
+        self.emit_u8(fun.captures.len() as u8);
+        self.deferred.push((hole, &fun.body));
+    }
+
+    fn emit_cont_lam(&mut self, cont: &'a ContLam) {
+        for cap in &cont.captures {
+            self.emit_loc(cap);
+        }
+        self.emit_u8(opcode::CLOSURE);
+        let hole = self.emit_u16_placeholder();
+        self.emit_u8(cont.captures.len() as u8);
+        self.deferred.push((hole, &cont.body));
     }
 
     fn emit_val(&mut self, val: &'a Val) {
@@ -83,8 +96,8 @@ impl<'a> Emitter<'a> {
             Val::Loc(loc) => {
                 self.emit_loc(loc);
             }
-            Val::Lambda(lam) => {
-                self.emit_lambda(lam);
+            Val::ContLam(cont) => {
+                self.emit_cont_lam(cont);
             }
             Val::Ctor(tag, fields) => {
                 self.record_arity(*tag, fields.len() as u8);
@@ -128,15 +141,22 @@ impl<'a> Emitter<'a> {
                 self.emit_expr(body);
             }
 
-            Expr::Letrec(lam, body) => {
-                self.emit_lambda(lam);
+            Expr::Letrec(fun, body) => {
+                self.emit_fun(fun);
                 self.emit_expr(body);
             }
 
-            Expr::App(fun, arg) => {
+            Expr::Encore(fun, arg, cont) => {
+                self.emit_loc(cont);
                 self.emit_loc(arg);
                 self.emit_loc(fun);
                 self.emit_u8(opcode::ENCORE);
+            }
+
+            Expr::Return(cont, result) => {
+                self.emit_loc(result);
+                self.emit_loc(cont);
+                self.emit_u8(opcode::RETURN);
             }
 
             Expr::Match(loc, base, cases) => {

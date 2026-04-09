@@ -4,7 +4,14 @@ pub type Name = String;
 pub type Tag = u8;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Lambda {
+pub struct Fun {
+    pub arg: Name,
+    pub cont: Name,
+    pub body: Box<Expr>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Cont {
     pub param: Name,
     pub body: Box<Expr>,
 }
@@ -18,7 +25,7 @@ pub struct Case {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Val {
     Var(Name),
-    Lambda(Lambda),
+    Cont(Cont),
     Ctor(Tag, Vec<Name>),
     Field(Name, u8),
     Int(i32),
@@ -28,8 +35,9 @@ pub enum Val {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Let(Name, Val, Box<Expr>),
-    Letrec(Name, Lambda, Box<Expr>),
-    App(Name, Name),
+    Letrec(Name, Fun, Box<Expr>),
+    Encore(Name, Name, Name),
+    Return(Name, Name),
     Match(Name, Tag, Vec<Case>),
     Fin(Name),
 }

@@ -15,24 +15,28 @@ fn int(v: i32) -> Val {
     Val::Int(v)
 }
 
-fn lam(param: &str, body: Expr) -> Val {
-    Val::Lambda(Lambda { param: n(param), body: Box::new(body) })
+fn cont_(param: &str, body: Expr) -> Val {
+    Val::Cont(Cont { param: n(param), body: Box::new(body) })
 }
 
-fn lambda(param: &str, body: Expr) -> Lambda {
-    Lambda { param: n(param), body: Box::new(body) }
+fn fun_(arg: &str, cont: &str, body: Expr) -> Fun {
+    Fun { arg: n(arg), cont: n(cont), body: Box::new(body) }
 }
 
 fn let_(name: &str, val: Val, body: Expr) -> Expr {
     Expr::Let(n(name), val, Box::new(body))
 }
 
-fn letrec(name: &str, lam: Lambda, body: Expr) -> Expr {
-    Expr::Letrec(n(name), lam, Box::new(body))
+fn letrec(name: &str, fun: Fun, body: Expr) -> Expr {
+    Expr::Letrec(n(name), fun, Box::new(body))
 }
 
-fn app(f: &str, x: &str) -> Expr {
-    Expr::App(n(f), n(x))
+fn return_(k: &str, x: &str) -> Expr {
+    Expr::Return(n(k), n(x))
+}
+
+fn encore(f: &str, x: &str, k: &str) -> Expr {
+    Expr::Encore(n(f), n(x), n(k))
 }
 
 fn fin(name: &str) -> Expr {
@@ -77,15 +81,15 @@ fn test_dead_code_used_let() {
 
 #[test]
 fn test_dead_code_unused_letrec() {
-    // letrec f = (x -> x) in fin y  ──►  fin y
-    let expr = letrec("f", lambda("x", app("f", "x")), fin("y"));
+    // letrec f = fun(x, k). return k x in fin y  ──►  fin y
+    let expr = letrec("f", fun_("x", "k", return_("k", "x")), fin("y"));
     assert_eq!(dead_code(expr), fin("y"));
 }
 
 #[test]
 fn test_dead_code_used_letrec() {
-    // letrec f = (x -> x) in f y  ──►  unchanged
-    let expr = letrec("f", lambda("x", fin("x")), app("f", "y"));
+    // letrec f = fun(x, k). fin x in fin f  ──►  unchanged
+    let expr = letrec("f", fun_("x", "k", fin("x")), fin("f"));
     assert_eq!(dead_code(expr.clone()), expr);
 }
 
@@ -97,11 +101,11 @@ fn test_dead_code_nested() {
 }
 
 #[test]
-fn test_dead_code_inside_lambda() {
-    // let k = (x -> let dead = 1 in fin x) in fin k
-    let inner = lam("x", let_("dead", int(1), fin("x")));
+fn test_dead_code_inside_cont() {
+    // let k = cont(x). let dead = 1 in fin x in fin k
+    let inner = cont_("x", let_("dead", int(1), fin("x")));
     let expr = let_("k", inner, fin("k"));
-    let expected = let_("k", lam("x", fin("x")), fin("k"));
+    let expected = let_("k", cont_("x", fin("x")), fin("k"));
     assert_eq!(dead_code(expr), expected);
 }
 
@@ -136,10 +140,10 @@ fn test_copy_prop_chain() {
 }
 
 #[test]
-fn test_copy_prop_in_app() {
-    // let y = x in f y  ──►  f x
-    let expr = let_("y", var("x"), app("f", "y"));
-    assert_eq!(copy_propagation(expr), app("f", "x"));
+fn test_copy_prop_in_return() {
+    // let y = x in return f y  ──►  return f x
+    let expr = let_("y", var("x"), return_("f", "y"));
+    assert_eq!(copy_propagation(expr), return_("f", "x"));
 }
 
 #[test]
@@ -150,11 +154,11 @@ fn test_copy_prop_non_var_untouched() {
 }
 
 #[test]
-fn test_copy_prop_inside_lambda() {
-    // let k = (x -> let y = x in fin y) in fin k
-    let inner = lam("x", let_("y", var("x"), fin("y")));
+fn test_copy_prop_inside_cont() {
+    // let k = cont(x). let y = x in fin y in fin k
+    let inner = cont_("x", let_("y", var("x"), fin("y")));
     let expr = let_("k", inner, fin("k"));
-    let expected = let_("k", lam("x", fin("x")), fin("k"));
+    let expected = let_("k", cont_("x", fin("x")), fin("k"));
     assert_eq!(copy_propagation(expr), expected);
 }
 
@@ -250,51 +254,51 @@ fn test_const_fold_lt_not_folded() {
 
 #[test]
 fn test_beta_simple() {
-    // let k = (x -> fin x) in k arg  ──►  fin arg
-    let expr = let_("k", lam("x", fin("x")), app("k", "arg"));
+    // let k = cont(x). fin x in return k arg  ──►  fin arg
+    let expr = let_("k", cont_("x", fin("x")), return_("k", "arg"));
     assert_eq!(beta_contraction(expr), fin("arg"));
 }
 
 #[test]
 fn test_beta_with_body() {
-    // let k = (x -> let r = field 0 of x in fin r) in k arg
+    // let k = cont(x). let r = field 0 of x in fin r in return k arg
     // ──►  let r = field 0 of arg in fin r
     let expr = let_("k",
-        lam("x", let_("r", field("x", 0), fin("r"))),
-        app("k", "arg"));
+        cont_("x", let_("r", field("x", 0), fin("r"))),
+        return_("k", "arg"));
     let expected = let_("r", field("arg", 0), fin("r"));
     assert_eq!(beta_contraction(expr), expected);
 }
 
 #[test]
 fn test_beta_nested_in_let() {
-    // let k = (x -> fin x) in let y = 42 in k arg
+    // let k = cont(x). fin x in let y = 42 in return k arg
     // ──►  let y = 42 in fin arg
     let expr = let_("k",
-        lam("x", fin("x")),
-        let_("y", int(42), app("k", "arg")));
+        cont_("x", fin("x")),
+        let_("y", int(42), return_("k", "arg")));
     let expected = let_("y", int(42), fin("arg"));
     assert_eq!(beta_contraction(expr), expected);
 }
 
 #[test]
 fn test_beta_multi_use_not_inlined() {
-    // let k = (x -> fin x) in let a = Ctor(0, [k]) in k arg
-    // k is used twice (in Ctor and in App), should not inline
+    // let k = cont(x). fin x in let a = Ctor(0, [k]) in return k arg
+    // k is used twice (in Ctor and in Return), should not inline
     let expr = let_("k",
-        lam("x", fin("x")),
-        let_("a", ctor(0, &["k"]), app("k", "arg")));
+        cont_("x", fin("x")),
+        let_("a", ctor(0, &["k"]), return_("k", "arg")));
     assert_eq!(beta_contraction(expr.clone()), expr);
 }
 
 #[test]
 fn test_beta_in_match_branch() {
-    // let k = (x -> fin x) in match s 0 [ k a | fin b ]
+    // let k = cont(x). fin x in match s 0 [ return k a | fin b ]
     // ──►  match s 0 [ fin a | fin b ]
     let expr = let_("k",
-        lam("x", fin("x")),
+        cont_("x", fin("x")),
         match_("s", 0, vec![
-            case(&[], app("k", "a")),
+            case(&[], return_("k", "a")),
             case(&[], fin("b")),
         ]));
     let expected = match_("s", 0, vec![
@@ -305,11 +309,11 @@ fn test_beta_in_match_branch() {
 }
 
 #[test]
-fn test_beta_inside_lambda() {
-    // let outer = (z -> let k = (x -> fin x) in k z) in fin outer
-    let inner = lam("z", let_("k", lam("x", fin("x")), app("k", "z")));
+fn test_beta_inside_cont() {
+    // let outer = cont(z). let k = cont(x). fin x in return k z in fin outer
+    let inner = cont_("z", let_("k", cont_("x", fin("x")), return_("k", "z")));
     let expr = let_("outer", inner, fin("outer"));
-    let expected = let_("outer", lam("z", fin("z")), fin("outer"));
+    let expected = let_("outer", cont_("z", fin("z")), fin("outer"));
     assert_eq!(beta_contraction(expr), expected);
 }
 
@@ -317,47 +321,46 @@ fn test_beta_inside_lambda() {
 
 #[test]
 fn test_eta_simple() {
-    // let g = (x -> f x) in fin g  ──►  let g = f in fin g
-    let expr = let_("g", lam("x", app("f", "x")), fin("g"));
+    // let g = cont(x). return f x in fin g  ──►  let g = f in fin g
+    let expr = let_("g", cont_("x", return_("f", "x")), fin("g"));
     let expected = let_("g", var("f"), fin("g"));
     assert_eq!(eta_reduction(expr), expected);
 }
 
 #[test]
 fn test_eta_not_forwarding() {
-    // let g = (x -> h x) where body isn't just App
-    // let g = (x -> let r = 1 in fin x) in fin g  ──►  unchanged
-    let expr = let_("g", lam("x", let_("r", int(1), fin("x"))), fin("g"));
+    // let g = cont(x). let r = 1 in fin x in fin g  ──►  unchanged
+    let expr = let_("g", cont_("x", let_("r", int(1), fin("x"))), fin("g"));
     assert_eq!(eta_reduction(expr.clone()), expr);
 }
 
 #[test]
 fn test_eta_self_reference() {
-    // let g = (x -> x x) in fin g  ──►  unchanged (f == param)
-    let expr = let_("g", lam("x", app("x", "x")), fin("g"));
+    // let g = cont(x). return x x in fin g  ──►  unchanged (f == param)
+    let expr = let_("g", cont_("x", return_("x", "x")), fin("g"));
     assert_eq!(eta_reduction(expr.clone()), expr);
 }
 
 #[test]
 fn test_eta_wrong_arg() {
-    // let g = (x -> f y) in fin g  ──►  unchanged (arg != param)
-    let expr = let_("g", lam("x", app("f", "y")), fin("g"));
+    // let g = cont(x). return f y in fin g  ──►  unchanged (arg != param)
+    let expr = let_("g", cont_("x", return_("f", "y")), fin("g"));
     assert_eq!(eta_reduction(expr.clone()), expr);
 }
 
 #[test]
-fn test_eta_inside_lambda() {
-    // let outer = (z -> let g = (x -> f x) in g z) in fin outer
-    let inner = lam("z", let_("g", lam("x", app("f", "x")), app("g", "z")));
+fn test_eta_inside_cont() {
+    // let outer = cont(z). let g = cont(x). return f x in return g z in fin outer
+    let inner = cont_("z", let_("g", cont_("x", return_("f", "x")), return_("g", "z")));
     let expr = let_("outer", inner, fin("outer"));
-    let expected = let_("outer", lam("z", let_("g", var("f"), app("g", "z"))), fin("outer"));
+    let expected = let_("outer", cont_("z", let_("g", var("f"), return_("g", "z"))), fin("outer"));
     assert_eq!(eta_reduction(expr), expected);
 }
 
 #[test]
 fn test_eta_letrec_not_reduced() {
-    // letrec should not be eta-reduced (only Let with Lambda)
-    let expr = letrec("g", lambda("x", app("f", "x")), fin("g"));
+    // letrec should not be eta-reduced (only Let with Cont)
+    let expr = letrec("g", fun_("x", "k", encore("f", "x", "k")), fin("g"));
     assert_eq!(eta_reduction(expr.clone()), expr);
 }
 
@@ -365,23 +368,23 @@ fn test_eta_letrec_not_reduced() {
 
 #[test]
 fn test_eta_then_copy_prop() {
-    // let g = (x -> f x) in g arg
-    // eta:  let g = f in g arg
-    // copy: f arg
-    let expr = let_("g", lam("x", app("f", "x")), app("g", "arg"));
+    // let g = cont(x). return f x in return g arg
+    // eta:  let g = f in return g arg
+    // copy: return f arg
+    let expr = let_("g", cont_("x", return_("f", "x")), return_("g", "arg"));
     let after_eta = eta_reduction(expr);
     let after_copy = copy_propagation(after_eta);
-    assert_eq!(after_copy, app("f", "arg"));
+    assert_eq!(after_copy, return_("f", "arg"));
 }
 
 #[test]
 fn test_beta_then_dead_code() {
-    // let k = (x -> fin x) in let unused = 99 in k arg
+    // let k = cont(x). fin x in let unused = 99 in return k arg
     // beta: let unused = 99 in fin arg
     // dead: fin arg
     let expr = let_("k",
-        lam("x", fin("x")),
-        let_("unused", int(99), app("k", "arg")));
+        cont_("x", fin("x")),
+        let_("unused", int(99), return_("k", "arg")));
     let after_beta = beta_contraction(expr);
     let after_dead = dead_code(after_beta);
     assert_eq!(after_dead, fin("arg"));
@@ -404,11 +407,11 @@ fn test_const_fold_then_dead_code() {
 // ── Inlining ───────────────────────────────────────────────────────────────
 
 #[test]
-fn test_inline_small_function() {
-    // let f = (x -> fin x) in f arg  ──►  let f = (x -> fin x) in fin arg
-    let expr = let_("f", lam("x", fin("x")), app("f", "arg"));
+fn test_inline_small_cont() {
+    // let f = cont(x). fin x in return f arg  ──►  let f = cont(x). fin x in fin arg
+    let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
     let result = rewrite::inlining(expr, 20);
-    let expected = let_("f", lam("x", fin("x")), fin("arg"));
+    let expected = let_("f", cont_("x", fin("x")), fin("arg"));
     assert_eq!(result, expected);
 }
 
@@ -418,29 +421,30 @@ fn test_inline_too_large() {
     let big_body = let_("a", int(1),
         let_("b", int(2),
             let_("c", int(3), fin("c"))));
-    let expr = let_("f", lam("x", big_body.clone()), app("f", "arg"));
+    let expr = let_("f", cont_("x", big_body.clone()), return_("f", "arg"));
     let result = rewrite::inlining(expr.clone(), 2);
     assert_eq!(result, expr);
 }
 
 #[test]
 fn test_inline_letrec_not_inlined() {
-    // Recursive functions should not be inlined
-    let expr = letrec("f", lambda("x", app("f", "x")), app("f", "arg"));
+    // Recursive functions should not be inlined by cont inlining
+    let expr = letrec("f", fun_("x", "k", encore("f", "x", "k")),
+        let_("k0", cont_("r", fin("r")), encore("f", "arg", "k0")));
     let result = rewrite::inlining(expr.clone(), 100);
     assert_eq!(result, expr);
 }
 
 #[test]
 fn test_inline_multiple_call_sites() {
-    // let f = (x -> fin x) in let a = Ctor(0, []) in match a 0 [ f x | f y ]
+    // let f = cont(x). fin x in match a 0 [ return f x | return f y ]
     // Both call sites get inlined
-    let expr = let_("f", lam("x", fin("x")),
+    let expr = let_("f", cont_("x", fin("x")),
         match_("a", 0, vec![
-            case(&[], app("f", "x")),
-            case(&[], app("f", "y")),
+            case(&[], return_("f", "x")),
+            case(&[], return_("f", "y")),
         ]));
-    let expected = let_("f", lam("x", fin("x")),
+    let expected = let_("f", cont_("x", fin("x")),
         match_("a", 0, vec![
             case(&[], fin("x")),
             case(&[], fin("y")),
@@ -451,13 +455,13 @@ fn test_inline_multiple_call_sites() {
 
 #[test]
 fn test_inline_with_substitution() {
-    // let f = (x -> let r = field 0 of x in fin r) in f arg
+    // let f = cont(x). let r = field 0 of x in fin r in return f arg
     // ──►  let f = (...) in let r = field 0 of arg in fin r
     let expr = let_("f",
-        lam("x", let_("r", field("x", 0), fin("r"))),
-        app("f", "arg"));
+        cont_("x", let_("r", field("x", 0), fin("r"))),
+        return_("f", "arg"));
     let expected = let_("f",
-        lam("x", let_("r", field("x", 0), fin("r"))),
+        cont_("x", let_("r", field("x", 0), fin("r"))),
         let_("r", field("arg", 0), fin("r")));
     let result = rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
@@ -465,11 +469,11 @@ fn test_inline_with_substitution() {
 
 #[test]
 fn test_inline_nested_let() {
-    // let f = (x -> fin x) in let y = 1 in f arg
+    // let f = cont(x). fin x in let y = 1 in return f arg
     // ──►  let f = (...) in let y = 1 in fin arg
-    let expr = let_("f", lam("x", fin("x")),
-        let_("y", int(1), app("f", "arg")));
-    let expected = let_("f", lam("x", fin("x")),
+    let expr = let_("f", cont_("x", fin("x")),
+        let_("y", int(1), return_("f", "arg")));
+    let expected = let_("f", cont_("x", fin("x")),
         let_("y", int(1), fin("arg")));
     let result = rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
@@ -478,8 +482,8 @@ fn test_inline_nested_let() {
 #[test]
 fn test_inline_then_dead_code() {
     // After inlining all call sites, dead_code removes the binding
-    // let f = (x -> fin x) in f arg  →inline→  let f = (...) in fin arg  →dead→  fin arg
-    let expr = let_("f", lam("x", fin("x")), app("f", "arg"));
+    // let f = cont(x). fin x in return f arg  →inline→  let f = (...) in fin arg  →dead→  fin arg
+    let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
     let after_inline = rewrite::inlining(expr, 20);
     let after_dead = dead_code(after_inline);
     assert_eq!(after_dead, fin("arg"));

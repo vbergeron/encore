@@ -1,26 +1,27 @@
 // Duplicate small function bodies at their call sites,
 // exposing new redexes for shrinking passes.
 //
-//   let double = x -> builtin add x x
-//   in double 3     ──►   builtin add 3 3
+//   let double = cont(x). builtin add x x
+//   in return double 3     ──►   builtin add 3 3
 //
 
 use std::collections::HashMap;
 
-use crate::ir::cps::{self, Expr, Lambda, Val};
+use crate::ir::cps::{self, Expr, Fun, Cont, Val};
 use crate::pass::subst::subst_expr;
 
 pub fn inlining(expr: Expr, threshold: usize) -> Expr {
     inline_expr(expr, threshold, &HashMap::new())
 }
 
-type Env = HashMap<String, Lambda>;
+type Env = HashMap<String, Cont>;
 
 fn expr_size(expr: &Expr) -> usize {
     match expr {
         Expr::Let(_, val, body) => 1 + val_size(val) + expr_size(body),
-        Expr::Letrec(_, lam, body) => 1 + expr_size(&lam.body) + expr_size(body),
-        Expr::App(_, _) => 1,
+        Expr::Letrec(_, fun, body) => 1 + expr_size(&fun.body) + expr_size(body),
+        Expr::Encore(_, _, _) => 1,
+        Expr::Return(_, _) => 1,
         Expr::Match(_, _, cases) => {
             1 + cases.iter().map(|c| expr_size(&c.body)).sum::<usize>()
         }
@@ -30,45 +31,46 @@ fn expr_size(expr: &Expr) -> usize {
 
 fn val_size(val: &Val) -> usize {
     match val {
-        Val::Lambda(lam) => expr_size(&lam.body),
+        Val::Cont(cont) => expr_size(&cont.body),
         _ => 1,
     }
 }
 
 fn inline_expr(expr: Expr, threshold: usize, env: &Env) -> Expr {
     match expr {
-        Expr::Let(name, Val::Lambda(lam), body) => {
-            let lam = Lambda {
-                param: lam.param,
-                body: Box::new(inline_expr(*lam.body, threshold, env)),
+        Expr::Let(name, Val::Cont(cont), body) => {
+            let cont = Cont {
+                param: cont.param,
+                body: Box::new(inline_expr(*cont.body, threshold, env)),
             };
             let mut env = env.clone();
-            if expr_size(&lam.body) <= threshold {
-                env.insert(name.clone(), lam.clone());
+            if expr_size(&cont.body) <= threshold {
+                env.insert(name.clone(), cont.clone());
             }
             let body = inline_expr(*body, threshold, &env);
-            Expr::Let(name, Val::Lambda(lam), Box::new(body))
+            Expr::Let(name, Val::Cont(cont), Box::new(body))
         }
         Expr::Let(name, val, body) => {
             let val = inline_val(val, threshold, env);
             let body = inline_expr(*body, threshold, env);
             Expr::Let(name, val, Box::new(body))
         }
-        Expr::Letrec(name, lam, body) => {
-            let lam = Lambda {
-                param: lam.param,
-                body: Box::new(inline_expr(*lam.body, threshold, env)),
+        Expr::Letrec(name, fun, body) => {
+            let fun = Fun {
+                arg: fun.arg,
+                cont: fun.cont,
+                body: Box::new(inline_expr(*fun.body, threshold, env)),
             };
             let body = inline_expr(*body, threshold, env);
-            Expr::Letrec(name, lam, Box::new(body))
+            Expr::Letrec(name, fun, Box::new(body))
         }
-        Expr::App(f, x) => {
-            if let Some(lam) = env.get(&f) {
-                let mut body = *lam.body.clone();
-                subst_expr(&lam.param, &x, &mut body);
+        Expr::Return(k, x) => {
+            if let Some(cont) = env.get(&k) {
+                let mut body = *cont.body.clone();
+                subst_expr(&cont.param, &x, &mut body);
                 body
             } else {
-                Expr::App(f, x)
+                Expr::Return(k, x)
             }
         }
         Expr::Match(name, base, cases) => {
@@ -81,17 +83,16 @@ fn inline_expr(expr: Expr, threshold: usize, env: &Env) -> Expr {
                 .collect();
             Expr::Match(name, base, cases)
         }
-        Expr::Fin(n) => Expr::Fin(n),
+        other => other,
     }
 }
 
 fn inline_val(val: Val, threshold: usize, env: &Env) -> Val {
     match val {
-        Val::Lambda(lam) => Val::Lambda(Lambda {
-            param: lam.param,
-            body: Box::new(inline_expr(*lam.body, threshold, env)),
+        Val::Cont(cont) => Val::Cont(Cont {
+            param: cont.param,
+            body: Box::new(inline_expr(*cont.body, threshold, env)),
         }),
         other => other,
     }
 }
-

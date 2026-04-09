@@ -62,14 +62,18 @@ fn resolve_expr(env: &mut Env, expr: &cps::Expr) -> asm::Expr {
             asm::Expr::Let(ir_val, Box::new(resolve_expr(env, body)))
         }
 
-        cps::Expr::Letrec(name, lam, body) => {
-            let ir_lam = resolve_lambda(env, lam, Some(name));
+        cps::Expr::Letrec(name, fun, body) => {
+            let ir_fun = resolve_fun(env, fun, Some(name));
             env.bind_local(name.clone());
-            asm::Expr::Letrec(ir_lam, Box::new(resolve_expr(env, body)))
+            asm::Expr::Letrec(ir_fun, Box::new(resolve_expr(env, body)))
         }
 
-        cps::Expr::App(f, x) => {
-            asm::Expr::App(env.lookup(f), env.lookup(x))
+        cps::Expr::Encore(f, x, k) => {
+            asm::Expr::Encore(env.lookup(f), env.lookup(x), env.lookup(k))
+        }
+
+        cps::Expr::Return(k, x) => {
+            asm::Expr::Return(env.lookup(k), env.lookup(x))
         }
 
         cps::Expr::Match(name, base, cases) => {
@@ -101,8 +105,8 @@ fn resolve_val(env: &Env, val: &cps::Val) -> asm::Val {
             asm::Val::Loc(env.lookup(name))
         }
 
-        cps::Val::Lambda(lam) => {
-            asm::Val::Lambda(resolve_lambda(env, lam, None))
+        cps::Val::Cont(cont) => {
+            asm::Val::ContLam(resolve_cont(env, cont))
         }
 
         cps::Val::Ctor(tag, fields) => {
@@ -123,10 +127,11 @@ fn resolve_val(env: &Env, val: &cps::Val) -> asm::Val {
     }
 }
 
-fn resolve_lambda(env: &Env, lam: &cps::Lambda, rec_name: Option<&str>) -> asm::Lambda {
+fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>) -> asm::Fun {
     let mut free = HashSet::new();
-    free_vars_expr(&lam.body, &mut HashSet::new(), &mut free);
-    free.remove(&lam.param);
+    free_vars_expr(&fun.body, &mut HashSet::new(), &mut free);
+    free.remove(&fun.arg);
+    free.remove(&fun.cont);
     if let Some(name) = rec_name {
         free.remove(name);
     }
@@ -142,7 +147,8 @@ fn resolve_lambda(env: &Env, lam: &cps::Lambda, rec_name: Option<&str>) -> asm::
         .collect();
 
     let mut inner = Env::new();
-    inner.bindings.insert(lam.param.clone(), asm::Loc::Arg);
+    inner.bindings.insert(fun.arg.clone(), asm::Loc::Arg);
+    inner.bindings.insert(fun.cont.clone(), asm::Loc::Cont);
     for (name, idx) in &globals {
         inner.bindings.insert(name.clone(), asm::Loc::Global(*idx));
     }
@@ -153,8 +159,36 @@ fn resolve_lambda(env: &Env, lam: &cps::Lambda, rec_name: Option<&str>) -> asm::
         inner.bindings.insert(name.to_string(), asm::Loc::SelfRef);
     }
 
-    let body = resolve_expr(&mut inner, &lam.body);
-    asm::Lambda { captures, body: Box::new(body) }
+    let body = resolve_expr(&mut inner, &fun.body);
+    asm::Fun { captures, body: Box::new(body) }
+}
+
+fn resolve_cont(env: &Env, cont: &cps::Cont) -> asm::ContLam {
+    let mut free = HashSet::new();
+    free_vars_expr(&cont.body, &mut HashSet::new(), &mut free);
+    free.remove(&cont.param);
+
+    let globals = env.globals();
+    let mut capture_names: Vec<String> = free.into_iter()
+        .filter(|n| !globals.contains_key(n))
+        .collect();
+    capture_names.sort();
+
+    let captures: Vec<asm::Loc> = capture_names.iter()
+        .map(|n| env.lookup(n))
+        .collect();
+
+    let mut inner = Env::new();
+    inner.bindings.insert(cont.param.clone(), asm::Loc::Arg);
+    for (name, idx) in &globals {
+        inner.bindings.insert(name.clone(), asm::Loc::Global(*idx));
+    }
+    for (i, name) in capture_names.iter().enumerate() {
+        inner.bindings.insert(name.clone(), asm::Loc::Capture(i as u8));
+    }
+
+    let body = resolve_expr(&mut inner, &cont.body);
+    asm::ContLam { captures, body: Box::new(body) }
 }
 
 fn free_vars_expr(expr: &cps::Expr, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
@@ -164,13 +198,18 @@ fn free_vars_expr(expr: &cps::Expr, bound: &mut HashSet<String>, free: &mut Hash
             bound.insert(name.clone());
             free_vars_expr(body, bound, free);
         }
-        cps::Expr::Letrec(name, lam, body) => {
+        cps::Expr::Letrec(name, fun, body) => {
             bound.insert(name.clone());
-            free_vars_lambda(lam, bound, free);
+            free_vars_fun(fun, bound, free);
             free_vars_expr(body, bound, free);
         }
-        cps::Expr::App(f, x) => {
+        cps::Expr::Encore(f, x, k) => {
             use_name(f, bound, free);
+            use_name(x, bound, free);
+            use_name(k, bound, free);
+        }
+        cps::Expr::Return(k, x) => {
+            use_name(k, bound, free);
             use_name(x, bound, free);
         }
         cps::Expr::Match(name, _, cases) => {
@@ -192,7 +231,7 @@ fn free_vars_expr(expr: &cps::Expr, bound: &mut HashSet<String>, free: &mut Hash
 fn free_vars_val(val: &cps::Val, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
     match val {
         cps::Val::Var(name) => use_name(name, bound, free),
-        cps::Val::Lambda(lam) => free_vars_lambda(lam, bound, free),
+        cps::Val::Cont(cont) => free_vars_cont(cont, bound, free),
         cps::Val::Ctor(_, fields) => {
             for name in fields {
                 use_name(name, bound, free);
@@ -208,10 +247,17 @@ fn free_vars_val(val: &cps::Val, bound: &mut HashSet<String>, free: &mut HashSet
     }
 }
 
-fn free_vars_lambda(lam: &cps::Lambda, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
+fn free_vars_fun(fun: &cps::Fun, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
     let mut inner_bound = bound.clone();
-    inner_bound.insert(lam.param.clone());
-    free_vars_expr(&lam.body, &mut inner_bound, free);
+    inner_bound.insert(fun.arg.clone());
+    inner_bound.insert(fun.cont.clone());
+    free_vars_expr(&fun.body, &mut inner_bound, free);
+}
+
+fn free_vars_cont(cont: &cps::Cont, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
+    let mut inner_bound = bound.clone();
+    inner_bound.insert(cont.param.clone());
+    free_vars_expr(&cont.body, &mut inner_bound, free);
 }
 
 fn use_name(name: &str, bound: &HashSet<String>, free: &mut HashSet<String>) {

@@ -1,30 +1,30 @@
-// Collapse a lambda that just forwards its argument to another function.
+// Collapse a continuation that just forwards its argument to another continuation.
 //
-//   let g = x -> f x in g arg     ──►   f arg
+//   let g = cont(x). return f x in return g arg     ──►   return f arg
 //
 
-use crate::ir::cps::{self, Expr, Lambda, Val};
+use crate::ir::cps::{self, Expr, Fun, Cont, Val};
 
 pub fn eta_reduction(expr: Expr) -> Expr {
     match expr {
-        Expr::Let(name, Val::Lambda(lam), body) => {
+        Expr::Let(name, Val::Cont(cont), body) => {
             let body = eta_reduction(*body);
-            if let Expr::App(ref f, ref x) = *lam.body {
-                if *x == lam.param && *f != lam.param {
+            if let Expr::Return(ref f, ref x) = *cont.body {
+                if *x == cont.param && *f != cont.param {
                     return Expr::Let(name, Val::Var(f.clone()), Box::new(body));
                 }
             }
-            Expr::Let(name, Val::Lambda(eta_reduction_lambda(lam)), Box::new(body))
+            Expr::Let(name, Val::Cont(eta_reduction_cont(cont)), Box::new(body))
         }
         Expr::Let(name, val, body) => {
             let val = eta_reduction_val(val);
             let body = eta_reduction(*body);
             Expr::Let(name, val, Box::new(body))
         }
-        Expr::Letrec(name, lam, body) => {
-            let lam = eta_reduction_lambda(lam);
+        Expr::Letrec(name, fun, body) => {
+            let fun = eta_reduction_fun(fun);
             let body = eta_reduction(*body);
-            Expr::Letrec(name, lam, Box::new(body))
+            Expr::Letrec(name, fun, Box::new(body))
         }
         Expr::Match(name, base, cases) => {
             let cases = cases
@@ -39,11 +39,15 @@ pub fn eta_reduction(expr: Expr) -> Expr {
 
 fn eta_reduction_val(val: Val) -> Val {
     match val {
-        Val::Lambda(lam) => Val::Lambda(eta_reduction_lambda(lam)),
+        Val::Cont(cont) => Val::Cont(eta_reduction_cont(cont)),
         other => other,
     }
 }
 
-fn eta_reduction_lambda(lam: Lambda) -> Lambda {
-    Lambda { param: lam.param, body: Box::new(eta_reduction(*lam.body)) }
+fn eta_reduction_fun(fun: Fun) -> Fun {
+    Fun { arg: fun.arg, cont: fun.cont, body: Box::new(eta_reduction(*fun.body)) }
+}
+
+fn eta_reduction_cont(cont: Cont) -> Cont {
+    Cont { param: cont.param, body: Box::new(eta_reduction(*cont.body)) }
 }

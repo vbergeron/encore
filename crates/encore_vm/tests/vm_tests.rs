@@ -39,12 +39,14 @@ fn test_pack_and_field() {
 
 #[test]
 fn test_closure_and_enter() {
-    // Build arg (ctor tag=0), build closure whose body is ARG FIN, ENCORE.
+    // ENCORE pops fun, arg, cont from stack.
     let code = [
+        PACK, 0,                    // cont = ctor(0) (dummy)
         PACK, 0,                    // arg = ctor(0)
-        CLOSURE, 7, 0, 0,           // closure with code_ptr=7, ncap=0
-        ENCORE,                     // pop clo, pop arg, enter
-        ARG,                        // closure body: push arg register
+        CLOSURE, 9, 0, 0,           // closure with code_ptr=9, ncap=0
+        ENCORE,                     // pop clo, pop arg, pop cont, enter
+        // closure body at byte 9:
+        ARG,                        // push arg register
         FIN,
     ];
     let arity_table = [0];
@@ -55,14 +57,13 @@ fn test_closure_and_enter() {
 
 #[test]
 fn test_load_capture() {
-    // Build arg (ctor tag=0), value to capture (ctor tag=1), closure capturing it.
-    // Closure body: CAPTURE 0, FIN. Should return ctor(1).
     let code = [
+        PACK, 0,                    // cont = ctor(0) (dummy)
         PACK, 0,                    // arg = ctor(0)
         PACK, 1,                    // value to capture = ctor(1)
-        CLOSURE, 9, 0, 1,           // closure with code_ptr=9, ncap=1 (captures ctor(1))
-        ENCORE,                     // pop clo, pop arg=ctor(0), enter
-        // closure body at byte 9:
+        CLOSURE, 11, 0, 1,          // closure with code_ptr=11, ncap=1
+        ENCORE,                     // pop clo, pop arg, pop cont, enter
+        // closure body at byte 11:
         CAPTURE, 0,                 // push capture 0 = ctor(1)
         FIN,
     ];
@@ -109,31 +110,32 @@ fn test_match() {
 fn test_self_recursive() {
     // Peano naturals: tag 0 = Zero (arity 0), tag 1 = Succ (arity 1).
     // Build Succ(Succ(Zero)), enter countdown.
-    // countdown = fix f n. match n with Zero -> halt | Succ -> f (field 0 n)
+    // countdown = fix f (n, k). match n with Zero -> halt | Succ -> f (field 0 n) k
     //
-    // ENCORE convention: pop clo (TOS), pop arg (below).
-    // So: push arg, push clo, ENCORE.
+    // ENCORE convention: pop clo (TOS), pop arg, pop cont.
     let code = [
         // main: build Succ(Succ(Zero))
+        PACK, 0,                    // dummy cont
         PACK, 0,                    // Zero
         PACK, 1,                    // Succ(Zero)
         PACK, 1,                    // Succ(Succ(Zero))  — arg
         // build countdown closure, enter
-        CLOSURE, 11, 0, 0,          // closure code_ptr=11, ncap=0
-        ENCORE,                     // pop clo, pop arg, enter
-        // countdown body at byte 11:
+        CLOSURE, 13, 0, 0,          // closure code_ptr=13, ncap=0
+        ENCORE,                     // pop clo, pop arg, pop cont, enter
+        // countdown body at byte 13:
         ARG,                        // push arg
         MATCH, 0, 2,                // base=0, n=2
-        19, 0,                      // off[0] = 19 (Zero branch)
-        21, 0,                      // off[1] = 21 (Succ branch)
-        // byte 19: Zero branch
+        21, 0,                      // off[0] = 21 (Zero branch)
+        23, 0,                      // off[1] = 23 (Succ branch)
+        // byte 21: Zero branch
         ARG,
         FIN,
-        // byte 21: Succ branch
+        // byte 23: Succ branch
+        CONT,                       // push cont (pass along)
         ARG,                        // push arg (the Succ ctor)
-        FIELD, 0,                   // peek Succ(pred), push pred
+        FIELD, 0,                   // pop Succ(pred), push pred
         SELF,                       // push self
-        ENCORE,                     // pop clo=self, pop arg=pred, recurse
+        ENCORE,                     // pop clo=self, pop arg=pred, pop cont, recurse
     ];
     let arity_table = [0, 1];
     let result = run(&code, &arity_table, &[]).unwrap();
@@ -303,30 +305,32 @@ fn test_gc_reclaims_dead_closures() {
 
 #[test]
 fn test_gc_preserves_live_data() {
-    // Two-phase program: first ENCORE creates a garbage closure,
-    // second ENCORE enters the real closure (with a capture).
-    // The real closure's body allocates, triggering GC.
+    // Three-phase program: ENCORE creates a garbage closure (with a dummy capture
+    // to make it 3 words), garbage_func builds the real closure (also 3 words)
+    // and RETURNs into it, and the real closure body allocates, triggering GC.
     // After GC compacts, CAPTURE must still read the correct capture.
     let code = [
         // main preamble:
-        PACK, 0,                    // byte 0: arg = ctor(0), nullary, no heap
-        CLOSURE, 7, 0, 0,           // byte 2: garbage_func at byte 7, ncap=0. alloc 2. hp=2
-        ENCORE,                     // byte 6: enter garbage_func
+        PACK, 0,                    // byte 0: dummy cont
+        PACK, 0,                    // byte 2: arg = ctor(0)
+        PACK, 1,                    // byte 4: dummy capture for garbage_func
+        CLOSURE, 11, 0, 1,          // byte 6: garbage_func at byte 11, ncap=1. alloc 3. hp=3
+        ENCORE,                     // byte 10: enter garbage_func
 
-        // garbage_func body at byte 7:
-        ARG,                        // byte 7: push arg for next ENCORE
-        PACK, 1,                    // byte 8: capture = ctor(1), nullary, no heap
-        CLOSURE, 15, 0, 1,          // byte 10: real closure at byte 15, ncap=1. alloc 3. hp=5
-        ENCORE,                     // byte 14: enter real closure. garbage closure is now dead.
+        // garbage_func body at byte 11:
+        ARG,                        // byte 11: push result for RETURN
+        PACK, 1,                    // byte 12: capture = ctor(1)
+        CLOSURE, 19, 0, 1,          // byte 14: real closure at byte 19, ncap=1. alloc 3. hp=6
+        RETURN,                     // byte 18: RETURN into real closure. garbage closure is now dead.
 
-        // real_closure body at byte 15:
-        ARG,                        // byte 15: push arg = ctor(0)
-        PACK, 2,                    // byte 16: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
-        CAPTURE, 0,                 // byte 18: push capture 0 — should be ctor(1)
-        FIN,                       // byte 20
+        // real_closure body at byte 19:
+        ARG,                        // byte 19: push arg = ctor(0)
+        PACK, 2,                    // byte 20: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
+        CAPTURE, 0,                 // byte 22: push capture 0 — should be ctor(1)
+        FIN,                        // byte 24
     ];
     let arity_table = [0, 0, 1];
-    let mut mem = [Value::from_u32(0); 7];
+    let mut mem = [Value::from_u32(0); 8];
     let mut vm = Vm::new(&code, &arity_table, &[], &mut mem);
     let result = vm.run().unwrap();
     assert!(result.is_ctor());
@@ -345,7 +349,7 @@ fn test_call() {
         8, 0,                       // off[0] = 8 (Zero branch)
         10, 0,                      // off[1] = 10 (Succ branch)
         ARG,                        // byte 8: Zero -> push arg
-        FIN,                       // byte 9
+        FIN,                        // byte 9
         ARG,                        // byte 10: Succ -> push arg
         FIELD, 0,                   // push pred
         FIN,

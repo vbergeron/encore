@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::ir::cps::{self, Expr, Lambda, Val};
+use crate::ir::cps::{self, Expr, Fun, Cont, Val};
 use crate::ir::prim::PrimOp;
 
 pub fn constant_fold(expr: Expr) -> Expr {
@@ -38,10 +38,10 @@ fn constant_fold_env(expr: Expr, env: &mut HashMap<String, i32>) -> Expr {
             let body = constant_fold_env(*body, env);
             Expr::Let(name, val, Box::new(body))
         }
-        Expr::Letrec(name, lam, body) => {
-            let lam = constant_fold_lambda(lam, env);
+        Expr::Letrec(name, fun, body) => {
+            let fun = constant_fold_fun(fun, env);
             let body = constant_fold_env(*body, env);
-            Expr::Letrec(name, lam, Box::new(body))
+            Expr::Letrec(name, fun, Box::new(body))
         }
         Expr::Match(name, base, cases) => {
             let cases = cases
@@ -59,15 +59,23 @@ fn constant_fold_env(expr: Expr, env: &mut HashMap<String, i32>) -> Expr {
 
 fn constant_fold_val(val: Val, env: &mut HashMap<String, i32>) -> Val {
     match val {
-        Val::Lambda(lam) => Val::Lambda(constant_fold_lambda(lam, env)),
+        Val::Cont(cont) => Val::Cont(constant_fold_cont(cont, env)),
         other => other,
     }
 }
 
-fn constant_fold_lambda(lam: Lambda, env: &mut HashMap<String, i32>) -> Lambda {
-    Lambda {
-        param: lam.param,
-        body: Box::new(constant_fold_env(*lam.body, &mut env.clone())),
+fn constant_fold_fun(fun: Fun, env: &mut HashMap<String, i32>) -> Fun {
+    Fun {
+        arg: fun.arg,
+        cont: fun.cont,
+        body: Box::new(constant_fold_env(*fun.body, &mut env.clone())),
+    }
+}
+
+fn constant_fold_cont(cont: Cont, env: &mut HashMap<String, i32>) -> Cont {
+    Cont {
+        param: cont.param,
+        body: Box::new(constant_fold_env(*cont.body, &mut env.clone())),
     }
 }
 

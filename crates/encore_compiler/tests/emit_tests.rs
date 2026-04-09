@@ -102,7 +102,7 @@ fn test_match_branch1() {
 #[test]
 fn test_letrec_deferred_body() {
     let expr = Expr::Letrec(
-        Lambda {
+        Fun {
             captures: vec![Loc::Global(0)],
             body: Box::new(Expr::Fin(Loc::Capture(0))),
         },
@@ -138,7 +138,7 @@ fn test_letrec_deferred_body() {
 #[test]
 fn test_letrec_run() {
     let expr = Expr::Letrec(
-        Lambda {
+        Fun {
             captures: vec![Loc::Global(0)],
             body: Box::new(Expr::Fin(Loc::Capture(0))),
         },

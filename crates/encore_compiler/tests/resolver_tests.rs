@@ -75,11 +75,6 @@ fn test_let_ctor_nullary() {
 
 #[test]
 fn test_let_ctor_with_fields() {
-    // define main =
-    //   let a = ctor(1, []);
-    //   let b = ctor(2, []);
-    //   let pair = ctor(0, ["a", "b"]);
-    //   halt("pair")
     let m = module(vec![
         define("main", cps::Expr::Let(
             "a".into(), cps::Val::Ctor(1, vec![]),
@@ -100,8 +95,6 @@ fn test_let_ctor_with_fields() {
 
 #[test]
 fn test_multiple_lets_ref_first() {
-    // define g0 = ...; define g1 = ...
-    // define main = let x = var("g0"); let y = var("g1"); halt("x")
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -119,7 +112,6 @@ fn test_multiple_lets_ref_first() {
 
 #[test]
 fn test_multiple_lets_ref_second() {
-    // same but halt("y")
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -139,11 +131,6 @@ fn test_multiple_lets_ref_second() {
 
 #[test]
 fn test_let_field() {
-    // define main =
-    //   let a = ctor(1, []); let b = ctor(2, []);
-    //   let pair = ctor(0, ["a", "b"]);
-    //   let snd = field("pair", 1);
-    //   halt("snd")
     let m = module(vec![
         define("main", cps::Expr::Let(
             "a".into(), cps::Val::Ctor(1, vec![]),
@@ -163,51 +150,51 @@ fn test_let_field() {
     assert_eq!(result.ctor_tag(), 2);
 }
 
-// -- Lambda: identity --
+// -- Cont: identity continuation --
 
 #[test]
-fn test_lambda_identity() {
-    // define main = let f = lambda(x, halt("x")); app("f", "main")
+fn test_cont_identity() {
+    // define main = let f = cont(x). fin x in return f main
     let m = module(vec![
         define("main", cps::Expr::Let(
             "f".into(),
-            cps::Val::Lambda(cps::Lambda {
+            cps::Val::Cont(cps::Cont {
                 param: "x".into(),
                 body: Box::new(cps::Expr::Fin("x".into())),
             }),
-            Box::new(cps::Expr::App("f".into(), "main".into())),
+            Box::new(cps::Expr::Return("f".into(), "main".into())),
         )),
     ]);
     let result = run_define(&m, 0, &[ctor(42)]);
     assert_eq!(result.ctor_tag(), 42);
 }
 
-// -- Lambda: global accessed directly (not captured) --
+// -- Cont: global accessed directly (not captured) --
 
 #[test]
-fn test_lambda_global_not_captured() {
-    // define g = ...; define main = let f = lambda(x, halt("g")); app("f", "main")
+fn test_cont_global_not_captured() {
+    // define g = ...; define main = let f = cont(x). fin g in return f main
     let m = module(vec![
         define("g", cps::Expr::Fin("g".into())),
         define("main", cps::Expr::Let(
             "f".into(),
-            cps::Val::Lambda(cps::Lambda {
+            cps::Val::Cont(cps::Cont {
                 param: "x".into(),
                 body: Box::new(cps::Expr::Fin("g".into())),
             }),
-            Box::new(cps::Expr::App("f".into(), "main".into())),
+            Box::new(cps::Expr::Return("f".into(), "main".into())),
         )),
     ]);
     let result = run_define(&m, 1, &[ctor(10), ctor(99)]);
     assert_eq!(result.ctor_tag(), 10);
 }
 
-// -- Lambda: captures a local --
+// -- Cont: captures a local --
 
 #[test]
-fn test_lambda_captures_local() {
+fn test_cont_captures_local() {
     // define g0 = ...; define g1 = ...
-    // define main = let v = var("g0"); let f = lambda(x, halt("v")); app("f", "g1")
+    // define main = let v = var("g0"); let f = cont(x). fin v in return f g1
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -215,11 +202,11 @@ fn test_lambda_captures_local() {
             "v".into(), cps::Val::Var("g0".into()),
             Box::new(cps::Expr::Let(
                 "f".into(),
-                cps::Val::Lambda(cps::Lambda {
+                cps::Val::Cont(cps::Cont {
                     param: "x".into(),
                     body: Box::new(cps::Expr::Fin("v".into())),
                 }),
-                Box::new(cps::Expr::App("f".into(), "g1".into())),
+                Box::new(cps::Expr::Return("f".into(), "g1".into())),
             )),
         )),
     ]);
@@ -227,14 +214,10 @@ fn test_lambda_captures_local() {
     assert_eq!(result.ctor_tag(), 10);
 }
 
-// -- Lambda: captures multiple locals (sorted deterministically) --
+// -- Cont: captures multiple locals (sorted deterministically) --
 
 #[test]
-fn test_lambda_captures_two_locals() {
-    // define main =
-    //   let a = ctor(1, []); let b = ctor(2, []);
-    //   let f = lambda(x, let pair = ctor(0, ["a", "b"]); halt("pair"));
-    //   app("f", "main")
+fn test_cont_captures_two_locals() {
     let m = module(vec![
         define("main", cps::Expr::Let(
             "a".into(), cps::Val::Ctor(1, vec![]),
@@ -242,7 +225,7 @@ fn test_lambda_captures_two_locals() {
                 "b".into(), cps::Val::Ctor(2, vec![]),
                 Box::new(cps::Expr::Let(
                     "f".into(),
-                    cps::Val::Lambda(cps::Lambda {
+                    cps::Val::Cont(cps::Cont {
                         param: "x".into(),
                         body: Box::new(cps::Expr::Let(
                             "pair".into(),
@@ -250,7 +233,7 @@ fn test_lambda_captures_two_locals() {
                             Box::new(cps::Expr::Fin("pair".into())),
                         )),
                     }),
-                    Box::new(cps::Expr::App("f".into(), "main".into())),
+                    Box::new(cps::Expr::Return("f".into(), "main".into())),
                 )),
             )),
         )),
@@ -263,8 +246,6 @@ fn test_lambda_captures_two_locals() {
 
 #[test]
 fn test_match_branch0() {
-    // define g0 = ...; define g1 = ...; define g2 = ...
-    // define main = let c = var("g0"); match "c" base=0 [halt("g1"), halt("g2")]
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -277,7 +258,6 @@ fn test_match_branch0() {
             ])),
         )),
     ]);
-    // g0 = ctor(0) → takes branch 0
     let result = run_define(&m, 3, &[ctor(0), ctor(10), ctor(20), ctor(0)]);
     assert_eq!(result.ctor_tag(), 10);
 }
@@ -296,7 +276,6 @@ fn test_match_branch1() {
             ])),
         )),
     ]);
-    // g0 = ctor(1) → takes branch 1
     let result = run_define(&m, 3, &[ctor(1), ctor(10), ctor(20), ctor(0)]);
     assert_eq!(result.ctor_tag(), 20);
 }
@@ -305,13 +284,6 @@ fn test_match_branch1() {
 
 #[test]
 fn test_match_with_binds() {
-    // define main =
-    //   let a = ctor(1, []);
-    //   let b = ctor(2, []);
-    //   let pair = ctor(0, ["a", "b"]);
-    //   match "pair" base=0 [
-    //     Case { binds: ["fst", "snd"], body: halt("snd") }
-    //   ]
     let m = module(vec![
         define("main", cps::Expr::Let(
             "a".into(), cps::Val::Ctor(1, vec![]),
@@ -335,7 +307,6 @@ fn test_match_with_binds() {
 
 #[test]
 fn test_match_binds_first_field() {
-    // Same as above but halt("fst")
     let m = module(vec![
         define("main", cps::Expr::Let(
             "a".into(), cps::Val::Ctor(1, vec![]),
@@ -357,19 +328,30 @@ fn test_match_binds_first_field() {
     assert_eq!(result.ctor_tag(), 1);
 }
 
-// -- Letrec: simple recursive closure (ignores self, returns arg) --
+// -- Letrec: simple function that returns its arg via continuation --
 
 #[test]
 fn test_letrec_simple() {
-    // define main = letrec f = lambda(x, halt("x")); app("f", "main")
+    // define main =
+    //   letrec f = fun(x, k). return k x
+    //   in let k0 = cont(r). fin r
+    //   in encore f main k0
     let m = module(vec![
         define("main", cps::Expr::Letrec(
             "f".into(),
-            cps::Lambda {
-                param: "x".into(),
-                body: Box::new(cps::Expr::Fin("x".into())),
+            cps::Fun {
+                arg: "x".into(),
+                cont: "k".into(),
+                body: Box::new(cps::Expr::Return("k".into(), "x".into())),
             },
-            Box::new(cps::Expr::App("f".into(), "main".into())),
+            Box::new(cps::Expr::Let(
+                "k0".into(),
+                cps::Val::Cont(cps::Cont {
+                    param: "r".into(),
+                    body: Box::new(cps::Expr::Fin("r".into())),
+                }),
+                Box::new(cps::Expr::Encore("f".into(), "main".into(), "k0".into())),
+            )),
         )),
     ]);
     let result = run_define(&m, 0, &[ctor(42)]);
@@ -384,13 +366,13 @@ fn test_peano_countdown() {
     //   let zero = ctor(0, []);
     //   let s1 = ctor(1, ["zero"]);
     //   let s2 = ctor(1, ["s1"]);
-    //   letrec f = lambda(n,
+    //   letrec f = fun(n, k).
     //     match "n" base=0 [
-    //       Case { binds: [], body: halt("n") },
-    //       Case { binds: ["pred"], body: app("f", "pred") }
+    //       Case { binds: [], body: return k n },
+    //       Case { binds: ["pred"], body: encore f pred k }
     //     ]
-    //   ) in
-    //   app("f", "s2")
+    //   in let k0 = cont(r). fin r
+    //   in encore f s2 k0
     let m = module(vec![
         define("main", cps::Expr::Let(
             "zero".into(), cps::Val::Ctor(0, vec![]),
@@ -400,26 +382,33 @@ fn test_peano_countdown() {
                     "s2".into(), cps::Val::Ctor(1, vec!["s1".into()]),
                     Box::new(cps::Expr::Letrec(
                         "f".into(),
-                        cps::Lambda {
-                            param: "n".into(),
+                        cps::Fun {
+                            arg: "n".into(),
+                            cont: "k".into(),
                             body: Box::new(cps::Expr::Match("n".into(), 0, vec![
                                 cps::Case {
                                     binds: vec![],
-                                    body: cps::Expr::Fin("n".into()),
+                                    body: cps::Expr::Return("k".into(), "n".into()),
                                 },
                                 cps::Case {
                                     binds: vec!["pred".into()],
-                                    body: cps::Expr::App("f".into(), "pred".into()),
+                                    body: cps::Expr::Encore("f".into(), "pred".into(), "k".into()),
                                 },
                             ])),
                         },
-                        Box::new(cps::Expr::App("f".into(), "s2".into())),
+                        Box::new(cps::Expr::Let(
+                            "k0".into(),
+                            cps::Val::Cont(cps::Cont {
+                                param: "r".into(),
+                                body: Box::new(cps::Expr::Fin("r".into())),
+                            }),
+                            Box::new(cps::Expr::Encore("f".into(), "s2".into(), "k0".into())),
+                        )),
                     )),
                 )),
             )),
         )),
     ]);
-    // Succ(Succ(Zero)) → Succ(Zero) → Zero → halt
     let result = run_define(&m, 0, &[ctor(0)]);
     assert_eq!(result.ctor_tag(), 0);
 }
@@ -443,20 +432,28 @@ fn test_peano_countdown_5() {
                                 "s5".into(), cps::Val::Ctor(1, vec!["s4".into()]),
                                 Box::new(cps::Expr::Letrec(
                                     "f".into(),
-                                    cps::Lambda {
-                                        param: "n".into(),
+                                    cps::Fun {
+                                        arg: "n".into(),
+                                        cont: "k".into(),
                                         body: Box::new(cps::Expr::Match("n".into(), 0, vec![
                                             cps::Case {
                                                 binds: vec![],
-                                                body: cps::Expr::Fin("n".into()),
+                                                body: cps::Expr::Return("k".into(), "n".into()),
                                             },
                                             cps::Case {
                                                 binds: vec!["pred".into()],
-                                                body: cps::Expr::App("f".into(), "pred".into()),
+                                                body: cps::Expr::Encore("f".into(), "pred".into(), "k".into()),
                                             },
                                         ])),
                                     },
-                                    Box::new(cps::Expr::App("f".into(), "s5".into())),
+                                    Box::new(cps::Expr::Let(
+                                        "k0".into(),
+                                        cps::Val::Cont(cps::Cont {
+                                            param: "r".into(),
+                                            body: Box::new(cps::Expr::Fin("r".into())),
+                                        }),
+                                        Box::new(cps::Expr::Encore("f".into(), "s5".into(), "k0".into())),
+                                    )),
                                 )),
                             )),
                         )),
@@ -469,20 +466,18 @@ fn test_peano_countdown_5() {
     assert_eq!(result.ctor_tag(), 0);
 }
 
-// -- Lambda called with different arg than capture --
+// -- Cont called with different arg than capture --
 
 #[test]
-fn test_lambda_capture_vs_arg() {
-    // Verify that the lambda returns the capture, not the argument.
+fn test_cont_capture_vs_arg() {
     // define g0 = ...; define g1 = ...
     // define main =
     //   let v = var("g0");
-    //   let f = lambda(x,
+    //   let f = cont(x).
     //     let pair = ctor(0, ["v", "x"]);
-    //     let result = field("pair", 0);  // extract first field = v
-    //     halt("result")
-    //   );
-    //   app("f", "g1")
+    //     let result = field("pair", 0);
+    //     fin result
+    //   in return f g1
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -490,7 +485,7 @@ fn test_lambda_capture_vs_arg() {
             "v".into(), cps::Val::Var("g0".into()),
             Box::new(cps::Expr::Let(
                 "f".into(),
-                cps::Val::Lambda(cps::Lambda {
+                cps::Val::Cont(cps::Cont {
                     param: "x".into(),
                     body: Box::new(cps::Expr::Let(
                         "pair".into(), cps::Val::Ctor(0, vec!["v".into(), "x".into()]),
@@ -500,49 +495,40 @@ fn test_lambda_capture_vs_arg() {
                         )),
                     )),
                 }),
-                Box::new(cps::Expr::App("f".into(), "g1".into())),
+                Box::new(cps::Expr::Return("f".into(), "g1".into())),
             )),
         )),
     ]);
-    // capture v = g0 = ctor(10), arg = g1 = ctor(20)
-    // pair = (v, x) = (ctor(10), ctor(20))
-    // result = field(pair, 0) = ctor(10)
     let result = run_define(&m, 2, &[ctor(10), ctor(20), ctor(0)]);
     assert_eq!(result.ctor_tag(), 10);
 }
 
-// -- Nested lambda: inner captures from outer --
+// -- Nested cont: inner captures from outer --
 
 #[test]
-fn test_nested_lambda() {
+fn test_nested_cont() {
     // define g = ...
     // define main =
-    //   let outer = lambda(x,
-    //     let inner = lambda(y, halt("x"));
-    //     app("inner", "g")
-    //   );
-    //   app("outer", "g")
-    //
-    // outer captures nothing (x is param).
-    // inner captures x from outer's scope.
-    // call outer with g=ctor(10): x=ctor(10).
-    // inner ignores y, returns x=ctor(10).
+    //   let outer = cont(x).
+    //     let inner = cont(y). fin x
+    //     in return inner g
+    //   in return outer g
     let m = module(vec![
         define("g", cps::Expr::Fin("g".into())),
         define("main", cps::Expr::Let(
             "outer".into(),
-            cps::Val::Lambda(cps::Lambda {
+            cps::Val::Cont(cps::Cont {
                 param: "x".into(),
                 body: Box::new(cps::Expr::Let(
                     "inner".into(),
-                    cps::Val::Lambda(cps::Lambda {
+                    cps::Val::Cont(cps::Cont {
                         param: "y".into(),
                         body: Box::new(cps::Expr::Fin("x".into())),
                     }),
-                    Box::new(cps::Expr::App("inner".into(), "g".into())),
+                    Box::new(cps::Expr::Return("inner".into(), "g".into())),
                 )),
             }),
-            Box::new(cps::Expr::App("outer".into(), "g".into())),
+            Box::new(cps::Expr::Return("outer".into(), "g".into())),
         )),
     ]);
     let result = run_define(&m, 1, &[ctor(10), ctor(0)]);
