@@ -2,6 +2,8 @@
 
 A small functional language compiled through CPS transformation to a tail-call-only virtual machine.
 
+The name comes from the VM's only calling convention: every function call is a tail call performed by the `ENCORE` opcode, which enters a closure, resets the stack, and never returns. There is no `CALL`/`RET` pair — continuations are passed explicitly as values. The compiler ensures this by CPS-transforming direct-style source code so that every application ends up in tail position, making `ENCORE` the one instruction needed to express all control flow.
+
 ## Architecture
 
 ```
