@@ -72,23 +72,35 @@ impl<'a> Emitter<'a> {
     }
 
     fn emit_fun(&mut self, fun: &'a Fun) {
-        for cap in &fun.captures {
-            self.emit_loc(cap);
+        if fun.captures.is_empty() {
+            self.emit_u8(opcode::FUNCTION);
+            let hole = self.emit_u16_placeholder();
+            self.deferred.push((hole, &fun.body));
+        } else {
+            for cap in &fun.captures {
+                self.emit_loc(cap);
+            }
+            self.emit_u8(opcode::CLOSURE);
+            let hole = self.emit_u16_placeholder();
+            self.emit_u8(fun.captures.len() as u8);
+            self.deferred.push((hole, &fun.body));
         }
-        self.emit_u8(opcode::CLOSURE);
-        let hole = self.emit_u16_placeholder();
-        self.emit_u8(fun.captures.len() as u8);
-        self.deferred.push((hole, &fun.body));
     }
 
     fn emit_cont_lam(&mut self, cont: &'a ContLam) {
-        for cap in &cont.captures {
-            self.emit_loc(cap);
+        if cont.captures.is_empty() {
+            self.emit_u8(opcode::FUNCTION);
+            let hole = self.emit_u16_placeholder();
+            self.deferred.push((hole, &cont.body));
+        } else {
+            for cap in &cont.captures {
+                self.emit_loc(cap);
+            }
+            self.emit_u8(opcode::CLOSURE);
+            let hole = self.emit_u16_placeholder();
+            self.emit_u8(cont.captures.len() as u8);
+            self.deferred.push((hole, &cont.body));
         }
-        self.emit_u8(opcode::CLOSURE);
-        let hole = self.emit_u16_placeholder();
-        self.emit_u8(cont.captures.len() as u8);
-        self.deferred.push((hole, &cont.body));
     }
 
     fn emit_val(&mut self, val: &'a Val) {

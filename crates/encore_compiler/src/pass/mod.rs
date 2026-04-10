@@ -1,7 +1,9 @@
+pub mod asm_emit;
+pub mod asm_resolve;
+pub mod cps_census;
 pub mod cps_optimize;
+pub mod cps_rewrite;
+pub mod cps_simplify;
+pub mod cps_subst;
 pub mod cps_transform;
-pub mod emit;
-pub mod resolver;
-pub mod rewrite;
-pub mod simplify;
-pub mod subst;
+pub mod dsi_resolve;

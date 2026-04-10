@@ -1,4 +1,4 @@
-use encore_compiler::pass::emit::Emitter;
+use encore_compiler::pass::asm_emit::Emitter;
 use encore_compiler::ir::asm::*;
 use encore_vm::program::Program;
 use encore_vm::value::{CodeAddress, HeapAddress, Value};

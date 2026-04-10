@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 
 use crate::ir::cps::{self, Expr, Fun, Cont, Val};
-use crate::pass::subst::subst_expr;
+use crate::pass::cps_subst::subst_expr;
 
 pub fn inlining(expr: Expr, threshold: usize) -> Expr {
     inline_expr(expr, threshold, &HashMap::new())

@@ -1,7 +1,7 @@
 use encore_compiler::ir::cps::*;
 use encore_compiler::ir::prim::PrimOp;
-use encore_compiler::pass::rewrite;
-use encore_compiler::pass::simplify::*;
+use encore_compiler::pass::cps_rewrite;
+use encore_compiler::pass::cps_simplify::*;
 
 fn n(s: &str) -> String {
     s.to_string()
@@ -232,22 +232,140 @@ fn test_const_fold_unknown_operand() {
 }
 
 #[test]
-fn test_const_fold_eq_not_folded() {
-    // Eq/Lt produce ctors, not ints — should not be folded
+fn test_const_fold_eq_true() {
+    // eq(3, 3) → Ctor(1, []) (True)
     let expr = let_("a", int(3),
         let_("b", int(3),
             let_("c", prim(PrimOp::Eq, &["a", "b"]),
                 fin("c"))));
-    assert_eq!(constant_fold(expr.clone()), expr);
+    let expected = let_("a", int(3),
+        let_("b", int(3),
+            let_("c", ctor(1, &[]),
+                fin("c"))));
+    assert_eq!(constant_fold(expr), expected);
 }
 
 #[test]
-fn test_const_fold_lt_not_folded() {
+fn test_const_fold_eq_false() {
+    // eq(3, 4) → Ctor(0, []) (False)
+    let expr = let_("a", int(3),
+        let_("b", int(4),
+            let_("c", prim(PrimOp::Eq, &["a", "b"]),
+                fin("c"))));
+    let expected = let_("a", int(3),
+        let_("b", int(4),
+            let_("c", ctor(0, &[]),
+                fin("c"))));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+#[test]
+fn test_const_fold_lt_true() {
+    // lt(1, 2) → Ctor(1, []) (True)
     let expr = let_("a", int(1),
         let_("b", int(2),
             let_("c", prim(PrimOp::Lt, &["a", "b"]),
                 fin("c"))));
-    assert_eq!(constant_fold(expr.clone()), expr);
+    let expected = let_("a", int(1),
+        let_("b", int(2),
+            let_("c", ctor(1, &[]),
+                fin("c"))));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+#[test]
+fn test_const_fold_lt_false() {
+    // lt(5, 3) → Ctor(0, []) (False)
+    let expr = let_("a", int(5),
+        let_("b", int(3),
+            let_("c", prim(PrimOp::Lt, &["a", "b"]),
+                fin("c"))));
+    let expected = let_("a", int(5),
+        let_("b", int(3),
+            let_("c", ctor(0, &[]),
+                fin("c"))));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+// ── Known-case elimination ────────────────────────────────────────────────
+
+#[test]
+fn test_known_case_nullary() {
+    // let x = Ctor(1, []) in match x base=0 [ fin a | fin b ]
+    // tag=1, branch=1 → fin b
+    let expr = let_("x", ctor(1, &[]),
+        match_("x", 0, vec![
+            case(&[], fin("a")),
+            case(&[], fin("b")),
+        ]));
+    let expected = let_("x", ctor(1, &[]), fin("b"));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+#[test]
+fn test_known_case_with_fields() {
+    // let p = Ctor(0, [x, y]) in match p base=0 [ case(a,b) -> fin a ]
+    // branch=0, substitute a→x, b→y → fin x
+    let expr = let_("p", ctor(0, &["x", "y"]),
+        match_("p", 0, vec![
+            case(&["a", "b"], fin("a")),
+        ]));
+    let expected = let_("p", ctor(0, &["x", "y"]), fin("x"));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+#[test]
+fn test_known_case_with_base_offset() {
+    // let x = Ctor(3, []) in match x base=2 [ fin a | fin b ]
+    // branch = 3 - 2 = 1 → fin b
+    let expr = let_("x", ctor(3, &[]),
+        match_("x", 2, vec![
+            case(&[], fin("a")),
+            case(&[], fin("b")),
+        ]));
+    let expected = let_("x", ctor(3, &[]), fin("b"));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+#[test]
+fn test_fold_comparison_then_match() {
+    // let a=3 in let b=3 in let r=eq(a,b) in match r [ fin no | fin yes ]
+    // eq folds to Ctor(1,[]), match selects branch 1 → fin yes
+    let expr = let_("a", int(3),
+        let_("b", int(3),
+            let_("r", prim(PrimOp::Eq, &["a", "b"]),
+                match_("r", 0, vec![
+                    case(&[], fin("no")),
+                    case(&[], fin("yes")),
+                ]))));
+    let expected = let_("a", int(3),
+        let_("b", int(3),
+            let_("r", ctor(1, &[]),
+                fin("yes"))));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+// ── Known-field projection ────────────────────────────────────────────────
+
+#[test]
+fn test_known_field_projection() {
+    // let p = Ctor(0, [x, y]) in let a = field 0 of p in fin a
+    // → let p = Ctor(0, [x, y]) in let a = x in fin a
+    let expr = let_("p", ctor(0, &["x", "y"]),
+        let_("a", field("p", 0), fin("a")));
+    let expected = let_("p", ctor(0, &["x", "y"]),
+        let_("a", var("x"), fin("a")));
+    assert_eq!(constant_fold(expr), expected);
+}
+
+#[test]
+fn test_known_field_second() {
+    // field 1 of Ctor(0, [x, y]) → y
+    let expr = let_("p", ctor(0, &["x", "y"]),
+        let_("a", field("p", 1), fin("a")));
+    let expected = let_("p", ctor(0, &["x", "y"]),
+        let_("a", var("y"), fin("a")));
+    assert_eq!(constant_fold(expr), expected);
 }
 
 // ── Beta contraction ───────────────────────────────────────────────────────
@@ -410,7 +528,7 @@ fn test_const_fold_then_dead_code() {
 fn test_inline_small_cont() {
     // let f = cont(x). fin x in return f arg  ──►  let f = cont(x). fin x in fin arg
     let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
-    let result = rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20);
     let expected = let_("f", cont_("x", fin("x")), fin("arg"));
     assert_eq!(result, expected);
 }
@@ -422,7 +540,7 @@ fn test_inline_too_large() {
         let_("b", int(2),
             let_("c", int(3), fin("c"))));
     let expr = let_("f", cont_("x", big_body.clone()), return_("f", "arg"));
-    let result = rewrite::inlining(expr.clone(), 2);
+    let result = cps_rewrite::inlining(expr.clone(), 2);
     assert_eq!(result, expr);
 }
 
@@ -431,7 +549,7 @@ fn test_inline_letrec_not_inlined() {
     // Recursive functions should not be inlined by cont inlining
     let expr = letrec("f", fun_("x", "k", encore("f", "x", "k")),
         let_("k0", cont_("r", fin("r")), encore("f", "arg", "k0")));
-    let result = rewrite::inlining(expr.clone(), 100);
+    let result = cps_rewrite::inlining(expr.clone(), 100);
     assert_eq!(result, expr);
 }
 
@@ -449,7 +567,7 @@ fn test_inline_multiple_call_sites() {
             case(&[], fin("x")),
             case(&[], fin("y")),
         ]));
-    let result = rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
 }
 
@@ -463,7 +581,7 @@ fn test_inline_with_substitution() {
     let expected = let_("f",
         cont_("x", let_("r", field("x", 0), fin("r"))),
         let_("r", field("arg", 0), fin("r")));
-    let result = rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
 }
 
@@ -475,7 +593,7 @@ fn test_inline_nested_let() {
         let_("y", int(1), return_("f", "arg")));
     let expected = let_("f", cont_("x", fin("x")),
         let_("y", int(1), fin("arg")));
-    let result = rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
 }
 
@@ -484,7 +602,515 @@ fn test_inline_then_dead_code() {
     // After inlining all call sites, dead_code removes the binding
     // let f = cont(x). fin x in return f arg  →inline→  let f = (...) in fin arg  →dead→  fin arg
     let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
-    let after_inline = rewrite::inlining(expr, 20);
+    let after_inline = cps_rewrite::inlining(expr, 20);
     let after_dead = dead_code(after_inline);
     assert_eq!(after_dead, fin("arg"));
+}
+
+// ── Hoisting ────────────────────────────────────────────────────────────────
+
+#[test]
+fn test_hoist_int_constant() {
+    // letrec f(n, k) = let one = 1 in return k one in fin f
+    // ──►  let one = 1 in letrec f(n, k) = return k one in fin f
+    let expr = letrec("f",
+        fun_("n", "k", let_("one", int(1), return_("k", "one"))),
+        fin("f"));
+    let expected = let_("one", int(1),
+        letrec("f",
+            fun_("n", "k", return_("k", "one")),
+            fin("f")));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
+}
+
+#[test]
+fn test_hoist_nothing_variant() {
+    // letrec f(n, k) = let r = field 0 of n in return k r in fin f
+    // r depends on n → nothing to hoist
+    let expr = letrec("f",
+        fun_("n", "k", let_("r", field("n", 0), return_("k", "r"))),
+        fin("f"));
+    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+}
+
+#[test]
+fn test_hoist_chain() {
+    // letrec f(n, k) = let a = 1 in let b = 2 in let c = add(a,b) in return k c in fin f
+    // a, b, c are all invariant → all hoisted
+    let expr = letrec("f",
+        fun_("n", "k",
+            let_("a", int(1),
+                let_("b", int(2),
+                    let_("c", prim(PrimOp::Add, &["a", "b"]),
+                        return_("k", "c"))))),
+        fin("f"));
+    let expected =
+        let_("a", int(1),
+            let_("b", int(2),
+                let_("c", prim(PrimOp::Add, &["a", "b"]),
+                    letrec("f",
+                        fun_("n", "k", return_("k", "c")),
+                        fin("f")))));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
+}
+
+#[test]
+fn test_hoist_interleaved() {
+    // letrec f(n, k) = let a = 1 in let b = n in let c = 2 in return k c in fin f
+    // a hoistable, b variant (uses n), c hoistable (doesn't use b)
+    let expr = letrec("f",
+        fun_("n", "k",
+            let_("a", int(1),
+                let_("b", var("n"),
+                    let_("c", int(2),
+                        return_("k", "c"))))),
+        fin("f"));
+    let expected =
+        let_("a", int(1),
+            let_("c", int(2),
+                letrec("f",
+                    fun_("n", "k",
+                        let_("b", var("n"),
+                            return_("k", "c"))),
+                    fin("f"))));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
+}
+
+#[test]
+fn test_hoist_transitive_variant() {
+    // letrec f(n, k) = let a = n in let b = add(a, x) in return k b in fin f
+    // a is variant (uses n), b is variant (uses a) → nothing hoisted
+    let expr = letrec("f",
+        fun_("n", "k",
+            let_("a", var("n"),
+                let_("b", prim(PrimOp::Add, &["a", "x"]),
+                    return_("k", "b")))),
+        fin("f"));
+    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+}
+
+#[test]
+fn test_hoist_does_not_hoist_self_ref() {
+    // letrec f(n, k) = let g = f in return k g in fin f
+    // g references f (the letrec name) → not hoistable
+    let expr = letrec("f",
+        fun_("n", "k", let_("g", var("f"), return_("k", "g"))),
+        fin("f"));
+    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+}
+
+#[test]
+fn test_hoist_recurses_into_nested_letrec() {
+    // let x = 1 in letrec f(n, k) = let a = 2 in return k a in fin f
+    // The inner letrec should be processed
+    let expr = let_("x", int(1),
+        letrec("f",
+            fun_("n", "k", let_("a", int(2), return_("k", "a"))),
+            fin("f")));
+    let expected = let_("x", int(1),
+        let_("a", int(2),
+            letrec("f",
+                fun_("n", "k", return_("k", "a")),
+                fin("f"))));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
+}
+
+#[test]
+fn test_hoist_no_letrec_unchanged() {
+    // No letrec → nothing to hoist
+    let expr = let_("a", int(1), fin("a"));
+    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+}
+
+// ── CSE ─────────────────────────────────────────────────────────────────────
+
+#[test]
+fn test_cse_field() {
+    // let a = field 0 of x in let b = field 0 of x in fin b
+    // ──►  let a = field 0 of x in fin a
+    let expr = let_("a", field("x", 0),
+        let_("b", field("x", 0),
+            fin("b")));
+    let expected = let_("a", field("x", 0), fin("a"));
+    assert_eq!(cps_rewrite::cse(expr), expected);
+}
+
+#[test]
+fn test_cse_prim() {
+    // let a = add(x,y) in let b = add(x,y) in fin b
+    // ──►  let a = add(x,y) in fin a
+    let expr = let_("a", prim(PrimOp::Add, &["x", "y"]),
+        let_("b", prim(PrimOp::Add, &["x", "y"]),
+            fin("b")));
+    let expected = let_("a", prim(PrimOp::Add, &["x", "y"]), fin("a"));
+    assert_eq!(cps_rewrite::cse(expr), expected);
+}
+
+#[test]
+fn test_cse_ctor() {
+    // let a = Ctor(0, [x, y]) in let b = Ctor(0, [x, y]) in fin b
+    // ──►  let a = Ctor(0, [x, y]) in fin a
+    let expr = let_("a", ctor(0, &["x", "y"]),
+        let_("b", ctor(0, &["x", "y"]),
+            fin("b")));
+    let expected = let_("a", ctor(0, &["x", "y"]), fin("a"));
+    assert_eq!(cps_rewrite::cse(expr), expected);
+}
+
+#[test]
+fn test_cse_different_vals() {
+    // Different field indices → no CSE
+    let expr = let_("a", field("x", 0),
+        let_("b", field("x", 1),
+            fin("b")));
+    assert_eq!(cps_rewrite::cse(expr.clone()), expr);
+}
+
+#[test]
+fn test_cse_var_not_eliminated() {
+    // Var is not a CSE candidate (copy propagation handles it)
+    let expr = let_("a", var("x"), let_("b", var("x"), fin("b")));
+    assert_eq!(cps_rewrite::cse(expr.clone()), expr);
+}
+
+#[test]
+fn test_cse_chain() {
+    // Three identical bindings → all collapse to the first
+    let expr = let_("a", field("x", 0),
+        let_("b", field("x", 0),
+            let_("c", field("x", 0),
+                fin("c"))));
+    let expected = let_("a", field("x", 0), fin("a"));
+    assert_eq!(cps_rewrite::cse(expr), expected);
+}
+
+#[test]
+fn test_cse_inside_letrec() {
+    // CSE works within a letrec body
+    let expr = letrec("f",
+        fun_("n", "k",
+            let_("a", field("n", 0),
+                let_("b", field("n", 0),
+                    return_("k", "b")))),
+        fin("f"));
+    let expected = letrec("f",
+        fun_("n", "k",
+            let_("a", field("n", 0),
+                return_("k", "a"))),
+        fin("f"));
+    assert_eq!(cps_rewrite::cse(expr), expected);
+}
+
+#[test]
+fn test_cse_does_not_cross_letrec() {
+    // Available expressions don't leak into letrec fun bodies
+    let expr = let_("a", field("x", 0),
+        letrec("f",
+            fun_("n", "k",
+                let_("b", field("x", 0), return_("k", "b"))),
+            fin("f")));
+    assert_eq!(cps_rewrite::cse(expr.clone()), expr);
+}
+
+#[test]
+fn test_cse_match_bind_invalidates() {
+    // match bind shadows 'x', so field 0 of x inside the case is NOT the same
+    let expr = let_("a", field("x", 0),
+        match_("s", 0, vec![
+            case(&["x"], let_("b", field("x", 0), fin("b"))),
+        ]));
+    assert_eq!(cps_rewrite::cse(expr.clone()), expr);
+}
+
+#[test]
+fn test_cse_across_match_branches() {
+    // Available expressions flow into branches (no shadowing)
+    let expr = let_("a", field("x", 0),
+        match_("s", 0, vec![
+            case(&[], let_("b", field("x", 0), fin("b"))),
+            case(&[], fin("a")),
+        ]));
+    let expected = let_("a", field("x", 0),
+        match_("s", 0, vec![
+            case(&[], fin("a")),
+            case(&[], fin("a")),
+        ]));
+    assert_eq!(cps_rewrite::cse(expr), expected);
+}
+
+// ── Contification ────────────────────────────────────────────────────────────
+
+#[test]
+fn test_contify_single_use_inline() {
+    // letrec f = fun(x, k). return k x in encore f arg k0
+    // f is non-recursive, used once → inline: return k0 arg
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        encore("f", "arg", "k0"));
+    assert_eq!(cps_rewrite::contification(expr), return_("k0", "arg"));
+}
+
+#[test]
+fn test_contify_single_use_with_body() {
+    // letrec f = fun(x, k). let r = field 0 of x in return k r
+    // in encore f arg k0
+    // ──►  let r = field 0 of arg in return k0 r
+    let expr = letrec("f",
+        fun_("x", "k", let_("r", field("x", 0), return_("k", "r"))),
+        encore("f", "arg", "k0"));
+    let expected = let_("r", field("arg", 0), return_("k0", "r"));
+    assert_eq!(cps_rewrite::contification(expr), expected);
+}
+
+#[test]
+fn test_contify_single_use_nested_in_let() {
+    // letrec f = fun(x, k). return k x in let a = 1 in encore f arg k0
+    // ──►  let a = 1 in return k0 arg
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        let_("a", int(1), encore("f", "arg", "k0")));
+    let expected = let_("a", int(1), return_("k0", "arg"));
+    assert_eq!(cps_rewrite::contification(expr), expected);
+}
+
+#[test]
+fn test_contify_single_use_in_match() {
+    // letrec f = fun(x, k). return k x in match s 0 [ encore f a k0 | fin b ]
+    // ──►  match s 0 [ return k0 a | fin b ]
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        match_("s", 0, vec![
+            case(&[], encore("f", "a", "k0")),
+            case(&[], fin("b")),
+        ]));
+    let expected = match_("s", 0, vec![
+        case(&[], return_("k0", "a")),
+        case(&[], fin("b")),
+    ]);
+    assert_eq!(cps_rewrite::contification(expr), expected);
+}
+
+#[test]
+fn test_contify_recursive_not_touched() {
+    // letrec f = fun(x, k). encore f x k in encore f arg k0
+    // f is recursive → unchanged
+    let expr = letrec("f",
+        fun_("x", "k", encore("f", "x", "k")),
+        encore("f", "arg", "k0"));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_escapes_as_value() {
+    // letrec f = fun(x, k). return k x in fin f
+    // f is used as a value (in Fin) → escapes, unchanged
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        fin("f"));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_escapes_as_arg() {
+    // letrec f = fun(x, k). return k x in encore g f k0
+    // f is passed as an argument → escapes, unchanged
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        encore("g", "f", "k0"));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_escapes_as_cont() {
+    // letrec f = fun(x, k). return k x in encore g arg f
+    // f is passed as continuation → escapes, unchanged
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        encore("g", "arg", "f"));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_escapes_in_ctor() {
+    // letrec f = fun(x, k). return k x in let p = Ctor(0, [f]) in fin p
+    // f captured in a Ctor → escapes
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        let_("p", ctor(0, &["f"]), fin("p")));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_multi_use_same_cont_in_scope() {
+    // letrec f = fun(x, k). return k x in match s 0 [ encore f a k0 | encore f b k0 ]
+    // f is non-recursive, used twice, both with k0, and k0 is NOT bound inside outer
+    // ──►  let f = cont(x). return k0 x in match s 0 [ return f a | return f b ]
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        match_("s", 0, vec![
+            case(&[], encore("f", "a", "k0")),
+            case(&[], encore("f", "b", "k0")),
+        ]));
+    let expected = let_("f",
+        cont_("x", return_("k0", "x")),
+        match_("s", 0, vec![
+            case(&[], return_("f", "a")),
+            case(&[], return_("f", "b")),
+        ]));
+    assert_eq!(cps_rewrite::contification(expr), expected);
+}
+
+#[test]
+fn test_contify_multi_use_different_conts() {
+    // Two call sites with different continuations → cannot contify
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        let_("a", int(1),
+            match_("s", 0, vec![
+                case(&[], encore("f", "a", "k1")),
+                case(&[], encore("f", "b", "k2")),
+            ])));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_multi_use_cont_bound_inside() {
+    // k0 is bound inside outer → not in scope at Letrec, skip
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        let_("k0", cont_("r", fin("r")),
+            match_("s", 0, vec![
+                case(&[], encore("f", "a", "k0")),
+                case(&[], encore("f", "b", "k0")),
+            ])));
+    assert_eq!(cps_rewrite::contification(expr.clone()), expr);
+}
+
+#[test]
+fn test_contify_cascading() {
+    // Two nested non-recursive letrecs: inner f is contified first (bottom-up),
+    // which exposes g as single-use, so g is contified in the same pass.
+    let expr = letrec("g",
+        fun_("y", "kg", return_("kg", "y")),
+        letrec("f",
+            fun_("x", "kf", encore("g", "x", "kf")),
+            encore("f", "arg", "k0")));
+    assert_eq!(cps_rewrite::contification(expr), return_("k0", "arg"));
+}
+
+#[test]
+fn test_contify_recurses_into_let_body() {
+    // Contification should find letrecs nested inside Let
+    let expr = let_("a", int(1),
+        letrec("f",
+            fun_("x", "k", return_("k", "x")),
+            encore("f", "a", "k0")));
+    let expected = let_("a", int(1), return_("k0", "a"));
+    assert_eq!(cps_rewrite::contification(expr), expected);
+}
+
+#[test]
+fn test_contify_then_beta() {
+    // After contification creates Let(Cont), beta contraction can inline it.
+    let expr = letrec("f",
+        fun_("x", "k", return_("k", "x")),
+        match_("s", 0, vec![
+            case(&[], encore("f", "a", "k0")),
+            case(&[], encore("f", "b", "k0")),
+        ]));
+    let after_contify = cps_rewrite::contification(expr);
+    let expected = let_("f",
+        cont_("x", return_("k0", "x")),
+        match_("s", 0, vec![
+            case(&[], return_("f", "a")),
+            case(&[], return_("f", "b")),
+        ]));
+    assert_eq!(after_contify, expected);
+}
+
+#[test]
+fn test_contify_curried_lambda() {
+    // Reproduces the map_filter bug pattern:
+    //   letrec f = fun(x, kf). letrec g = fun(y, kg). return kg y in return kf g
+    //   in let k = cont(r). fin r
+    //      in encore f arg k
+    //
+    // f is non-recursive, single-use. After contification of f:
+    //   let k = cont(r). fin r
+    //   in letrec g = fun(y, kg). return kg y
+    //      in return k g
+    let expr = letrec("f",
+        fun_("x", "kf",
+            letrec("g",
+                fun_("y", "kg", return_("kg", "y")),
+                return_("kf", "g"))),
+        let_("k", cont_("r", fin("r")),
+            encore("f", "arg", "k")));
+    let result = cps_rewrite::contification(expr);
+    let expected = let_("k", cont_("r", fin("r")),
+        letrec("g",
+            fun_("y", "kg", return_("kg", "y")),
+            return_("k", "g")));
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_contify_two_curried_wrappers() {
+    // Two curried wrappers with distinct inner names (as DSI would produce).
+    // Both map_f and filt_f are single-use non-recursive: both get contified.
+    // After contification + simplification, only the inner letrecs remain.
+    let expr =
+        letrec("map_f",
+            fun_("f", "km",
+                letrec("go_m",
+                    fun_("y", "ky", return_("ky", "y")),
+                    return_("km", "go_m"))),
+        letrec("filt_f",
+            fun_("p", "kf",
+                letrec("go_f",
+                    fun_("z", "kz", return_("kz", "z")),
+                    return_("kf", "go_f"))),
+        let_("k1", cont_("pm",
+            let_("k2", cont_("pf",
+                let_("k3", cont_("mapped",
+                    encore("pf", "mapped", "k_halt")),
+                    encore("pm", "list", "k3"))),
+                encore("filt_f", "is_big", "k2"))),
+            encore("map_f", "double", "k1"))));
+
+    let after = cps_rewrite::contification(expr);
+    let after = beta_contraction(after);
+    let after = copy_propagation(after);
+    let after = dead_code(after);
+
+    // Both wrappers should be eliminated. The result should contain
+    // go_m and go_f as distinct letrecs, not shadowing each other.
+    fn collect_letrec_names(e: &encore_compiler::ir::cps::Expr, names: &mut Vec<String>) {
+        use encore_compiler::ir::cps::{Expr, Val};
+        match e {
+            Expr::Letrec(name, fun, body) => {
+                names.push(name.clone());
+                collect_letrec_names(&fun.body, names);
+                collect_letrec_names(body, names);
+            }
+            Expr::Let(_, val, body) => {
+                if let Val::Cont(c) = val {
+                    collect_letrec_names(&c.body, names);
+                }
+                collect_letrec_names(body, names);
+            }
+            Expr::Match(_, _, cases) => {
+                for c in cases {
+                    collect_letrec_names(&c.body, names);
+                }
+            }
+            _ => {}
+        }
+    }
+    let mut names = Vec::new();
+    collect_letrec_names(&after, &mut names);
+    assert!(names.contains(&"go_m".to_string()), "go_m should survive: {after:#?}");
+    assert!(names.contains(&"go_f".to_string()), "go_f should survive: {after:#?}");
+    assert!(!names.contains(&"map_f".to_string()), "map_f should be inlined: {after:#?}");
+    assert!(!names.contains(&"filt_f".to_string()), "filt_f should be inlined: {after:#?}");
 }

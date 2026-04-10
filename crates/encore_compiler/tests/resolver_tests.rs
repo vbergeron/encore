@@ -1,5 +1,5 @@
 use encore_compiler::ir::cps;
-use encore_compiler::pass::{emit::Emitter, resolver};
+use encore_compiler::pass::{asm_emit::Emitter, asm_resolve};
 use encore_vm::program::Program;
 use encore_vm::value::{HeapAddress, Value};
 use encore_vm::vm::Vm;
@@ -9,7 +9,7 @@ fn ctor(tag: u8) -> Value {
 }
 
 fn run_define(module: &cps::Module, define_idx: usize, globals: &[Value]) -> Value {
-    let ir_module = resolver::resolve_module(module);
+    let ir_module = asm_resolve::resolve_module(module);
     let define = &ir_module.defines[define_idx];
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&define.body);
