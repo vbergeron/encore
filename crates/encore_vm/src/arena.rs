@@ -60,9 +60,12 @@ impl<'a> Arena<'a> {
 
     // -- Stack (grows down from end) --
 
-    pub fn stack_ensure(&self, n: usize) -> Result<(), VmError> {
+    pub fn stack_ensure(&mut self, n: usize, roots: &mut [Value]) -> Result<(), VmError> {
         if self.sp < self.hp + n {
-            return Err(VmError::StackOverflow);
+            gc::collect(self, roots);
+            if self.sp < self.hp + n {
+                return Err(VmError::StackOverflow);
+            }
         }
         Ok(())
     }

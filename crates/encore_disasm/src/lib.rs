@@ -1,6 +1,6 @@
 pub mod tui;
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
 use encore_vm::error::VmError;
@@ -22,10 +22,14 @@ pub enum Op {
     Function { target: u16 },
     Pack { tag: u8 },
     Field(u8),
+    Unpack { tag: u8 },
     Match { table: Vec<(u8, u16)> },
     Encore,
     Return,
     Int(i32),
+    Int0,
+    Int1,
+    Int2,
     IntAdd,
     IntSub,
     IntMul,
@@ -46,6 +50,8 @@ pub struct Disasm {
     pub globals: Vec<(usize, String)>,
     pub instructions: Vec<Instr>,
     pub code_len: usize,
+    pub ctor_names: BTreeMap<u8, String>,
+    pub global_names: BTreeMap<u8, String>,
 }
 
 // --- Public API ---
@@ -71,8 +77,24 @@ pub fn decode_program(prog: &Program) -> Disasm {
         .map(|(tag, &arity)| (tag as u8, arity))
         .collect();
 
+    let ctor_names: BTreeMap<u8, String> = prog
+        .ctor_names()
+        .map(|(tag, name)| (tag, name.to_owned()))
+        .collect();
+
+    let global_names: BTreeMap<u8, String> = prog
+        .global_names()
+        .map(|(idx, name)| (idx, name.to_owned()))
+        .collect();
+
     let globals: Vec<(usize, String)> = (0..prog.n_globals())
-        .map(|i| (i, format_value(prog.global(i))))
+        .map(|i| {
+            let val_desc = format_value(prog.global(i));
+            match global_names.get(&(i as u8)) {
+                Some(name) => (i, format!("{name} = {val_desc}")),
+                None => (i, val_desc),
+            }
+        })
         .collect();
 
     let fn_targets = collect_fn_targets(prog.code);
@@ -84,15 +106,37 @@ pub fn decode_program(prog: &Program) -> Disasm {
         }
         match &instr.op {
             Op::Global(idx) => {
-                let idx = *idx as usize;
-                if idx < globals.len() {
-                    instr.comment = Some(globals[idx].1.clone());
+                let idx = *idx;
+                if let Some(name) = global_names.get(&idx) {
+                    instr.comment = Some(name.clone());
+                } else if (idx as usize) < globals.len() {
+                    instr.comment = Some(globals[idx as usize].1.clone());
                 }
             }
             Op::Pack { tag } => {
-                let tag = *tag as usize;
-                if tag < arity_table.len() {
-                    instr.comment = Some(format!("arity={}", arity_table[tag].1));
+                let tag = *tag;
+                let mut parts = Vec::new();
+                if let Some(name) = ctor_names.get(&tag) {
+                    parts.push(name.clone());
+                }
+                if (tag as usize) < arity_table.len() {
+                    parts.push(format!("arity={}", arity_table[tag as usize].1));
+                }
+                if !parts.is_empty() {
+                    instr.comment = Some(parts.join(", "));
+                }
+            }
+            Op::Unpack { tag } => {
+                if let Some(name) = ctor_names.get(tag) {
+                    instr.comment = Some(name.clone());
+                }
+            }
+            Op::Match { table } => {
+                let named: Vec<String> = table.iter()
+                    .filter_map(|(tag, _)| ctor_names.get(tag).map(|n| n.clone()))
+                    .collect();
+                if !named.is_empty() {
+                    instr.comment = Some(named.join(" | "));
                 }
             }
             _ => {}
@@ -104,6 +148,8 @@ pub fn decode_program(prog: &Program) -> Disasm {
         globals,
         instructions,
         code_len: prog.code.len(),
+        ctor_names,
+        global_names,
     }
 }
 
@@ -123,6 +169,7 @@ impl fmt::Display for Op {
             Op::Function { target } => write!(f, "FUNCTION @{target:04x}"),
             Op::Pack { tag } => write!(f, "PACK tag={tag}"),
             Op::Field(i) => write!(f, "FIELD {i}"),
+            Op::Unpack { tag } => write!(f, "UNPACK tag={tag}"),
             Op::Match { table } => {
                 write!(f, "MATCH [")?;
                 for (j, &(tag, target)) in table.iter().enumerate() {
@@ -136,6 +183,9 @@ impl fmt::Display for Op {
             Op::Encore => write!(f, "ENCORE"),
             Op::Return => write!(f, "RETURN"),
             Op::Int(n) => write!(f, "INT {n}"),
+            Op::Int0 => write!(f, "INT_0"),
+            Op::Int1 => write!(f, "INT_1"),
+            Op::Int2 => write!(f, "INT_2"),
             Op::IntAdd => write!(f, "INT_ADD"),
             Op::IntSub => write!(f, "INT_SUB"),
             Op::IntMul => write!(f, "INT_MUL"),
@@ -150,7 +200,11 @@ impl fmt::Display for Disasm {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "--- Arity table ({} entries) ---", self.arity_table.len())?;
         for &(tag, arity) in &self.arity_table {
-            writeln!(f, "  tag {tag}: arity {arity}")?;
+            if let Some(name) = self.ctor_names.get(&tag) {
+                writeln!(f, "  tag {tag}: arity {arity}  ({name})")?;
+            } else {
+                writeln!(f, "  tag {tag}: arity {arity}")?;
+            }
         }
 
         writeln!(f)?;
@@ -209,7 +263,8 @@ fn collect_fn_targets(code: &[u8]) -> BTreeSet<u16> {
         let op = code[pc];
         pc += 1;
         match op {
-            opcode::GLOBAL | opcode::CAPTURE | opcode::LOCAL | opcode::PACK | opcode::FIELD => {
+            opcode::GLOBAL | opcode::CAPTURE | opcode::LOCAL | opcode::PACK | opcode::FIELD
+            | opcode::UNPACK => {
                 pc += 1;
             }
             opcode::CLOSURE => {
@@ -278,6 +333,7 @@ fn decode_instructions(code: &[u8]) -> Vec<Instr> {
                 tag: read_u8(&mut pc),
             },
             opcode::FIELD => Op::Field(read_u8(&mut pc)),
+            opcode::UNPACK => Op::Unpack { tag: read_u8(&mut pc) },
             opcode::MATCH => {
                 let base = read_u8(&mut pc);
                 let n = read_u8(&mut pc);
@@ -296,6 +352,9 @@ fn decode_instructions(code: &[u8]) -> Vec<Instr> {
                 let raw = b0 | (b1 << 8) | (b2 << 16);
                 Op::Int(((raw as i32) << 8) >> 8)
             }
+            opcode::INT_0 => Op::Int0,
+            opcode::INT_1 => Op::Int1,
+            opcode::INT_2 => Op::Int2,
             opcode::INT_ADD => Op::IntAdd,
             opcode::INT_SUB => Op::IntSub,
             opcode::INT_MUL => Op::IntMul,

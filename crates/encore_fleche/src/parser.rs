@@ -40,6 +40,12 @@ impl Parser {
         ds::Module { defines }
     }
 
+    pub fn ctor_names(&self) -> Vec<(u8, String)> {
+        self.ctors.iter()
+            .map(|(name, info)| (info.tag, name.clone()))
+            .collect()
+    }
+
     fn parse_data(&mut self) {
         self.lexer.expect(&Token::Data);
 

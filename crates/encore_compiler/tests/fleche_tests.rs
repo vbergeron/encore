@@ -6,7 +6,7 @@ use encore_vm::vm::Vm;
 
 fn run(source: &str) -> Value {
     let module = encore_fleche::parse(source);
-    let binary = pipeline::compile_module(module);
+    let binary = pipeline::compile_module(module, None, None);
     let prog = Program::parse(&binary).unwrap();
     let mut mem = [Value::from_u32(0); 4096];
     let globals = vec![Value::from_u32(0); prog.n_globals() as usize];

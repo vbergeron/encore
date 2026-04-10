@@ -2,9 +2,10 @@ use std::fs;
 use std::process;
 
 use clap::{Parser, Subcommand};
+use encore_compiler::pass::asm_emit::Metadata;
 use encore_compiler::pass::cps_optimize::OptimizeConfig;
 use encore_vm::program::Program;
-use encore_vm::value::Value;
+use encore_vm::value::{CodeAddress, Value};
 use encore_vm::vm::Vm;
 
 const DEFAULT_HEAP_SIZE: usize = 1 << 16;
@@ -45,9 +46,9 @@ enum Command {
     Run {
         /// Path to the compiled binary
         file: String,
-        /// Entrypoint define index (0-based)
-        #[arg(short, long, default_value_t = 0)]
-        entry: usize,
+        /// Entrypoint: define name or index (0-based)
+        #[arg(short, long, default_value = "0")]
+        entry: String,
         /// Heap size in 32-bit words
         #[arg(long, default_value_t = DEFAULT_HEAP_SIZE)]
         heap_size: usize,
@@ -76,6 +77,9 @@ enum Frontend {
         /// Output binary path
         #[arg(short, long, default_value = "out.bin")]
         out: String,
+        /// Include debug metadata (constructor names) in the binary
+        #[arg(long)]
+        include_metadata: bool,
         #[command(flatten)]
         opt: OptimizeFlags,
     },
@@ -148,18 +152,18 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Run { file, entry, heap_size } => cmd_run(&file, entry, heap_size),
+        Command::Run { file, entry, heap_size } => cmd_run(&file, &entry, heap_size),
         Command::Compile { frontend } => match frontend {
-            Frontend::Fleche { file, out, opt } => {
+            Frontend::Fleche { file, out, include_metadata, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile_fleche(&file, &out, config);
+                cmd_compile_fleche(&file, &out, config, include_metadata);
             }
         },
         Command::Disasm { file, interactive } => cmd_disasm(&file, interactive),
     }
 }
 
-fn cmd_run(path: &str, entry: usize, heap_size: usize) {
+fn cmd_run(path: &str, entry: &str, heap_size: usize) {
     let bytes = fs::read(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
@@ -170,47 +174,77 @@ fn cmd_run(path: &str, entry: usize, heap_size: usize) {
         process::exit(1);
     });
 
-    if entry >= prog.n_globals() {
-        eprintln!(
-            "error: entrypoint {entry} out of range (module has {} defines)",
-            prog.n_globals()
-        );
-        process::exit(1);
-    }
+    let entry_idx = resolve_entry(entry, &prog);
 
     let mut heap = vec![Value::from_u32(0); heap_size];
     let mut globals = vec![Value::from_u32(0); prog.n_globals()];
     prog.load_globals(&mut globals);
 
-    globals.swap(0, entry);
-
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut heap);
-    match vm.run() {
-        Ok(val) => {
-            #[cfg(feature = "stats")]
-            eprintln!("{}", vm.stats());
-            print_value(val);
-        }
-        Err(e) => {
-            #[cfg(feature = "stats")]
-            eprintln!("{}", vm.stats());
-            eprintln!("runtime error: {e:?}");
-            process::exit(2);
-        }
+    // Evaluate each define in order to populate globals with computed values.
+    // Function defines produce closure values; the entry define produces the final result.
+    for i in 0..globals.len() {
+        let addr = CodeAddress::new(globals[i].closure_addr().raw());
+        let val = {
+            let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut heap);
+            vm.call(addr, Value::from_u32(0)).unwrap_or_else(|e| {
+                eprintln!("runtime error in define {i}: {e:?}");
+                process::exit(2);
+            })
+        };
+        globals[i] = val;
     }
+
+    #[cfg(feature = "stats")]
+    eprintln!("(stats not available in module-init mode)");
+
+    print_value(globals[entry_idx]);
 }
 
-fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>) {
+fn resolve_entry(entry: &str, prog: &Program) -> usize {
+    if let Ok(idx) = entry.parse::<usize>() {
+        if idx >= prog.n_globals() {
+            eprintln!(
+                "error: entrypoint {idx} out of range (module has {} defines)",
+                prog.n_globals()
+            );
+            process::exit(1);
+        }
+        return idx;
+    }
+
+    let global_names: Vec<(u8, &str)> = prog.global_names().collect();
+    for &(idx, name) in &global_names {
+        if name == entry {
+            return idx as usize;
+        }
+    }
+
+    if global_names.is_empty() {
+        eprintln!("error: no define named '{entry}' (binary has no metadata; use --include-metadata when compiling, or pass a numeric index)");
+    } else {
+        let available: Vec<&str> = global_names.iter().map(|(_, n)| *n).collect();
+        eprintln!("error: no define named '{entry}'; available: {}", available.join(", "));
+    }
+    process::exit(1);
+}
+
+fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool) {
     let source = fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
     });
 
-    let module = encore_fleche::parse(&source);
-    let binary = match config {
-        Some(config) => encore_compiler::pipeline::compile_module_with_config(module, config),
-        None => encore_compiler::pipeline::compile_module_unoptimized(module),
+    let (module, ctor_names) = encore_fleche::parse_with_metadata(&source);
+    let metadata = if include_metadata {
+        let global_names = module.defines.iter()
+            .enumerate()
+            .map(|(i, d)| (i as u8, d.name.clone()))
+            .collect();
+        Some(Metadata { ctor_names, global_names })
+    } else {
+        None
     };
+    let binary = encore_compiler::pipeline::compile_module(module,config, metadata.as_ref());
 
     fs::write(out, &binary).unwrap_or_else(|e| {
         eprintln!("error: cannot write {out}: {e}");

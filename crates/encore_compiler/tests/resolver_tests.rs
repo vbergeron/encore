@@ -13,7 +13,8 @@ fn run_define(module: &cps::Module, define_idx: usize, globals: &[Value]) -> Val
     let define = &ir_module.defines[define_idx];
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&define.body);
-    let binary = emitter.serialize(globals.len() as u16);
+    let entries: Vec<u16> = (0..globals.len()).map(|_| 0u16).collect();
+    let binary = emitter.serialize(&entries, None);
     let prog = Program::parse(&binary).unwrap();
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::new(prog.code, prog.arity_table, globals, &mut mem);

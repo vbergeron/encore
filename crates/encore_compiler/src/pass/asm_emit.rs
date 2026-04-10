@@ -2,6 +2,11 @@ use encore_vm::opcode;
 use crate::ir::asm::{ContLam, Expr, Fun, Loc, Module, Val};
 use crate::ir::prim::PrimOp;
 
+pub struct Metadata {
+    pub ctor_names: Vec<(u8, String)>,
+    pub global_names: Vec<(u8, String)>,
+}
+
 pub struct Emitter<'a> {
     buf: Vec<u8>,
     arity_table: Vec<u8>,
@@ -125,11 +130,18 @@ impl<'a> Emitter<'a> {
                 self.emit_u8(*idx);
             }
             Val::Int(n) => {
-                self.emit_u8(opcode::INT);
-                let bits = *n as u32;
-                self.emit_u8(bits as u8);
-                self.emit_u8((bits >> 8) as u8);
-                self.emit_u8((bits >> 16) as u8);
+                match *n {
+                    0 => self.emit_u8(opcode::INT_0),
+                    1 => self.emit_u8(opcode::INT_1),
+                    2 => self.emit_u8(opcode::INT_2),
+                    _ => {
+                        self.emit_u8(opcode::INT);
+                        let bits = *n as u32;
+                        self.emit_u8(bits as u8);
+                        self.emit_u8((bits >> 8) as u8);
+                        self.emit_u8((bits >> 16) as u8);
+                    }
+                }
             }
             Val::Prim(op, locs) => {
                 for loc in locs {
@@ -181,10 +193,10 @@ impl<'a> Emitter<'a> {
                     .collect();
                 for (i, case) in cases.iter().enumerate() {
                     self.patch_u16(holes[i], self.pos() as u16);
-                    for f in 0..case.arity {
+                    if case.arity > 0 {
                         self.emit_loc(loc);
-                        self.emit_u8(opcode::FIELD);
-                        self.emit_u8(f);
+                        self.emit_u8(opcode::UNPACK);
+                        self.emit_u8(base + i as u8);
                     }
                     self.emit_expr(&case.body);
                 }
@@ -209,26 +221,44 @@ impl<'a> Emitter<'a> {
         self.buf
     }
 
-    pub fn emit_module(module: &Module) -> Vec<u8> {
-        let n_globals = module.defines.len() as u16;
+    pub fn emit_module(module: &Module, metadata: Option<&Metadata>) -> Vec<u8> {
         let mut emitter = Self::new();
+        let mut entry_addrs = Vec::with_capacity(module.defines.len());
         for define in &module.defines {
+            entry_addrs.push(emitter.pos() as u16);
             emitter.emit_toplevel(&define.body);
         }
-        emitter.serialize(n_globals)
+        emitter.serialize(&entry_addrs, metadata)
     }
 
-    pub fn serialize(self, n_globals: u16) -> Vec<u8> {
+    pub fn serialize(self, entry_addrs: &[u16], metadata: Option<&Metadata>) -> Vec<u8> {
         let arity_table = self.arity_table;
         let code = self.buf;
+        let n_globals = entry_addrs.len() as u16;
         let mut out = Vec::new();
         out.extend_from_slice(&encore_vm::program::MAGIC);
         out.extend_from_slice(&(arity_table.len() as u16).to_le_bytes());
         out.extend_from_slice(&n_globals.to_le_bytes());
         out.extend_from_slice(&(code.len() as u16).to_le_bytes());
         out.extend_from_slice(&arity_table);
-        out.resize(out.len() + n_globals as usize * 4, 0);
+        for &addr in entry_addrs {
+            let val = encore_vm::value::Value::function(encore_vm::value::CodeAddress::new(addr));
+            out.extend_from_slice(&val.to_u32().to_le_bytes());
+        }
         out.extend_from_slice(&code);
+        if let Some(meta) = metadata {
+            serialize_name_section(&mut out, &meta.ctor_names);
+            serialize_name_section(&mut out, &meta.global_names);
+        }
         out
+    }
+}
+
+fn serialize_name_section(out: &mut Vec<u8>, entries: &[(u8, String)]) {
+    out.extend_from_slice(&(entries.len() as u16).to_le_bytes());
+    for (idx, name) in entries {
+        out.push(*idx);
+        out.push(name.len() as u8);
+        out.extend_from_slice(name.as_bytes());
     }
 }

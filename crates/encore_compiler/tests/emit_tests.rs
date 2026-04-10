@@ -12,7 +12,7 @@ fn test_halt_global() {
 
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(1);
+    let binary = emitter.serialize(&[0], None);
     let prog = Program::parse(&binary).unwrap();
 
     let tag7 = Value::ctor(7, HeapAddress::NULL);
@@ -31,7 +31,7 @@ fn test_call_lambda_body() {
 
     let mut emitter = Emitter::new();
     emitter.emit_expr(&body);
-    let binary = emitter.serialize(1);
+    let binary = emitter.serialize(&[0], None);
     let prog = Program::parse(&binary).unwrap();
 
     let tag5 = Value::ctor(5, HeapAddress::NULL);
@@ -58,7 +58,7 @@ fn test_match_branch0() {
 
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(3);
+    let binary = emitter.serialize(&[0, 0, 0], None);
     let prog = Program::parse(&binary).unwrap();
 
     let g0 = Value::ctor(0, HeapAddress::NULL);
@@ -84,7 +84,7 @@ fn test_match_branch1() {
 
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(3);
+    let binary = emitter.serialize(&[0, 0, 0], None);
     let prog = Program::parse(&binary).unwrap();
 
     let g0 = Value::ctor(1, HeapAddress::NULL);
@@ -147,7 +147,7 @@ fn test_letrec_run() {
 
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(2);
+    let binary = emitter.serialize(&[0, 0], None);
     let prog = Program::parse(&binary).unwrap();
 
     let g0 = Value::ctor(0, HeapAddress::NULL);
