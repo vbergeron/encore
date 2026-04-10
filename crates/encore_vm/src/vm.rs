@@ -6,14 +6,16 @@ use crate::opcode;
 use crate::stats::VmStats;
 use crate::value::{CodeAddress, HeapAddress, Value};
 
+const SELF_REF: usize = 0;
+const ARG: usize = 1;
+const CONT: usize = 2;
+
 pub struct Vm<'a> {
     code: Code<'a>,
     arity_table: &'a [u8],
     globals: &'a [Value],
     arena: Arena<'a>,
-    self_ref: Value,
-    arg: Value,
-    cont: Value,
+    roots: [Value; 3],
     #[cfg(feature = "stats")]
     stats: VmStats,
 }
@@ -30,23 +32,25 @@ impl<'a> Vm<'a> {
             arity_table,
             globals,
             arena: Arena::new(mem),
-            self_ref: Value::function(CodeAddress::new(0)),
-            arg: Value::from_u32(0),
-            cont: Value::from_u32(0),
+            roots: [
+                Value::function(CodeAddress::new(0)),
+                Value::from_u32(0),
+                Value::from_u32(0),
+            ],
             #[cfg(feature = "stats")]
             stats: VmStats::default(),
         }
     }
 
     fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
-        self.arena.alloc(n, &mut self.self_ref, &mut self.arg, &mut self.cont)
+        self.arena.alloc(n, &mut self.roots)
     }
 
     pub fn call(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
-        self.self_ref = Value::function(entry);
+        self.roots[SELF_REF] = Value::function(entry);
         self.arena.stack_reset();
-        self.arg = arg;
-        self.cont = Value::from_u32(0);
+        self.roots[ARG] = arg;
+        self.roots[CONT] = Value::from_u32(0);
         self.code.jump(entry);
         self.run()
     }
@@ -74,7 +78,7 @@ impl<'a> Vm<'a> {
                 opcode::CAPTURE => {
                     self.arena.stack_ensure(1)?;
                     let idx = self.code.read_u8();
-                    let addr = self.self_ref.closure_addr();
+                    let addr = self.roots[SELF_REF].closure_addr();
                     let val = self.arena.heap_read(addr, 2 + idx as usize);
                     self.arena.stack_push(val);
                 }
@@ -88,17 +92,17 @@ impl<'a> Vm<'a> {
 
                 opcode::ARG => {
                     self.arena.stack_ensure(1)?;
-                    self.arena.stack_push(self.arg);
+                    self.arena.stack_push(self.roots[ARG]);
                 }
 
                 opcode::SELF => {
                     self.arena.stack_ensure(1)?;
-                    self.arena.stack_push(self.self_ref);
+                    self.arena.stack_push(self.roots[SELF_REF]);
                 }
 
                 opcode::CONT => {
                     self.arena.stack_ensure(1)?;
-                    self.arena.stack_push(self.cont);
+                    self.arena.stack_push(self.roots[CONT]);
                 }
 
                 opcode::CLOSURE => {
@@ -167,9 +171,9 @@ impl<'a> Vm<'a> {
                     } else {
                         self.arena.heap_read(clo.closure_addr(), 1).header_code_ptr()
                     };
-                    self.self_ref = clo;
-                    self.arg = arg;
-                    self.cont = cont;
+                    self.roots[SELF_REF] = clo;
+                    self.roots[ARG] = arg;
+                    self.roots[CONT] = cont;
                     self.arena.stack_reset();
                     self.code.jump(code_ptr);
                 }
@@ -182,8 +186,8 @@ impl<'a> Vm<'a> {
                     } else {
                         self.arena.heap_read(clo.closure_addr(), 1).header_code_ptr()
                     };
-                    self.self_ref = clo;
-                    self.arg = result;
+                    self.roots[SELF_REF] = clo;
+                    self.roots[ARG] = result;
                     self.arena.stack_reset();
                     self.code.jump(code_ptr);
                 }
