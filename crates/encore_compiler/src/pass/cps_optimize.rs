@@ -1,7 +1,7 @@
 use crate::ir::cps::{self, Expr};
 
-use super::rewrite;
-use super::simplify;
+use super::cps_rewrite;
+use super::cps_simplify;
 
 // ── Configuration ───────────────────────────────────────────────────────────
 
@@ -18,6 +18,7 @@ pub struct OptimizeConfig {
     pub rewrite_inlining: bool,
     pub rewrite_hoisting: bool,
     pub rewrite_cse: bool,
+    pub rewrite_contification: bool,
 }
 
 impl Default for OptimizeConfig {
@@ -35,6 +36,7 @@ impl Default for OptimizeConfig {
             rewrite_inlining: true,
             rewrite_hoisting: true,
             rewrite_cse: true,
+            rewrite_contification: true,
         }
     }
 }
@@ -49,19 +51,19 @@ fn run_simplify(mut expr: Expr, config: &OptimizeConfig, fuel: &mut usize) -> Ex
         let before = expr.clone();
 
         if config.simplify_dead_code {
-            expr = simplify::dead_code(expr);
+            expr = cps_simplify::dead_code(expr);
         }
         if config.simplify_copy_propagation {
-            expr = simplify::copy_propagation(expr);
+            expr = cps_simplify::copy_propagation(expr);
         }
         if config.simplify_constant_fold {
-            expr = simplify::constant_fold(expr);
+            expr = cps_simplify::constant_fold(expr);
         }
         if config.simplify_beta_contraction {
-            expr = simplify::beta_contraction(expr);
+            expr = cps_simplify::beta_contraction(expr);
         }
         if config.simplify_eta_reduction {
-            expr = simplify::eta_reduction(expr);
+            expr = cps_simplify::eta_reduction(expr);
         }
 
         if expr == before {
@@ -85,17 +87,22 @@ fn optimize_expr(expr: Expr, config: &OptimizeConfig, fuel: &mut usize) -> Expr 
         expr = run_simplify(expr, config, fuel);
 
         if config.rewrite_inlining {
-            expr = rewrite::inlining(expr, config.inline_threshold);
+            expr = cps_rewrite::inlining(expr, config.inline_threshold);
             expr = run_simplify(expr, config, fuel);
         }
 
         if config.rewrite_hoisting {
-            expr = rewrite::hoisting(expr);
+            expr = cps_rewrite::hoisting(expr);
             expr = run_simplify(expr, config, fuel);
         }
 
         if config.rewrite_cse {
-            expr = rewrite::cse(expr);
+            expr = cps_rewrite::cse(expr);
+            expr = run_simplify(expr, config, fuel);
+        }
+
+        if config.rewrite_contification {
+            expr = cps_rewrite::contification(expr);
             expr = run_simplify(expr, config, fuel);
         }
 

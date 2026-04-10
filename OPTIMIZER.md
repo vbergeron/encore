@@ -79,8 +79,8 @@ Duplicates small function bodies at call sites. Uses an Appel-style heuristic: a
 ### Hoisting (`rewrite_02_hoisting`) — stub
 
 ```
-# fix loop = n ->               let one = 1 in
-#   let one = 1 in              fix loop = n ->
+# let rec loop n =              let one = 1 in
+#   let one = 1 in              let rec loop n =
 #   builtin add n one    ──►      builtin add n one
 ```
 
@@ -142,7 +142,7 @@ Already implemented in `pass/resolver.rs`. Computes free variables of each lambd
 
 ### Zero-env closure detection
 
-After closure conversion, closures with no captures could use a cheaper representation. A dedicated `FUNCTION` opcode would skip environment setup, saving both the heap allocation and the indirection at call time. This pairs naturally with hoisting, which is likely to produce zero-capture closures by moving bindings to outer scopes.
+After closure conversion, closures with no captures use a cheaper representation. The `FUNCTION` opcode packs the code address directly into the 32-bit value (in the addr field, with `ncap=0`), skipping both the heap allocation and the heap indirection at call time. `ENCORE` and `RETURN` branch on `ncap` to decide whether to read the code pointer from the value or from the heap. This pairs naturally with hoisting, which is likely to produce zero-capture closures by moving bindings to outer scopes.
 
 ## References
 

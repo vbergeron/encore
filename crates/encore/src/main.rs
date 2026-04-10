@@ -57,6 +57,14 @@ enum Command {
         #[command(subcommand)]
         frontend: Frontend,
     },
+    /// Disassemble a compiled .bin program
+    Disasm {
+        /// Path to the compiled binary
+        file: String,
+        /// Launch interactive TUI
+        #[arg(short, long)]
+        interactive: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -75,6 +83,10 @@ enum Frontend {
 
 #[derive(Parser)]
 struct OptimizeFlags {
+    /// Enable/disable the CPS optimizer entirely
+    #[arg(long, default_value = "on")]
+    cps_optimize: Flag,
+
     /// Optimizer fuel (max iterations)
     #[arg(long, default_value_t = 100)]
     cps_optimize_fuel: usize,
@@ -106,11 +118,17 @@ struct OptimizeFlags {
 
     #[arg(long, default_value = "on")]
     cps_optimize_rewrite_cse: Flag,
+
+    #[arg(long, default_value = "on")]
+    cps_optimize_rewrite_contification: Flag,
 }
 
-impl From<OptimizeFlags> for OptimizeConfig {
+impl From<OptimizeFlags> for Option<OptimizeConfig> {
     fn from(f: OptimizeFlags) -> Self {
-        Self {
+        if matches!(f.cps_optimize, Flag::Off) {
+            return None;
+        }
+        Some(OptimizeConfig {
             fuel: f.cps_optimize_fuel,
             inline_threshold: f.cps_optimize_inline_threshold,
             simplify_dead_code: f.cps_optimize_simplify_dead_code.into(),
@@ -121,7 +139,8 @@ impl From<OptimizeFlags> for OptimizeConfig {
             rewrite_inlining: f.cps_optimize_rewrite_inlining.into(),
             rewrite_hoisting: f.cps_optimize_rewrite_hoisting.into(),
             rewrite_cse: f.cps_optimize_rewrite_cse.into(),
-        }
+            rewrite_contification: f.cps_optimize_rewrite_contification.into(),
+        })
     }
 }
 
@@ -131,8 +150,12 @@ fn main() {
     match cli.command {
         Command::Run { file, entry, heap_size } => cmd_run(&file, entry, heap_size),
         Command::Compile { frontend } => match frontend {
-            Frontend::Fleche { file, out, opt } => cmd_compile_fleche(&file, &out, opt.into()),
+            Frontend::Fleche { file, out, opt } => {
+                let config: Option<OptimizeConfig> = opt.into();
+                cmd_compile_fleche(&file, &out, config);
+            }
         },
+        Command::Disasm { file, interactive } => cmd_disasm(&file, interactive),
     }
 }
 
@@ -163,22 +186,31 @@ fn cmd_run(path: &str, entry: usize, heap_size: usize) {
 
     let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut heap);
     match vm.run() {
-        Ok(val) => print_value(val),
+        Ok(val) => {
+            #[cfg(feature = "stats")]
+            eprintln!("{}", vm.stats());
+            print_value(val);
+        }
         Err(e) => {
+            #[cfg(feature = "stats")]
+            eprintln!("{}", vm.stats());
             eprintln!("runtime error: {e:?}");
             process::exit(2);
         }
     }
 }
 
-fn cmd_compile_fleche(path: &str, out: &str, config: OptimizeConfig) {
+fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>) {
     let source = fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
     });
 
     let module = encore_fleche::parse(&source);
-    let binary = encore_compiler::pipeline::compile_module_with_config(module, config);
+    let binary = match config {
+        Some(config) => encore_compiler::pipeline::compile_module_with_config(module, config),
+        None => encore_compiler::pipeline::compile_module_unoptimized(module),
+    };
 
     fs::write(out, &binary).unwrap_or_else(|e| {
         eprintln!("error: cannot write {out}: {e}");
@@ -197,5 +229,29 @@ fn print_value(val: Value) {
         println!("closure(ncap={})", val.closure_ncap());
     } else {
         println!("value(0x{:08x})", val.to_u32());
+    }
+}
+
+fn cmd_disasm(path: &str, interactive: bool) {
+    let bytes = fs::read(path).unwrap_or_else(|e| {
+        eprintln!("error: cannot read {path}: {e}");
+        process::exit(1);
+    });
+
+    let disasm = match encore_disasm::decode(&bytes) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("error: invalid binary: {e:?}");
+            process::exit(1);
+        }
+    };
+
+    if interactive {
+        encore_disasm::tui::run(disasm).unwrap_or_else(|e| {
+            eprintln!("error: TUI failed: {e}");
+            process::exit(1);
+        });
+    } else {
+        print!("{disasm}");
     }
 }
