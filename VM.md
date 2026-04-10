@@ -1,6 +1,6 @@
 # Encore VM
 
-A `#![no_std]` bytecode virtual machine for a functional language. All function calls are tail calls (`ENCORE`); higher-level calling conventions (continuations, return values) are compiled away before reaching the VM.
+A `#![no_std]` bytecode virtual machine for a functional language. Function calls use `ENCORE` (enter a closure with an argument and continuation) and `RETURN` (resume a continuation with a result). Both are tail operations that reset the stack — there is no `CALL`/`RET` pair.
 
 ## Value representation
 
@@ -58,11 +58,12 @@ Nullary constructors (`k = 0`) are not heap-allocated.
 
 | Register | Description |
 |----------|-------------|
-| `arg` | Current function argument, accessible via `ARG` |
+| `arg` | Current function/continuation argument, accessible via `ARG` |
+| `cont` | Current continuation value, accessible via `CONT` |
 | `self_ref` | Current closure value, accessible via `SELF` |
 | `pc` | Program counter into the bytecode stream |
 
-There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `self_ref`, and `pc`.
+There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`, `self_ref`, and `pc`. `RETURN` resets the stack and overwrites `arg`, `self_ref`, and `pc`.
 
 ## Opcodes
 
@@ -72,6 +73,7 @@ There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `self_
 |--------|-----|----------|--------|
 | `ARG` | `04` | — | Push `arg` register |
 | `SELF` | `05` | — | Push `self_ref` register |
+| `CONT` | `0B` | — | Push `cont` register |
 | `LOCAL i` | `03 i` | `i: u8` | Push local variable at index `i` |
 | `CAPTURE i` | `02 i` | `i: u8` | Push capture slot `i` of current closure |
 | `GLOBAL i` | `01 i` | `i: u8` | Push global at index `i` |
@@ -81,6 +83,7 @@ There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `self_
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
 | `CLOSURE` | `06` | `addr: u16 LE`, `ncap: u8` | Pop `ncap` values as captures, allocate closure on heap, push closure value |
+| `FUNCTION` | `0D` | `addr: u16 LE` | Push a zero-capture closure value with code pointer packed directly in the value (no heap allocation) |
 | `PACK tag` | `07 tag` | `tag: u8` | Look up arity from arity table. Pop `arity` values as fields (0 = nullary, no heap alloc), push constructor value |
 
 ### Destructuring
@@ -94,14 +97,15 @@ There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `self_
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `ENCORE` | `0A` | — | Pop closure (TOS), pop argument. Set `self_ref`, `arg`, reset stack, jump to closure's code pointer |
+| `ENCORE` | `0A` | — | Pop closure, pop argument, pop continuation. Set `self_ref`, `arg`, `cont`, reset stack, jump to closure's code pointer. For zero-capture closures (`ncap=0`) the code pointer is read from the value itself; otherwise from the heap |
+| `RETURN` | `0C` | — | Pop continuation closure, pop result. Set `self_ref` to the continuation, `arg` to the result, reset stack, jump to continuation's code pointer |
 | `FIN` | `00` | — | Halt, return top of stack |
 
 ### Integer arithmetic
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `INT_CONST` | `10` | 3 bytes LE | Push 24-bit signed integer |
+| `INT` | `10` | 3 bytes LE | Push 24-bit signed integer |
 | `INT_ADD` | `11` | — | Pop `b`, pop `a`, push `a + b` |
 | `INT_SUB` | `12` | — | Pop `b`, pop `a`, push `a - b` |
 | `INT_MUL` | `13` | — | Pop `b`, pop `a`, push `a * b` |
@@ -114,7 +118,7 @@ Comparisons return nullary constructors: tag `1` = true, tag `0` = false.
 
 A **mark-compact** (Lisp-2 style) collector runs in-place when the heap cannot satisfy an allocation:
 
-1. **Mark** — trace roots (`arg`, `self_ref`, all stack slots) and recursively mark reachable heap objects via `gc_header` mark bits.
+1. **Mark** — trace roots (`arg`, `cont`, `self_ref`, all stack slots) and recursively mark reachable heap objects via `gc_header` mark bits.
 2. **Forward** — linear scan computes new addresses for marked objects, stored in the GC header's forwarding field.
 3. **Update** — rewrite all pointers (roots, stack, and interior heap pointers) to forwarding addresses.
 4. **Compact** — copy marked objects to their new positions and reset `hp`.

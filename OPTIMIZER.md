@@ -96,6 +96,15 @@ Loop-invariant code motion. Moves closure allocations and computations out of se
 
 Reuses a previously computed value instead of recomputing it. CPS names every intermediate value, which makes detection straightforward.
 
+### Contification (`rewrite_04_contification`)
+
+```
+# let rec f x k = k r         let cont f x = r
+# in ... f a k ...     ──►    in ... f a ...
+```
+
+Turns escaping functions into local continuations when escape analysis shows the function is only ever called with the same continuation. A contified function no longer needs to allocate a closure or pass/receive a continuation — it becomes a local jump. This is especially effective after inlining, where formerly separate call sites collapse and the continuation argument becomes uniform.
+
 ## Configuration
 
 `OptimizeConfig` provides fine-grained control:
@@ -112,6 +121,7 @@ Reuses a previously computed value instead of recomputing it. CPS names every in
 | `rewrite_inlining` | `bool` | `true` | Toggle function inlining |
 | `rewrite_hoisting` | `bool` | `true` | Toggle loop-invariant hoisting |
 | `rewrite_cse` | `bool` | `true` | Toggle CSE |
+| `rewrite_contification` | `bool` | `true` | Toggle contification |
 
 These are exposed as CLI flags on `encore compile fleche` (e.g. `--cps-optimize-simplify-dead-code=off`).
 
@@ -120,14 +130,15 @@ These are exposed as CLI flags on `encore compile fleche` (e.g. `--cps-optimize-
 ```
 repeat (up to fuel iterations):
   shrinking reductions to fixed point
-  inlining  → shrinking reductions
-  hoisting  → shrinking reductions
-  CSE       → shrinking reductions
+  inlining       → shrinking reductions
+  hoisting       → shrinking reductions
+  CSE            → shrinking reductions
+  contification  → shrinking reductions
 until nothing changes
 
 then:
-  closure conversion (resolver)
-  bytecode emission
+  closure conversion (asm_resolve)
+  bytecode emission (asm_emit)
 ```
 
 The key invariant: after every pass that can grow or restructure code, re-stabilize with shrinking reductions before proceeding. This keeps the IR clean and ensures each subsequent pass sees the simplest possible input.
@@ -138,7 +149,7 @@ Applied once after the optimization loop, before bytecode emission.
 
 ### Closure conversion
 
-Already implemented in `pass/resolver.rs`. Computes free variables of each lambda, determines captures vs. globals, and assigns `Local`/`Capture`/`Global`/`Arg`/`SelfRef` locations. Should come after all optimizations so it sees the smallest possible free variable sets.
+Implemented in `pass/asm_resolve.rs`. Computes free variables of each function and continuation lambda, determines captures vs. globals, and assigns `Local`/`Capture`/`Global`/`Arg`/`Cont`/`SelfRef` locations. Should come after all optimizations so it sees the smallest possible free variable sets.
 
 ### Zero-env closure detection
 
