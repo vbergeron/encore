@@ -1,5 +1,5 @@
 use encore_compiler::ir::ds;
-use encore_compiler::pass::{cps_transform, emit::Emitter, resolver};
+use encore_compiler::pass::{asm_emit::Emitter, asm_resolve, cps_transform, dsi_resolve};
 use encore_vm::program::Program;
 use encore_vm::value::{HeapAddress, Value};
 use encore_vm::vm::Vm;
@@ -9,8 +9,9 @@ fn ctor(tag: u8) -> Value {
 }
 
 fn run_ds(module: ds::Module, define_idx: usize, globals: &[Value]) -> Value {
-    let cps_module = cps_transform::transform_module(module);
-    let ir_module = resolver::resolve_module(&cps_module);
+    let dsi_module = dsi_resolve::resolve_module(module);
+    let cps_module = cps_transform::transform_module(dsi_module);
+    let ir_module = asm_resolve::resolve_module(&cps_module);
     let define = &ir_module.defines[define_idx];
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&define.body);

@@ -1,4 +1,4 @@
-use crate::ir::{cps, ds, prim::PrimOp};
+use crate::ir::{cps, dsi, prim::PrimOp};
 
 struct FreshGen {
     counter: usize,
@@ -22,7 +22,8 @@ fn halt(_fg: &mut FreshGen, name: String) -> cps::Expr {
     cps::Expr::Fin(name)
 }
 
-pub fn transform_module(module: ds::Module) -> cps::Module {
+pub fn transform_module(module: dsi::Module) -> cps::Module {
+    let globals: Vec<String> = module.defines.iter().map(|d| d.name.clone()).collect();
     cps::Module {
         defines: module
             .defines
@@ -31,27 +32,33 @@ pub fn transform_module(module: ds::Module) -> cps::Module {
                 let mut fg = FreshGen::new();
                 cps::Define {
                     name: d.name,
-                    body: transform(&mut fg, d.body, Box::new(halt)),
+                    body: transform(&mut fg, &globals, d.body, Box::new(halt)),
                 }
             })
             .collect(),
     }
 }
 
-fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
+fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps::Expr {
     match expr {
-        ds::Expr::Var(x) => k(fg, x),
+        dsi::Expr::Var(idx) => {
+            let name = env[env.len() - 1 - idx].clone();
+            k(fg, name)
+        }
 
-        ds::Expr::Lam(x, body) => {
+        dsi::Expr::Lam(body) => {
             let f = fg.fresh("f");
+            let x = fg.fresh("x");
             let kv = fg.fresh("k");
             let kv2 = kv.clone();
+            let mut env_body = env.to_vec();
+            env_body.push(x.clone());
             cps::Expr::Letrec(
                 f.clone(),
                 cps::Fun {
                     arg: x,
                     cont: kv,
-                    body: Box::new(transform(fg, *body, Box::new(move |_fg, r| {
+                    body: Box::new(transform(fg, &env_body, *body, Box::new(move |_fg, r| {
                         cps::Expr::Return(kv2, r)
                     }))),
                 },
@@ -59,9 +66,10 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
             )
         }
 
-        ds::Expr::App(e1, e2) => {
-            transform(fg, *e1, Box::new(move |fg, f| {
-                transform(fg, *e2, Box::new(move |fg, x| {
+        dsi::Expr::App(e1, e2) => {
+            let env2 = env.to_vec();
+            transform(fg, env, *e1, Box::new(move |fg, f| {
+                transform(fg, &env2, *e2, Box::new(move |fg, x| {
                     let kn = fg.fresh("k");
                     let r = fg.fresh("r");
                     let r2 = r.clone();
@@ -77,38 +85,44 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
             }))
         }
 
-        ds::Expr::Let(x, e1, e2) => {
-            transform(fg, *e1, Box::new(move |fg, v| {
-                cps::Expr::Let(
-                    x,
-                    cps::Val::Var(v),
-                    Box::new(transform(fg, *e2, k)),
-                )
+        dsi::Expr::Let(bound, body) => {
+            let env_owned = env.to_vec();
+            transform(fg, env, *bound, Box::new(move |fg, v| {
+                let mut env_body = env_owned;
+                env_body.push(v);
+                transform(fg, &env_body, *body, k)
             }))
         }
 
-        ds::Expr::Letrec(f, x, body, rest) => {
+        dsi::Expr::Letrec(fun_body, rest) => {
+            let f = fg.fresh("f");
+            let x = fg.fresh("x");
             let kv = fg.fresh("k");
             let kv2 = kv.clone();
+            let mut env_fx = env.to_vec();
+            env_fx.push(f.clone());
+            env_fx.push(x.clone());
+            let mut env_f = env.to_vec();
+            env_f.push(f.clone());
             cps::Expr::Letrec(
                 f,
                 cps::Fun {
                     arg: x,
                     cont: kv,
-                    body: Box::new(transform(fg, *body, Box::new(move |_fg, r| {
+                    body: Box::new(transform(fg, &env_fx, *fun_body, Box::new(move |_fg, r| {
                         cps::Expr::Return(kv2, r)
                     }))),
                 },
-                Box::new(transform(fg, *rest, k)),
+                Box::new(transform(fg, &env_f, *rest, k)),
             )
         }
 
-        ds::Expr::Ctor(tag, fields) => {
-            transform_fields(fg, fields, vec![], tag, k)
+        dsi::Expr::Ctor(tag, fields) => {
+            transform_fields(fg, env, fields, vec![], tag, k)
         }
 
-        ds::Expr::Field(e, idx) => {
-            transform(fg, *e, Box::new(move |fg, v| {
+        dsi::Expr::Field(e, idx) => {
+            transform(fg, env, *e, Box::new(move |fg, v| {
                 let tmp = fg.fresh("fld");
                 cps::Expr::Let(
                     tmp.clone(),
@@ -118,7 +132,7 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
             }))
         }
 
-        ds::Expr::Int(n) => {
+        dsi::Expr::Int(n) => {
             let tmp = fg.fresh("i");
             cps::Expr::Let(
                 tmp.clone(),
@@ -127,29 +141,37 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
             )
         }
 
-        ds::Expr::Prim(op, fields) => {
-            transform_prim_fields(fg, fields, vec![], op, k)
+        dsi::Expr::Prim(op, fields) => {
+            transform_prim_fields(fg, env, fields, vec![], op, k)
         }
 
-        ds::Expr::Match(e, base, cases) => {
+        dsi::Expr::Match(e, base, cases) => {
             let kn = fg.fresh("k");
             let r = fg.fresh("r");
             let r2 = r.clone();
             let kn2 = kn.clone();
+            let env_owned = env.to_vec();
             cps::Expr::Let(
                 kn,
                 cps::Val::Cont(cps::Cont {
                     param: r,
                     body: Box::new(k(fg, r2)),
                 }),
-                Box::new(transform(fg, *e, Box::new(move |fg, v| {
+                Box::new(transform(fg, env, *e, Box::new(move |fg, v| {
                     let cps_cases = cases
                         .into_iter()
                         .map(|c| {
                             let kn_ref = kn2.clone();
+                            let mut env_case = env_owned.clone();
+                            let mut binds = Vec::new();
+                            for _ in 0..c.arity {
+                                let b = fg.fresh("b");
+                                env_case.push(b.clone());
+                                binds.push(b);
+                            }
                             cps::Case {
-                                binds: c.binds,
-                                body: transform(fg, c.body, Box::new(move |_fg, r| {
+                                binds,
+                                body: transform(fg, &env_case, c.body, Box::new(move |_fg, r| {
                                     cps::Expr::Return(kn_ref, r)
                                 })),
                             }
@@ -164,7 +186,8 @@ fn transform(fg: &mut FreshGen, expr: ds::Expr, k: Cont) -> cps::Expr {
 
 fn transform_prim_fields(
     fg: &mut FreshGen,
-    mut fields: Vec<ds::Expr>,
+    env: &[String],
+    mut fields: Vec<dsi::Expr>,
     acc: Vec<String>,
     op: PrimOp,
     k: Cont,
@@ -178,16 +201,18 @@ fn transform_prim_fields(
         );
     }
     let head = fields.remove(0);
-    transform(fg, head, Box::new(move |fg, v| {
+    let env_owned = env.to_vec();
+    transform(fg, env, head, Box::new(move |fg, v| {
         let mut acc = acc;
         acc.push(v);
-        transform_prim_fields(fg, fields, acc, op, k)
+        transform_prim_fields(fg, &env_owned, fields, acc, op, k)
     }))
 }
 
 fn transform_fields(
     fg: &mut FreshGen,
-    mut fields: Vec<ds::Expr>,
+    env: &[String],
+    mut fields: Vec<dsi::Expr>,
     acc: Vec<String>,
     tag: u8,
     k: Cont,
@@ -201,9 +226,10 @@ fn transform_fields(
         );
     }
     let head = fields.remove(0);
-    transform(fg, head, Box::new(move |fg, v| {
+    let env_owned = env.to_vec();
+    transform(fg, env, head, Box::new(move |fg, v| {
         let mut acc = acc;
         acc.push(v);
-        transform_fields(fg, fields, acc, tag, k)
+        transform_fields(fg, &env_owned, fields, acc, tag, k)
     }))
 }
