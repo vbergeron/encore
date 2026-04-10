@@ -17,10 +17,13 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(input: &str) -> Self {
+        let mut ctors = HashMap::new();
+        ctors.insert("False".into(), CtorInfo { tag: 0, arity: 0 });
+        ctors.insert("True".into(), CtorInfo { tag: 1, arity: 0 });
         Self {
             lexer: Lexer::new(input),
-            ctors: HashMap::new(),
-            next_tag: 0,
+            ctors,
+            next_tag: 2,
         }
     }
 
@@ -58,9 +61,6 @@ impl Parser {
             tok => panic!("expected constructor name, got {tok:?}"),
         };
 
-        let tag = self.next_tag;
-        self.next_tag += 1;
-
         let mut arity: u8 = 0;
         if *self.lexer.peek() == Token::LParen {
             self.lexer.next();
@@ -76,6 +76,12 @@ impl Parser {
             self.lexer.expect(&Token::RParen);
         }
 
+        if self.ctors.contains_key(&name) {
+            return;
+        }
+
+        let tag = self.next_tag;
+        self.next_tag += 1;
         self.ctors.insert(name, CtorInfo { tag, arity });
     }
 
@@ -97,7 +103,6 @@ impl Parser {
     fn parse_expr(&mut self) -> ds::Expr {
         match self.lexer.peek() {
             Token::Let => self.parse_let(),
-            Token::Fix => self.parse_fix(),
             Token::Match => self.parse_match(),
             Token::Field => self.parse_field(),
             Token::Builtin => self.parse_builtin(),
@@ -117,23 +122,23 @@ impl Parser {
 
     fn parse_let(&mut self) -> ds::Expr {
         self.lexer.expect(&Token::Let);
-        let name = self.expect_lower_ident();
-        self.lexer.expect(&Token::Eq);
-        let bound = self.parse_expr();
-        self.lexer.expect(&Token::In);
-        let body = self.parse_expr();
-        ds::Expr::Let(name, Box::new(bound), Box::new(body))
-    }
-
-    fn parse_fix(&mut self) -> ds::Expr {
-        self.lexer.expect(&Token::Fix);
-        let fname = self.expect_lower_ident();
-        let param = self.expect_lower_ident();
-        self.lexer.expect(&Token::Eq);
-        let body = self.parse_expr();
-        self.lexer.expect(&Token::In);
-        let rest = self.parse_expr();
-        ds::Expr::Letrec(fname, param, Box::new(body), Box::new(rest))
+        if *self.lexer.peek() == Token::Rec {
+            self.lexer.next();
+            let fname = self.expect_lower_ident();
+            let param = self.expect_lower_ident();
+            self.lexer.expect(&Token::Eq);
+            let body = self.parse_expr();
+            self.lexer.expect(&Token::In);
+            let rest = self.parse_expr();
+            ds::Expr::Letrec(fname, param, Box::new(body), Box::new(rest))
+        } else {
+            let name = self.expect_lower_ident();
+            self.lexer.expect(&Token::Eq);
+            let bound = self.parse_expr();
+            self.lexer.expect(&Token::In);
+            let body = self.parse_expr();
+            ds::Expr::Let(name, Box::new(bound), Box::new(body))
+        }
     }
 
     fn parse_match(&mut self) -> ds::Expr {

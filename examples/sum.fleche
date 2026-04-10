@@ -1,0 +1,18 @@
+# Tail-recursive sum with accumulator via Pair packing
+# sum(1000, 0) = 500500
+
+data Pair(fst, snd)
+
+define main as
+  let rec sum p =
+    let n = field 0 of p in
+    let acc = field 1 of p in
+    let done = builtin eq n 0 in
+    match done
+      case True -> acc
+      case False ->
+        let m = builtin sub n 1 in
+        let a = builtin add acc n in
+        sum Pair(m, a)
+    end
+  in sum Pair(1000, 0)

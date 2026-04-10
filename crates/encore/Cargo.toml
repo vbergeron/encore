@@ -3,8 +3,12 @@ name = "encore"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+stats = ["encore_vm/stats"]
+
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 encore_compiler = { path = "../encore_compiler" }
+encore_disasm = { path = "../encore_disasm" }
 encore_fleche = { path = "../encore_fleche" }
 encore_vm = { path = "../encore_vm" }

@@ -43,9 +43,9 @@ fn test_closure_and_enter() {
     let code = [
         PACK, 0,                    // cont = ctor(0) (dummy)
         PACK, 0,                    // arg = ctor(0)
-        CLOSURE, 9, 0, 0,           // closure with code_ptr=9, ncap=0
+        FUNCTION, 8, 0,             // function with code_ptr=8
         ENCORE,                     // pop clo, pop arg, pop cont, enter
-        // closure body at byte 9:
+        // function body at byte 8:
         ARG,                        // push arg register
         FIN,
     ];
@@ -119,18 +119,18 @@ fn test_self_recursive() {
         PACK, 0,                    // Zero
         PACK, 1,                    // Succ(Zero)
         PACK, 1,                    // Succ(Succ(Zero))  — arg
-        // build countdown closure, enter
-        CLOSURE, 13, 0, 0,          // closure code_ptr=13, ncap=0
+        // build countdown function, enter
+        FUNCTION, 12, 0,            // function code_ptr=12
         ENCORE,                     // pop clo, pop arg, pop cont, enter
-        // countdown body at byte 13:
+        // countdown body at byte 12:
         ARG,                        // push arg
         MATCH, 0, 2,                // base=0, n=2
-        21, 0,                      // off[0] = 21 (Zero branch)
-        23, 0,                      // off[1] = 23 (Succ branch)
-        // byte 21: Zero branch
+        20, 0,                      // off[0] = 20 (Zero branch)
+        22, 0,                      // off[1] = 22 (Succ branch)
+        // byte 20: Zero branch
         ARG,
         FIN,
-        // byte 23: Succ branch
+        // byte 22: Succ branch
         CONT,                       // push cont (pass along)
         ARG,                        // push arg (the Succ ctor)
         FIELD, 0,                   // pop Succ(pred), push pred

@@ -98,10 +98,10 @@ Juxtaposition of atoms, left-associative.
 let x = expr1 in expr2
 ```
 
-#### Fix (recursive let)
+#### Recursive let
 
 ```
-fix f x = body in rest
+let rec f x = body in rest
 ```
 
 Binds `f` as a recursive function with parameter `x` in both `body` and `rest`.

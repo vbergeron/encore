@@ -34,7 +34,12 @@ impl Value {
     // -- Constructors --
 
     pub fn closure(ncap: u8, addr: HeapAddress) -> Self {
+        debug_assert!(ncap > 0, "use Value::function() for zero-capture closures");
         Self(TYP_CLOS | (ncap as u32) << 8 | (addr.raw() as u32) << 16)
+    }
+
+    pub fn function(code_ptr: CodeAddress) -> Self {
+        Self(TYP_CLOS | (code_ptr.raw() as u32) << 16)
     }
 
     pub fn ctor(tag: u8, addr: HeapAddress) -> Self {
@@ -104,7 +109,8 @@ impl Value {
     }
 
     pub fn has_heap_addr(self) -> bool {
-        (self.is_closure() || self.is_ctor()) && !self.heap_addr().is_null()
+        (self.is_closure() && self.closure_ncap() > 0)
+            || (self.is_ctor() && !self.heap_addr().is_null())
     }
 
     pub fn heap_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }

@@ -3,4 +3,7 @@ name = "encore_vm"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+stats = []
+
 [dependencies]

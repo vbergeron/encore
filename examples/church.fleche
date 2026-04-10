@@ -1,0 +1,12 @@
+# Church numerals — closure-heavy, tests capture and GC
+# to_int(eight) = 8
+
+define main as
+  let zero = f -> x -> x in
+  let succ = n -> f -> x -> f (n f x) in
+  let add = a -> b -> f -> x -> a f (b f x) in
+  let to_int = n -> n (x -> builtin add x 1) 0 in
+  let two = succ (succ zero) in
+  let four = add two two in
+  let eight = add four four in
+  to_int eight

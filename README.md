@@ -81,7 +81,7 @@ encore ──► encore_fleche ──► encore_compiler ──► encore_vm
 data Zero | Succ(n)
 
 define main as
-  fix countdown n =
+  let rec countdown n =
     match n
       case Zero -> 0
       case Succ(pred) -> builtin add 1 (countdown pred)

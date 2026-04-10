@@ -2,6 +2,8 @@ use crate::arena::Arena;
 use crate::code::Code;
 use crate::error::VmError;
 use crate::opcode;
+#[cfg(feature = "stats")]
+use crate::stats::VmStats;
 use crate::value::{CodeAddress, HeapAddress, Value};
 
 pub struct Vm<'a> {
@@ -12,6 +14,8 @@ pub struct Vm<'a> {
     self_ref: Value,
     arg: Value,
     cont: Value,
+    #[cfg(feature = "stats")]
+    stats: VmStats,
 }
 
 impl<'a> Vm<'a> {
@@ -26,9 +30,11 @@ impl<'a> Vm<'a> {
             arity_table,
             globals,
             arena: Arena::new(mem),
-            self_ref: Value::closure(0, HeapAddress::NULL),
+            self_ref: Value::function(CodeAddress::new(0)),
             arg: Value::from_u32(0),
             cont: Value::from_u32(0),
+            #[cfg(feature = "stats")]
+            stats: VmStats::default(),
         }
     }
 
@@ -37,10 +43,7 @@ impl<'a> Vm<'a> {
     }
 
     pub fn call(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
-        let addr = self.alloc(2)?;
-        self.arena.heap_write(addr, 0, Value::gc_header(2));
-        self.arena.heap_write(addr, 1, Value::closure_header(entry));
-        self.self_ref = Value::closure(0, addr);
+        self.self_ref = Value::function(entry);
         self.arena.stack_reset();
         self.arg = arg;
         self.cont = Value::from_u32(0);
@@ -48,8 +51,18 @@ impl<'a> Vm<'a> {
         self.run()
     }
 
+    #[cfg(feature = "stats")]
+    pub fn stats(&self) -> VmStats {
+        VmStats {
+            op_count: self.stats.op_count,
+            arena: self.arena.stats,
+        }
+    }
+
     pub fn run(&mut self) -> Result<Value, VmError> {
         loop {
+            #[cfg(feature = "stats")]
+            { self.stats.op_count += 1; }
             let op = self.code.read_u8();
             match op {
                 opcode::GLOBAL => {
@@ -102,6 +115,12 @@ impl<'a> Vm<'a> {
                     self.arena.stack_push(Value::closure(ncap, addr));
                 }
 
+                opcode::FUNCTION => {
+                    self.arena.stack_ensure(1)?;
+                    let code_ptr = self.code.read_address();
+                    self.arena.stack_push(Value::function(code_ptr));
+                }
+
                 opcode::PACK => {
                     let tag = self.code.read_u8();
                     let arity = self.arity_table[tag as usize] as usize;
@@ -143,8 +162,11 @@ impl<'a> Vm<'a> {
                     let clo = self.arena.stack_pop();
                     let arg = self.arena.stack_pop();
                     let cont = self.arena.stack_pop();
-                    let addr = clo.closure_addr();
-                    let code_ptr = self.arena.heap_read(addr, 1).header_code_ptr();
+                    let code_ptr = if clo.closure_ncap() == 0 {
+                        CodeAddress::new(clo.closure_addr().raw())
+                    } else {
+                        self.arena.heap_read(clo.closure_addr(), 1).header_code_ptr()
+                    };
                     self.self_ref = clo;
                     self.arg = arg;
                     self.cont = cont;
@@ -155,8 +177,11 @@ impl<'a> Vm<'a> {
                 opcode::RETURN => {
                     let clo = self.arena.stack_pop();
                     let result = self.arena.stack_pop();
-                    let addr = clo.closure_addr();
-                    let code_ptr = self.arena.heap_read(addr, 1).header_code_ptr();
+                    let code_ptr = if clo.closure_ncap() == 0 {
+                        CodeAddress::new(clo.closure_addr().raw())
+                    } else {
+                        self.arena.heap_read(clo.closure_addr(), 1).header_code_ptr()
+                    };
                     self.self_ref = clo;
                     self.arg = result;
                     self.arena.stack_reset();

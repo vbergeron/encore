@@ -1,0 +1,34 @@
+# Build, reverse, then measure length of a list
+# length(reverse(make(100))) = 100
+
+data Nil | Cons(head, tail)
+data Pair(fst, snd)
+
+define main as
+  let rec make n =
+    let done = builtin eq n 0 in
+    match done
+      case True -> Nil
+      case False ->
+        let m = builtin sub n 1 in
+        Cons(n, make m)
+    end
+  in
+  let rec rev p =
+    let lst = field 0 of p in
+    let acc = field 1 of p in
+    match lst
+      case Nil -> acc
+      case Cons(h, t) -> rev Pair(t, Cons(h, acc))
+    end
+  in
+  let rec length lst =
+    match lst
+      case Nil -> 0
+      case Cons(h, t) ->
+        let r = length t in
+        builtin add 1 r
+    end
+  in
+  let l = make 100 in
+  length (rev Pair(l, Nil))

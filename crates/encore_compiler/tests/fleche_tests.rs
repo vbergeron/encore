@@ -22,7 +22,7 @@ fn test_nullary_ctor() {
         data Zero | Succ(n)
         define main as Zero
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 2);
 }
 
 // -- Let + var --
@@ -30,10 +30,9 @@ fn test_nullary_ctor() {
 #[test]
 fn test_let_var() {
     let result = run("
-        data True | False
         define main as let x = True in x
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 1);
 }
 
 // -- Identity function --
@@ -41,10 +40,9 @@ fn test_let_var() {
 #[test]
 fn test_identity() {
     let result = run("
-        data True | False
         define main as let id = x -> x in id True
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 1);
 }
 
 // -- Nested app --
@@ -52,10 +50,9 @@ fn test_identity() {
 #[test]
 fn test_nested_app() {
     let result = run("
-        data True | False
         define main as let id = x -> x in id (id True)
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 1);
 }
 
 // -- Ctor with fields --
@@ -63,7 +60,6 @@ fn test_nested_app() {
 #[test]
 fn test_ctor_with_fields() {
     let result = run("
-        data True | False
         data Pair(a, b)
         define main as Pair(True, False)
     ");
@@ -75,11 +71,10 @@ fn test_ctor_with_fields() {
 #[test]
 fn test_field_access() {
     let result = run("
-        data True | False
         data Pair(a, b)
         define main as field 1 of Pair(True, False)
     ");
-    assert_eq!(result.ctor_tag(), 1);
+    assert_eq!(result.ctor_tag(), 0);
 }
 
 // -- Match branches --
@@ -87,22 +82,8 @@ fn test_field_access() {
 #[test]
 fn test_match_branch0() {
     let result = run("
-        data True | False
         define main as
           match True
-            case True -> False
-            case False -> True
-          end
-    ");
-    assert_eq!(result.ctor_tag(), 1);
-}
-
-#[test]
-fn test_match_branch1() {
-    let result = run("
-        data True | False
-        define main as
-          match False
             case True -> False
             case False -> True
           end
@@ -110,19 +91,30 @@ fn test_match_branch1() {
     assert_eq!(result.ctor_tag(), 0);
 }
 
+#[test]
+fn test_match_branch1() {
+    let result = run("
+        define main as
+          match False
+            case True -> False
+            case False -> True
+          end
+    ");
+    assert_eq!(result.ctor_tag(), 1);
+}
+
 // -- Match with binds --
 
 #[test]
 fn test_match_with_binds() {
     let result = run("
-        data True | False
         data Pair(a, b)
         define main as
           match Pair(True, False)
             case Pair(x, y) -> y
           end
     ");
-    assert_eq!(result.ctor_tag(), 1);
+    assert_eq!(result.ctor_tag(), 0);
 }
 
 // -- Peano countdown --
@@ -132,14 +124,14 @@ fn test_peano_countdown() {
     let result = run("
         data Zero | Succ(n)
         define main as
-          fix countdown n =
+          let rec countdown n =
             match n
               case Zero -> n
               case Succ(pred) -> countdown pred
             end
           in countdown Succ(Succ(Succ(Zero)))
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 2);
 }
 
 // -- Lambda capture --
@@ -147,13 +139,12 @@ fn test_peano_countdown() {
 #[test]
 fn test_lambda_capture() {
     let result = run("
-        data True | False
         define main as
           let v = True in
           let f = x -> v in
           f False
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 1);
 }
 
 // -- Constant function --
@@ -166,7 +157,7 @@ fn test_constant_fn() {
           let k = x -> y -> x in
           k A B
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 2);
 }
 
 // -- Multi-data declarations --
@@ -178,7 +169,7 @@ fn test_multi_data() {
         data True | False
         define main as True
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 1);
 }
 
 // -- Optional leading pipe in data --
@@ -191,7 +182,7 @@ fn test_leading_pipe() {
           | Succ(n)
         define main as Succ(Zero)
     ");
-    assert_eq!(result.ctor_tag(), 1);
+    assert_eq!(result.ctor_tag(), 3);
 }
 
 // -- Triple nested app --
@@ -204,7 +195,7 @@ fn test_triple_nested_app() {
           let id = x -> x in
           id (id (id X))
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 2);
 }
 
 // -- Field of nested ctor --
@@ -216,7 +207,7 @@ fn test_field_first() {
         data Pair(x, y)
         define main as field 0 of Pair(A, B)
     ");
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(result.ctor_tag(), 2);
 }
 
 // -- Fix with match returning ctor --
@@ -225,16 +216,15 @@ fn test_field_first() {
 fn test_fix_map() {
     let result = run("
         data Zero | Succ(n)
-        data True | False
         define main as
-          fix is_zero n =
+          let rec is_zero n =
             match n
               case Zero -> True
               case Succ(p) -> False
             end
           in is_zero Zero
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 1);
 }
 
 // -- Integer literal --
@@ -326,7 +316,6 @@ fn test_int_in_ctor_field() {
 #[test]
 fn test_builtin_lt_with_match() {
     let result = run("
-        data False | True
         define main as
           let r = builtin lt 3 5 in
           match r

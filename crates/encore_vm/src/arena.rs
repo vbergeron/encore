@@ -1,17 +1,27 @@
 use crate::error::VmError;
 use crate::gc;
+#[cfg(feature = "stats")]
+use crate::stats::ArenaStats;
 use crate::value::{HeapAddress, Value};
 
 pub struct Arena<'a> {
     pub(crate) mem: &'a mut [Value],
     pub(crate) hp: usize,
     pub(crate) sp: usize,
+    #[cfg(feature = "stats")]
+    pub(crate) stats: ArenaStats,
 }
 
 impl<'a> Arena<'a> {
     pub fn new(mem: &'a mut [Value]) -> Self {
         let sp = mem.len();
-        Self { mem, hp: 0, sp }
+        Self {
+            mem,
+            hp: 0,
+            sp,
+            #[cfg(feature = "stats")]
+            stats: ArenaStats::default(),
+        }
     }
 
     pub fn hp(&self) -> usize { self.hp }
@@ -37,6 +47,8 @@ impl<'a> Arena<'a> {
         }
         let addr = HeapAddress::new(self.hp as u16);
         self.hp += n;
+        #[cfg(feature = "stats")]
+        if self.hp > self.stats.peak_heap { self.stats.peak_heap = self.hp; }
         Ok(addr)
     }
 
@@ -60,6 +72,11 @@ impl<'a> Arena<'a> {
     pub fn stack_push(&mut self, val: Value) {
         self.sp -= 1;
         self.mem[self.sp] = val;
+        #[cfg(feature = "stats")]
+        {
+            let depth = self.mem.len() - self.sp;
+            if depth > self.stats.peak_stack { self.stats.peak_stack = depth; }
+        }
     }
 
     pub fn stack_pop(&mut self) -> Value {
