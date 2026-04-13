@@ -1,66 +1,61 @@
 data Nil | Cons(head, tail)
 data Pair(fst, snd)
 
-define main as
-  let rec make_list n =
-    let done = builtin eq n 0 in
-    match done
-      case True -> Nil
-      case False ->
-        let m = builtin sub n 1 in
-        let rest = make_list m in
-        Cons(n, rest)
-    end
-  in
+define make_list as n ->
+  let done = builtin eq n 0 in
+  match done
+    case True -> Nil
+    case False ->
+      let m = builtin sub n 1 in
+      let rest = make_list m in
+      Cons(n, rest)
+  end
 
-  let rec split lst =
-    match lst
-      case Nil -> Pair(Nil, Nil)
-      case Cons(h, t) ->
-        let rest = split t in
-        let a = field 0 of rest in
-        let b = field 1 of rest in
-        Pair(Cons(h, b), a)
-    end
-  in
+define split as lst ->
+  match lst
+    case Nil -> Pair(Nil, Nil)
+    case Cons(h, t) ->
+      let rest = split t in
+      let a = field 0 of rest in
+      let b = field 1 of rest in
+      Pair(Cons(h, b), a)
+  end
 
-  let rec merge p =
-    let a = field 0 of p in
-    let b = field 1 of p in
-    match a
-      case Nil -> b
-      case Cons(ha, ta) ->
-        match b
-          case Nil -> a
-          case Cons(hb, tb) ->
-            let cmp = builtin lt ha hb in
-            match cmp
-              case True ->
-                let rest = merge Pair(ta, b) in
-                Cons(ha, rest)
-              case False ->
-                let rest = merge Pair(a, tb) in
-                Cons(hb, rest)
-            end
-        end
-    end
-  in
+define merge as p ->
+  let a = field 0 of p in
+  let b = field 1 of p in
+  match a
+    case Nil -> b
+    case Cons(ha, ta) ->
+      match b
+        case Nil -> a
+        case Cons(hb, tb) ->
+          let cmp = builtin lt ha hb in
+          match cmp
+            case True ->
+              let rest = merge Pair(ta, b) in
+              Cons(ha, rest)
+            case False ->
+              let rest = merge Pair(a, tb) in
+              Cons(hb, rest)
+          end
+      end
+  end
 
-  let rec sort lst =
-    match lst
-      case Nil -> Nil
-      case Cons(h, t) ->
-        match t
-          case Nil -> Cons(h, Nil)
-          case Cons(h2, t2) ->
-            let halves = split lst in
-            let left = field 0 of halves in
-            let right = field 1 of halves in
-            let sl = sort left in
-            let sr = sort right in
-            merge Pair(sl, sr)
-        end
-    end
-  in
+define sort as lst ->
+  match lst
+    case Nil -> Nil
+    case Cons(h, t) ->
+      match t
+        case Nil -> Cons(h, Nil)
+        case Cons(h2, t2) ->
+          let halves = split lst in
+          let left = field 0 of halves in
+          let right = field 1 of halves in
+          let sl = sort left in
+          let sr = sort right in
+          merge Pair(sl, sr)
+      end
+  end
 
-  sort (make_list 10)
+define main as sort (make_list 10)

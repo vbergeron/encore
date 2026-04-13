@@ -242,8 +242,7 @@ impl<'a> Emitter<'a> {
         out.extend_from_slice(&(code.len() as u16).to_le_bytes());
         out.extend_from_slice(&arity_table);
         for &addr in entry_addrs {
-            let val = encore_vm::value::Value::function(encore_vm::value::CodeAddress::new(addr));
-            out.extend_from_slice(&val.to_u32().to_le_bytes());
+            out.extend_from_slice(&addr.to_le_bytes());
         }
         out.extend_from_slice(&code);
         if let Some(meta) = metadata {

@@ -18,7 +18,7 @@ impl HeapAddress {
     pub fn raw(self) -> u16 { self.0 }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct CodeAddress(u16);
 
 impl CodeAddress {

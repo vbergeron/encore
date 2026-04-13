@@ -9,9 +9,9 @@ fn run(source: &str) -> Value {
     let binary = pipeline::compile_module(module, None, None);
     let prog = Program::parse(&binary).unwrap();
     let mut mem = [Value::from_u32(0); 4096];
-    let globals = vec![Value::from_u32(0); prog.n_globals() as usize];
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut mem);
-    vm.run().unwrap()
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    vm.global(0)
 }
 
 // -- Nullary ctor --

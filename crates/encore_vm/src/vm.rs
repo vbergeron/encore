@@ -2,6 +2,7 @@ use crate::arena::Arena;
 use crate::code::Code;
 use crate::error::VmError;
 use crate::opcode;
+use crate::program::Program;
 #[cfg(feature = "stats")]
 use crate::stats::VmStats;
 use crate::value::{CodeAddress, HeapAddress, Value};
@@ -13,7 +14,8 @@ const CONT: usize = 2;
 pub struct Vm<'a> {
     code: Code<'a>,
     arity_table: &'a [u8],
-    globals: &'a [Value],
+    globals: [Value; 64],
+    n_globals: u8,
     arena: Arena<'a>,
     registers: [Value; 3],
     #[cfg(feature = "stats")]
@@ -21,16 +23,12 @@ pub struct Vm<'a> {
 }
 
 impl<'a> Vm<'a> {
-    pub fn new(
-        code: &'a [u8],
-        arity_table: &'a [u8],
-        globals: &'a [Value],
-        mem: &'a mut [Value],
-    ) -> Self {
+    pub fn init(mem: &'a mut [Value]) -> Self {
         Self {
-            code: Code::new(code),
-            arity_table,
-            globals,
+            code: Code::new(&[]),
+            arity_table: &[],
+            globals: [Value::from_u32(0); 64],
+            n_globals: 0,
             arena: Arena::new(mem),
             registers: [
                 Value::function(CodeAddress::new(0)),
@@ -42,6 +40,21 @@ impl<'a> Vm<'a> {
         }
     }
 
+    pub fn load(&mut self, prog: &'a Program) -> Result<(), VmError> {
+        self.code = Code::new(prog.code);
+        self.arity_table = prog.arity_table;
+        self.n_globals = prog.n_globals() as u8;
+        for i in 0..self.n_globals as usize {
+            let addr = prog.global(i);
+            self.globals[i] = self.call_address(addr, Value::from_u32(0))?;
+        }
+        Ok(())
+    }
+
+    pub fn global(&self, idx: usize) -> Value {
+        self.globals[idx]
+    }
+
     fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
         self.arena.alloc(n, &mut self.registers)
     }
@@ -50,7 +63,22 @@ impl<'a> Vm<'a> {
         self.arena.stack_ensure(n, &mut self.registers)
     }
 
-    pub fn call(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
+    pub fn call(&mut self, global_idx: usize, arg: Value) -> Result<Value, VmError> {
+        let func = self.globals[global_idx];
+        let code_ptr = if func.closure_ncap() == 0 {
+            CodeAddress::new(func.closure_addr().raw())
+        } else {
+            self.arena.heap_read(func.closure_addr(), 1).header_code_ptr()
+        };
+        self.registers[SELF_REF] = func;
+        self.arena.stack_reset();
+        self.registers[ARG] = arg;
+        self.registers[CONT] = Value::from_u32(0);
+        self.code.jump(code_ptr);
+        self.run()
+    }
+
+    fn call_address(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
         self.registers[SELF_REF] = Value::function(entry);
         self.arena.stack_reset();
         self.registers[ARG] = arg;
@@ -67,7 +95,7 @@ impl<'a> Vm<'a> {
         }
     }
 
-    pub fn run(&mut self) -> Result<Value, VmError> {
+    fn run(&mut self) -> Result<Value, VmError> {
         loop {
             #[cfg(feature = "stats")]
             { self.stats.op_count += 1; }

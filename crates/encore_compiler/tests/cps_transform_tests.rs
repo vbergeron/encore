@@ -1,27 +1,18 @@
-use encore_compiler::ir::ds;
-use encore_compiler::pass::{asm_emit::Emitter, asm_resolve, cps_transform, dsi_resolve};
-use encore_vm::program::Program;
-use encore_vm::value::{HeapAddress, Value};
-use encore_vm::vm::Vm;
+use encore_compiler::ir::{cps, ds};
+use encore_compiler::pass::{cps_transform, dsi_resolve};
 
-fn ctor(tag: u8) -> Value {
-    Value::ctor(tag, HeapAddress::NULL)
-}
-
-fn run_ds(module: ds::Module, define_idx: usize, globals: &[Value]) -> Value {
+fn transform(module: ds::Module) -> cps::Module {
     let dsi_module = dsi_resolve::resolve_module(module);
-    let cps_module = cps_transform::transform_module(dsi_module);
-    let ir_module = asm_resolve::resolve_module(&cps_module);
-    let define = &ir_module.defines[define_idx];
-    let mut emitter = Emitter::new();
-    emitter.emit_toplevel(&define.body);
-    let entries: Vec<u16> = (0..globals.len()).map(|_| 0u16).collect();
-    let binary = emitter.serialize(&entries, None);
-    let prog = Program::parse(&binary).unwrap();
-    let mut mem = [Value::from_u32(0); 4096];
-    let mut vm = Vm::new(prog.code, prog.arity_table, globals, &mut mem);
-    vm.run().unwrap()
+    cps_transform::transform_module(dsi_module)
 }
+
+fn transform_one(module: ds::Module) -> cps::Expr {
+    let mut cps_module = transform(module);
+    assert_eq!(cps_module.defines.len(), 1);
+    cps_module.defines.remove(0).body
+}
+
+// DS helpers
 
 fn define(name: &str, body: ds::Expr) -> ds::Define {
     ds::Define { name: name.into(), body }
@@ -70,39 +61,119 @@ fn case(binds: Vec<&str>, body: ds::Expr) -> ds::Case {
     }
 }
 
+fn count_ctor(expr: &cps::Expr, tag: u8) -> usize {
+    match expr {
+        cps::Expr::Fin(_) => 0,
+        cps::Expr::Let(_, val, body) => {
+            let here = match val {
+                cps::Val::Ctor(t, _) if *t == tag => 1,
+                cps::Val::Cont(cont) => count_ctor(&cont.body, tag),
+                _ => 0,
+            };
+            here + count_ctor(body, tag)
+        }
+        cps::Expr::Letrec(_, fun, body) => {
+            count_ctor(&fun.body, tag) + count_ctor(body, tag)
+        }
+        cps::Expr::Encore(_, _, _) => 0,
+        cps::Expr::Return(_, _) => 0,
+        cps::Expr::Match(_, _, cases) => {
+            cases.iter().map(|c| count_ctor(&c.body, tag)).sum()
+        }
+    }
+}
+
+fn has_letrec(expr: &cps::Expr) -> bool {
+    match expr {
+        cps::Expr::Letrec(_, _, _) => true,
+        cps::Expr::Let(_, val, body) => {
+            let in_val = match val {
+                cps::Val::Cont(cont) => has_letrec(&cont.body),
+                _ => false,
+            };
+            in_val || has_letrec(body)
+        }
+        cps::Expr::Match(_, _, cases) => cases.iter().any(|c| has_letrec(&c.body)),
+        _ => false,
+    }
+}
+
+fn has_encore(expr: &cps::Expr) -> bool {
+    match expr {
+        cps::Expr::Encore(_, _, _) => true,
+        cps::Expr::Let(_, val, body) => {
+            let in_val = match val {
+                cps::Val::Cont(cont) => has_encore(&cont.body),
+                _ => false,
+            };
+            in_val || has_encore(body)
+        }
+        cps::Expr::Letrec(_, fun, body) => has_encore(&fun.body) || has_encore(body),
+        cps::Expr::Match(_, _, cases) => cases.iter().any(|c| has_encore(&c.body)),
+        _ => false,
+    }
+}
+
+fn has_match(expr: &cps::Expr, base: u8, n_cases: usize) -> bool {
+    match expr {
+        cps::Expr::Match(_, b, cases) => *b == base && cases.len() == n_cases,
+        cps::Expr::Let(_, val, body) => {
+            let in_val = match val {
+                cps::Val::Cont(cont) => has_match(&cont.body, base, n_cases),
+                _ => false,
+            };
+            in_val || has_match(body, base, n_cases)
+        }
+        cps::Expr::Letrec(_, fun, body) => {
+            has_match(&fun.body, base, n_cases) || has_match(body, base, n_cases)
+        }
+        _ => false,
+    }
+}
+
 // -- Trivial: just return a global --
 
 #[test]
 fn test_var() {
-    let m = module(vec![
-        define("main", var("main")),
-    ]);
-    let result = run_ds(m, 0, &[ctor(42)]);
-    assert_eq!(result.ctor_tag(), 42);
+    let m = module(vec![define("main", var("main"))]);
+    let cps = transform_one(m);
+    assert_eq!(cps, cps::Expr::Fin("main".into()));
 }
 
-// -- Let + Var --
+// -- Let + Var: optimizer may inline trivial let --
 
 #[test]
 fn test_let_var() {
-    // let x = main in x
-    let m = module(vec![
-        define("main", ds_let("x", var("main"), var("x"))),
-    ]);
-    let result = run_ds(m, 0, &[ctor(7)]);
-    assert_eq!(result.ctor_tag(), 7);
+    let m = module(vec![define("main", ds_let("x", var("main"), var("x")))]);
+    let cps = transform_one(m);
+
+    // Either inlined to Fin("main") or Let(_x, Var("main"), Fin(_x))
+    match &cps {
+        cps::Expr::Fin(name) => assert_eq!(name, "main"),
+        cps::Expr::Let(_, cps::Val::Var(src), body) => {
+            assert_eq!(src, "main");
+            assert!(matches!(body.as_ref(), cps::Expr::Fin(_)));
+        }
+        other => panic!("unexpected: {other:?}"),
+    }
 }
 
 // -- Ctor --
 
 #[test]
 fn test_ctor_nullary() {
-    // let c = Ctor(5, []) in c
-    let m = module(vec![
-        define("main", ds_let("c", ds_ctor(5, vec![]), var("c"))),
-    ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 5);
+    let m = module(vec![define("main", ds_let("c", ds_ctor(5, vec![]), var("c")))]);
+    let cps = transform_one(m);
+
+    assert_eq!(count_ctor(&cps, 5), 1);
+    // Should end with Fin
+    match &cps {
+        cps::Expr::Let(name, cps::Val::Ctor(5, fields), body) => {
+            assert!(fields.is_empty());
+            assert_eq!(body.as_ref(), &cps::Expr::Fin(name.clone()));
+        }
+        other => panic!("expected Let(Ctor(5,..)), got {other:?}"),
+    }
 }
 
 #[test]
@@ -111,8 +182,11 @@ fn test_ctor_nested() {
     let m = module(vec![
         define("main", ds_ctor(0, vec![ds_ctor(1, vec![]), ds_ctor(2, vec![])])),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 0);
+    let cps = transform_one(m);
+
+    assert_eq!(count_ctor(&cps, 0), 1);
+    assert_eq!(count_ctor(&cps, 1), 1);
+    assert_eq!(count_ctor(&cps, 2), 1);
 }
 
 // -- Field --
@@ -123,8 +197,10 @@ fn test_field_of_ctor() {
     let m = module(vec![
         define("main", field(ds_ctor(0, vec![ds_ctor(7, vec![])]), 0)),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 7);
+    let cps = transform_one(m);
+
+    assert_eq!(count_ctor(&cps, 7), 1);
+    assert_eq!(count_ctor(&cps, 0), 1);
 }
 
 #[test]
@@ -133,8 +209,11 @@ fn test_field_second() {
     let m = module(vec![
         define("main", field(ds_ctor(0, vec![ds_ctor(1, vec![]), ds_ctor(2, vec![])]), 1)),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 2);
+    let cps = transform_one(m);
+
+    assert_eq!(count_ctor(&cps, 0), 1);
+    assert_eq!(count_ctor(&cps, 1), 1);
+    assert_eq!(count_ctor(&cps, 2), 1);
 }
 
 // -- Identity function --
@@ -148,8 +227,11 @@ fn test_identity() {
             app(var("id"), ds_ctor(42, vec![])),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 42);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert!(has_encore(&cps));
+    assert_eq!(count_ctor(&cps, 42), 1);
 }
 
 // -- Constant function --
@@ -163,8 +245,11 @@ fn test_constant_fn() {
             app(var("k"), ds_ctor(99, vec![])),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert_eq!(count_ctor(&cps, 10), 1);
+    assert_eq!(count_ctor(&cps, 99), 1);
 }
 
 // -- Nested application: f(g(x)) --
@@ -178,8 +263,10 @@ fn test_nested_app() {
             app(var("id"), app(var("id"), ds_ctor(33, vec![]))),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 33);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert_eq!(count_ctor(&cps, 33), 1);
 }
 
 // -- Lambda capturing a local --
@@ -196,8 +283,10 @@ fn test_lambda_capture() {
             ),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 15);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert_eq!(count_ctor(&cps, 15), 1);
 }
 
 // -- Match --
@@ -215,8 +304,12 @@ fn test_match_branch0() {
             ],
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    let cps = transform_one(m);
+
+    assert!(has_match(&cps, 0, 2));
+    assert_eq!(count_ctor(&cps, 0), 1);
+    assert_eq!(count_ctor(&cps, 10), 1);
+    assert_eq!(count_ctor(&cps, 20), 1);
 }
 
 #[test]
@@ -232,8 +325,10 @@ fn test_match_branch1() {
             ],
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 20);
+    let cps = transform_one(m);
+
+    assert!(has_match(&cps, 0, 2));
+    assert_eq!(count_ctor(&cps, 1), 1);
 }
 
 #[test]
@@ -250,20 +345,18 @@ fn test_match_with_binds() {
             ),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 2);
+    let cps = transform_one(m);
+
+    assert!(has_match(&cps, 0, 1));
+    assert_eq!(count_ctor(&cps, 0), 1);
+    assert_eq!(count_ctor(&cps, 1), 1);
+    assert_eq!(count_ctor(&cps, 2), 1);
 }
 
 // -- Letrec: Peano countdown --
 
 #[test]
 fn test_peano_countdown() {
-    // letrec countdown n =
-    //   match n base=0 {
-    //     [] -> n,                       -- Zero
-    //     [pred] -> countdown(pred)      -- Succ(pred)
-    //   }
-    // in countdown(Succ(Succ(Zero)))
     let m = module(vec![
         define("main", letrec(
             "countdown", "n",
@@ -280,37 +373,43 @@ fn test_peano_countdown() {
             ),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 0);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert!(has_match(&cps, 0, 2));
+    assert!(has_encore(&cps));
 }
 
-// -- App with ctor arg (non-trivial argument normalization) --
+// -- App with ctor arg --
 
 #[test]
 fn test_app_ctor_arg() {
-    // let fst = \pair -> field(pair, 0) in
-    // fst(Ctor(0, [Ctor(5, []), Ctor(9, [])]))
     let m = module(vec![
         define("main", ds_let(
             "fst", lam("pair", field(var("pair"), 0)),
             app(var("fst"), ds_ctor(0, vec![ds_ctor(5, vec![]), ds_ctor(9, vec![])])),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 5);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert!(has_encore(&cps));
+    assert_eq!(count_ctor(&cps, 5), 1);
+    assert_eq!(count_ctor(&cps, 9), 1);
 }
 
 // -- Triple nested app: f(f(f(x))) --
 
 #[test]
 fn test_triple_nested_app() {
-    // let id = \x -> x in id(id(id(Ctor(77, []))))
     let m = module(vec![
         define("main", ds_let(
             "id", lam("x", var("x")),
             app(var("id"), app(var("id"), app(var("id"), ds_ctor(77, vec![])))),
         )),
     ]);
-    let result = run_ds(m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 77);
+    let cps = transform_one(m);
+
+    assert!(has_letrec(&cps));
+    assert_eq!(count_ctor(&cps, 77), 1);
 }

@@ -3,48 +3,50 @@
 
 data Nil | Cons(head, tail)
 
-define main as
-  let rec make n =
-    let done = builtin eq n 0 in
-    match done
-      case True -> Nil
-      case False ->
-        let m = builtin sub n 1 in
-        Cons(n, make m)
-    end
-  in
-  let map = f ->
-    let rec go lst =
-      match lst
-        case Nil -> Nil
-        case Cons(h, t) ->
-          let fh = f h in
-          Cons(fh, go t)
-      end
-    in go
-  in
-  let filter = p ->
-    let rec go lst =
-      match lst
-        case Nil -> Nil
-        case Cons(h, t) ->
-          let keep = p h in
-          let rest = go t in
-          match keep
-            case True -> Cons(h, rest)
-            case False -> rest
-          end
-      end
-    in go
-  in
-  let rec sum lst =
+define make as n ->
+  let done = builtin eq n 0 in
+  match done
+    case True -> Nil
+    case False ->
+      let m = builtin sub n 1 in
+      Cons(n, make m)
+  end
+
+define map as f ->
+  let rec go lst =
     match lst
-      case Nil -> 0
+      case Nil -> Nil
       case Cons(h, t) ->
-        let r = sum t in
-        builtin add h r
+        let fh = f h in
+        Cons(fh, go t)
     end
-  in
-  let double = x -> builtin mul x 2 in
-  let is_big = x -> builtin lt 5 x in
+  in go
+
+define filter as p ->
+  let rec go lst =
+    match lst
+      case Nil -> Nil
+      case Cons(h, t) ->
+        let keep = p h in
+        let rest = go t in
+        match keep
+          case True -> Cons(h, rest)
+          case False -> rest
+        end
+    end
+  in go
+
+define sum as lst ->
+  match lst
+    case Nil -> 0
+    case Cons(h, t) ->
+      let r = sum t in
+      builtin add h r
+  end
+
+define double as x -> builtin mul x 2
+
+define is_big as x -> builtin lt 5 x
+
+define main as
   sum (filter is_big (map double (make 50)))

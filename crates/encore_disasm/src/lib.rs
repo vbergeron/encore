@@ -6,7 +6,7 @@ use std::fmt;
 use encore_vm::error::VmError;
 use encore_vm::opcode;
 use encore_vm::program::Program;
-use encore_vm::value::Value;
+
 
 // --- Intermediate representation ---
 
@@ -89,10 +89,11 @@ pub fn decode_program(prog: &Program) -> Disasm {
 
     let globals: Vec<(usize, String)> = (0..prog.n_globals())
         .map(|i| {
-            let val_desc = format_value(prog.global(i));
+            let addr = prog.global(i);
+            let addr_desc = format!("@{:04x}", addr.raw());
             match global_names.get(&(i as u8)) {
-                Some(name) => (i, format!("{name} = {val_desc}")),
-                None => (i, val_desc),
+                Some(name) => (i, format!("{name} = {addr_desc}")),
+                None => (i, addr_desc),
             }
         })
         .collect();
@@ -233,28 +234,6 @@ impl fmt::Display for Disasm {
 }
 
 // --- Internal helpers ---
-
-fn format_value(val: Value) -> String {
-    if val.is_int() {
-        format!("int({})", val.int_value())
-    } else if val.is_ctor() {
-        format!(
-            "ctor(tag={}, addr=0x{:04x})",
-            val.ctor_tag(),
-            val.ctor_addr().raw()
-        )
-    } else if val.is_closure() && val.closure_ncap() == 0 {
-        format!("function(code=@{:04x})", val.closure_addr().raw())
-    } else if val.is_closure() {
-        format!(
-            "closure(ncap={}, addr=0x{:04x})",
-            val.closure_ncap(),
-            val.closure_addr().raw()
-        )
-    } else {
-        format!("0x{:08x}", val.to_u32())
-    }
-}
 
 fn collect_fn_targets(code: &[u8]) -> BTreeSet<u16> {
     let mut targets = BTreeSet::new();

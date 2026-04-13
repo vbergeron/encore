@@ -1,8 +1,8 @@
 use encore_vm::error::VmError;
 use encore_vm::program::{Program, MAGIC};
-use encore_vm::value::Value;
+use encore_vm::value::CodeAddress;
 
-fn build(n_arities: u16, n_globals: u16, arities: &[u8], globals: &[u32], code: &[u8]) -> Vec<u8> {
+fn build(n_arities: u16, n_globals: u16, arities: &[u8], globals: &[u16], code: &[u8]) -> Vec<u8> {
     let mut buf = Vec::new();
     buf.extend_from_slice(&MAGIC);
     buf.extend_from_slice(&n_arities.to_le_bytes());
@@ -34,23 +34,11 @@ fn test_arity_table() {
 
 #[test]
 fn test_globals_roundtrip() {
-    let g0 = Value::from_u32(0xDEAD_BEEF);
-    let g1 = Value::from_u32(42);
-    let bytes = build(0, 2, &[], &[g0.to_u32(), g1.to_u32()], &[]);
+    let bytes = build(0, 2, &[], &[0x00AB, 42], &[]);
     let prog = Program::parse(&bytes).unwrap();
     assert_eq!(prog.n_globals(), 2);
-    assert_eq!(prog.global(0).to_u32(), 0xDEAD_BEEF);
-    assert_eq!(prog.global(1).to_u32(), 42);
-}
-
-#[test]
-fn test_load_globals() {
-    let bytes = build(0, 2, &[], &[100, 200], &[]);
-    let prog = Program::parse(&bytes).unwrap();
-    let mut buf = [Value::from_u32(0); 2];
-    prog.load_globals(&mut buf);
-    assert_eq!(buf[0].to_u32(), 100);
-    assert_eq!(buf[1].to_u32(), 200);
+    assert_eq!(prog.global(0).raw(), 0x00AB);
+    assert_eq!(prog.global(1).raw(), 42);
 }
 
 #[test]
@@ -64,14 +52,26 @@ fn test_code_slice() {
 #[test]
 fn test_full_program() {
     let arities = &[0, 2];
-    let globals = &[0xCAFE_BABE];
+    let globals = &[0x0042];
     let code = &[0xAA, 0xBB];
     let bytes = build(2, 1, arities, globals, code);
     let prog = Program::parse(&bytes).unwrap();
     assert_eq!(prog.arity_table, arities);
     assert_eq!(prog.n_globals(), 1);
-    assert_eq!(prog.global(0).to_u32(), 0xCAFE_BABE);
+    assert_eq!(prog.global(0).raw(), 0x0042);
     assert_eq!(prog.code, code);
+}
+
+#[test]
+fn test_new_constructor() {
+    let code = &[0x01, 0x02];
+    let globals = [CodeAddress::new(0), CodeAddress::new(5)];
+    let prog = Program::new(code, &[0, 1], &globals);
+    assert_eq!(prog.n_globals(), 2);
+    assert_eq!(prog.global(0).raw(), 0);
+    assert_eq!(prog.global(1).raw(), 5);
+    assert_eq!(prog.code, code);
+    assert_eq!(prog.arity_table, &[0, 1]);
 }
 
 #[test]

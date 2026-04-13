@@ -1,52 +1,39 @@
 use encore_compiler::pass::asm_emit::Emitter;
 use encore_compiler::ir::asm::*;
-use encore_vm::program::Program;
-use encore_vm::value::{CodeAddress, HeapAddress, Value};
-use encore_vm::vm::Vm;
-
-// -- Test 1: Fin(Global(0)) via run() --
+use encore_vm::opcode;
 
 #[test]
-fn test_halt_global() {
+fn test_fin_global() {
     let expr = Expr::Fin(Loc::Global(0));
-
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(&[0], None);
-    let prog = Program::parse(&binary).unwrap();
+    let code = emitter.into_bytes();
 
-    let tag7 = Value::ctor(7, HeapAddress::NULL);
-    let globals = [tag7];
-    let mut mem = [Value::from_u32(0); 1024];
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut mem);
-    let result = vm.run().unwrap();
-    assert_eq!(result.to_u32(), tag7.to_u32());
+    assert_eq!(code, [opcode::GLOBAL, 0, opcode::FIN]);
 }
 
-// -- Test 2: Emit a function body, call via Vm::call --
-
 #[test]
-fn test_call_lambda_body() {
-    let body = Expr::Fin(Loc::Global(0));
-
+fn test_fin_arg() {
+    let expr = Expr::Fin(Loc::Arg);
     let mut emitter = Emitter::new();
-    emitter.emit_expr(&body);
-    let binary = emitter.serialize(&[0], None);
-    let prog = Program::parse(&binary).unwrap();
+    emitter.emit_toplevel(&expr);
+    let code = emitter.into_bytes();
 
-    let tag5 = Value::ctor(5, HeapAddress::NULL);
-    let dummy_arg = Value::ctor(0, HeapAddress::NULL);
-    let globals = [tag5];
-    let mut mem = [Value::from_u32(0); 1024];
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut mem);
-    let result = vm.call(CodeAddress::new(0), dummy_arg).unwrap();
-    assert_eq!(result.to_u32(), tag5.to_u32());
+    assert_eq!(code, [opcode::ARG, opcode::FIN]);
 }
 
-// -- Test 3: Match on constructor tags --
+#[test]
+fn test_fin_capture() {
+    let expr = Expr::Fin(Loc::Capture(2));
+    let mut emitter = Emitter::new();
+    emitter.emit_toplevel(&expr);
+    let code = emitter.into_bytes();
+
+    assert_eq!(code, [opcode::CAPTURE, 2, opcode::FIN]);
+}
 
 #[test]
-fn test_match_branch0() {
+fn test_match_two_branches() {
     let expr = Expr::Match(
         Loc::Global(0),
         0,
@@ -55,49 +42,26 @@ fn test_match_branch0() {
             Case { arity: 0, body: Expr::Fin(Loc::Global(2)) },
         ],
     );
-
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(&[0, 0, 0], None);
-    let prog = Program::parse(&binary).unwrap();
+    let code = emitter.into_bytes();
 
-    let g0 = Value::ctor(0, HeapAddress::NULL);
-    let g1 = Value::ctor(10, HeapAddress::NULL);
-    let g2 = Value::ctor(20, HeapAddress::NULL);
-    let globals = [g0, g1, g2];
-    let mut mem = [Value::from_u32(0); 1024];
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut mem);
-    let result = vm.run().unwrap();
-    assert_eq!(result.to_u32(), g1.to_u32());
+    assert_eq!(code[0], opcode::GLOBAL);
+    assert_eq!(code[1], 0);
+    assert_eq!(code[2], opcode::MATCH);
+    assert_eq!(code[3], 0); // base tag
+    assert_eq!(code[4], 2); // n branches
+    let off0 = u16::from_le_bytes([code[5], code[6]]);
+    let off1 = u16::from_le_bytes([code[7], code[8]]);
+    // branch 0 body
+    assert_eq!(code[off0 as usize], opcode::GLOBAL);
+    assert_eq!(code[off0 as usize + 1], 1);
+    assert_eq!(code[off0 as usize + 2], opcode::FIN);
+    // branch 1 body
+    assert_eq!(code[off1 as usize], opcode::GLOBAL);
+    assert_eq!(code[off1 as usize + 1], 2);
+    assert_eq!(code[off1 as usize + 2], opcode::FIN);
 }
-
-#[test]
-fn test_match_branch1() {
-    let expr = Expr::Match(
-        Loc::Global(0),
-        0,
-        vec![
-            Case { arity: 0, body: Expr::Fin(Loc::Global(1)) },
-            Case { arity: 0, body: Expr::Fin(Loc::Global(2)) },
-        ],
-    );
-
-    let mut emitter = Emitter::new();
-    emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(&[0, 0, 0], None);
-    let prog = Program::parse(&binary).unwrap();
-
-    let g0 = Value::ctor(1, HeapAddress::NULL);
-    let g1 = Value::ctor(10, HeapAddress::NULL);
-    let g2 = Value::ctor(20, HeapAddress::NULL);
-    let globals = [g0, g1, g2];
-    let mut mem = [Value::from_u32(0); 1024];
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut mem);
-    let result = vm.run().unwrap();
-    assert_eq!(result.to_u32(), g2.to_u32());
-}
-
-// -- Test 4: Lambda deferred body + Letrec --
 
 #[test]
 fn test_letrec_deferred_body() {
@@ -113,19 +77,11 @@ fn test_letrec_deferred_body() {
     emitter.emit_toplevel(&expr);
     let code = emitter.into_bytes();
 
-    use encore_vm::opcode;
-    // Expected bytecode:
-    // 0: GLOBAL 0             (push Global(0) as capture)
-    // 2: CLOSURE <addr> 1     (ncap=1, body deferred)
-    // 6: GLOBAL 1             (push Global(1))
-    // 8: FIN
-    // 9: CAPTURE 0            (deferred body: push Capture(0))
-    // 11: FIN
     assert_eq!(code[0], opcode::GLOBAL);
     assert_eq!(code[1], 0);
     assert_eq!(code[2], opcode::CLOSURE);
     let body_addr = u16::from_le_bytes([code[3], code[4]]);
-    assert_eq!(code[5], 1);
+    assert_eq!(code[5], 1); // ncap
     assert_eq!(code[6], opcode::GLOBAL);
     assert_eq!(code[7], 1);
     assert_eq!(code[8], opcode::FIN);
@@ -136,25 +92,24 @@ fn test_letrec_deferred_body() {
 }
 
 #[test]
-fn test_letrec_run() {
-    let expr = Expr::Letrec(
-        Fun {
-            captures: vec![Loc::Global(0)],
-            body: Box::new(Expr::Fin(Loc::Capture(0))),
-        },
-        Box::new(Expr::Fin(Loc::Global(1))),
-    );
+fn test_emit_expr_no_fin() {
+    let body = Expr::Fin(Loc::Global(0));
+    let mut emitter = Emitter::new();
+    emitter.emit_expr(&body);
+    let code = emitter.into_bytes();
 
+    assert_eq!(code, [opcode::GLOBAL, 0, opcode::FIN]);
+}
+
+#[test]
+fn test_serialize_roundtrip() {
+    let expr = Expr::Fin(Loc::Global(0));
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(&[0, 0], None);
-    let prog = Program::parse(&binary).unwrap();
+    let binary = emitter.serialize(&[0], None);
 
-    let g0 = Value::ctor(0, HeapAddress::NULL);
-    let g1 = Value::ctor(1, HeapAddress::NULL);
-    let globals = [g0, g1];
-    let mut mem = [Value::from_u32(0); 1024];
-    let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut mem);
-    let result = vm.run().unwrap();
-    assert_eq!(result.to_u32(), g1.to_u32());
+    let prog = encore_vm::program::Program::parse(&binary).unwrap();
+    assert_eq!(prog.n_globals(), 1);
+    assert_eq!(prog.global(0).raw(), 0);
+    assert_eq!(prog.code, [opcode::GLOBAL, 0, opcode::FIN]);
 }

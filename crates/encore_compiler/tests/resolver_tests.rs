@@ -1,24 +1,11 @@
-use encore_compiler::ir::cps;
-use encore_compiler::pass::{asm_emit::Emitter, asm_resolve};
-use encore_vm::program::Program;
-use encore_vm::value::{HeapAddress, Value};
-use encore_vm::vm::Vm;
+use encore_compiler::ir::{asm, cps};
+use encore_compiler::pass::asm_resolve;
 
-fn ctor(tag: u8) -> Value {
-    Value::ctor(tag, HeapAddress::NULL)
-}
+use asm::Loc::*;
 
-fn run_define(module: &cps::Module, define_idx: usize, globals: &[Value]) -> Value {
-    let ir_module = asm_resolve::resolve_module(module);
-    let define = &ir_module.defines[define_idx];
-    let mut emitter = Emitter::new();
-    emitter.emit_toplevel(&define.body);
-    let entries: Vec<u16> = (0..globals.len()).map(|_| 0u16).collect();
-    let binary = emitter.serialize(&entries, None);
-    let prog = Program::parse(&binary).unwrap();
-    let mut mem = [Value::from_u32(0); 1024];
-    let mut vm = Vm::new(prog.code, prog.arity_table, globals, &mut mem);
-    vm.run().unwrap()
+fn resolve_one(module: &cps::Module) -> asm::Expr {
+    let mut ir = asm_resolve::resolve_module(module);
+    ir.defines.pop().unwrap().body
 }
 
 fn define(name: &str, body: cps::Expr) -> cps::Define {
@@ -29,23 +16,68 @@ fn module(defines: Vec<cps::Define>) -> cps::Module {
     cps::Module { defines }
 }
 
+// ASM helpers
+
+fn fin(loc: asm::Loc) -> asm::Expr {
+    asm::Expr::Fin(loc)
+}
+
+fn let_(val: asm::Val, body: asm::Expr) -> asm::Expr {
+    asm::Expr::Let(val, Box::new(body))
+}
+
+fn loc(l: asm::Loc) -> asm::Val {
+    asm::Val::Loc(l)
+}
+
+fn ctor(tag: u8, fields: Vec<asm::Loc>) -> asm::Val {
+    asm::Val::Ctor(tag, fields)
+}
+
+fn field(l: asm::Loc, idx: u8) -> asm::Val {
+    asm::Val::Field(l, idx)
+}
+
+fn cont(captures: Vec<asm::Loc>, body: asm::Expr) -> asm::Val {
+    asm::Val::ContLam(asm::ContLam { captures, body: Box::new(body) })
+}
+
+fn ret(cont: asm::Loc, val: asm::Loc) -> asm::Expr {
+    asm::Expr::Return(cont, val)
+}
+
+fn encore(f: asm::Loc, arg: asm::Loc, k: asm::Loc) -> asm::Expr {
+    asm::Expr::Encore(f, arg, k)
+}
+
+fn letrec(captures: Vec<asm::Loc>, body: asm::Expr, rest: asm::Expr) -> asm::Expr {
+    asm::Expr::Letrec(
+        asm::Fun { captures, body: Box::new(body) },
+        Box::new(rest),
+    )
+}
+
+fn match_(scrutinee: asm::Loc, base: u8, cases: Vec<(u8, asm::Expr)>) -> asm::Expr {
+    asm::Expr::Match(
+        scrutinee, base,
+        cases.into_iter().map(|(arity, body)| asm::Case { arity, body }).collect(),
+    )
+}
+
 // -- Fin / Global --
 
 #[test]
 fn test_halt_global() {
-    // define main = halt("main")
     let m = module(vec![
         define("main", cps::Expr::Fin("main".into())),
     ]);
-    let result = run_define(&m, 0, &[ctor(42)]);
-    assert_eq!(result.ctor_tag(), 42);
+    assert_eq!(resolve_one(&m), fin(Global(0)));
 }
 
 // -- Let with Var --
 
 #[test]
 fn test_let_var() {
-    // define g = ...; define main = let x = var("g"); halt("x")
     let m = module(vec![
         define("g", cps::Expr::Fin("g".into())),
         define("main", cps::Expr::Let(
@@ -54,15 +86,13 @@ fn test_let_var() {
             Box::new(cps::Expr::Fin("x".into())),
         )),
     ]);
-    let result = run_define(&m, 1, &[ctor(10), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(resolve_one(&m), let_(loc(Global(0)), fin(Local(0))));
 }
 
 // -- Let with Ctor --
 
 #[test]
 fn test_let_ctor_nullary() {
-    // define main = let c = ctor(5, []); halt("c")
     let m = module(vec![
         define("main", cps::Expr::Let(
             "c".into(),
@@ -70,8 +100,7 @@ fn test_let_ctor_nullary() {
             Box::new(cps::Expr::Fin("c".into())),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 5);
+    assert_eq!(resolve_one(&m), let_(ctor(5, vec![]), fin(Local(0))));
 }
 
 #[test]
@@ -88,8 +117,13 @@ fn test_let_ctor_with_fields() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(
+        resolve_one(&m),
+        let_(ctor(1, vec![]),
+            let_(ctor(2, vec![]),
+                let_(ctor(0, vec![Local(0), Local(1)]),
+                    fin(Local(2)))))
+    );
 }
 
 // -- Multiple lets, reference order --
@@ -107,8 +141,10 @@ fn test_multiple_lets_ref_first() {
             )),
         )),
     ]);
-    let result = run_define(&m, 2, &[ctor(10), ctor(20), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(
+        resolve_one(&m),
+        let_(loc(Global(0)), let_(loc(Global(1)), fin(Local(0))))
+    );
 }
 
 #[test]
@@ -124,8 +160,10 @@ fn test_multiple_lets_ref_second() {
             )),
         )),
     ]);
-    let result = run_define(&m, 2, &[ctor(10), ctor(20), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 20);
+    assert_eq!(
+        resolve_one(&m),
+        let_(loc(Global(0)), let_(loc(Global(1)), fin(Local(1))))
+    );
 }
 
 // -- Let with Field --
@@ -147,15 +185,20 @@ fn test_let_field() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(
+        resolve_one(&m),
+        let_(ctor(1, vec![]),
+            let_(ctor(2, vec![]),
+                let_(ctor(0, vec![Local(0), Local(1)]),
+                    let_(field(Local(2), 1),
+                        fin(Local(3))))))
+    );
 }
 
 // -- Cont: identity continuation --
 
 #[test]
 fn test_cont_identity() {
-    // define main = let f = cont(x). fin x in return f main
     let m = module(vec![
         define("main", cps::Expr::Let(
             "f".into(),
@@ -166,15 +209,16 @@ fn test_cont_identity() {
             Box::new(cps::Expr::Return("f".into(), "main".into())),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(42)]);
-    assert_eq!(result.ctor_tag(), 42);
+    assert_eq!(
+        resolve_one(&m),
+        let_(cont(vec![], fin(Arg)), ret(Local(0), Global(0)))
+    );
 }
 
 // -- Cont: global accessed directly (not captured) --
 
 #[test]
 fn test_cont_global_not_captured() {
-    // define g = ...; define main = let f = cont(x). fin g in return f main
     let m = module(vec![
         define("g", cps::Expr::Fin("g".into())),
         define("main", cps::Expr::Let(
@@ -186,16 +230,16 @@ fn test_cont_global_not_captured() {
             Box::new(cps::Expr::Return("f".into(), "main".into())),
         )),
     ]);
-    let result = run_define(&m, 1, &[ctor(10), ctor(99)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(
+        resolve_one(&m),
+        let_(cont(vec![], fin(Global(0))), ret(Local(0), Global(1)))
+    );
 }
 
 // -- Cont: captures a local --
 
 #[test]
 fn test_cont_captures_local() {
-    // define g0 = ...; define g1 = ...
-    // define main = let v = var("g0"); let f = cont(x). fin v in return f g1
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -211,11 +255,15 @@ fn test_cont_captures_local() {
             )),
         )),
     ]);
-    let result = run_define(&m, 2, &[ctor(10), ctor(20), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(
+        resolve_one(&m),
+        let_(loc(Global(0)),
+            let_(cont(vec![Local(0)], fin(Capture(0))),
+                ret(Local(1), Global(1))))
+    );
 }
 
-// -- Cont: captures multiple locals (sorted deterministically) --
+// -- Cont: captures multiple locals --
 
 #[test]
 fn test_cont_captures_two_locals() {
@@ -239,8 +287,16 @@ fn test_cont_captures_two_locals() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 0);
+    let asm = resolve_one(&m);
+    assert_eq!(
+        asm,
+        let_(ctor(1, vec![]),
+            let_(ctor(2, vec![]),
+                let_(cont(vec![Local(0), Local(1)],
+                        let_(ctor(0, vec![Capture(0), Capture(1)]),
+                            fin(Local(0)))),
+                    ret(Local(2), Global(0)))))
+    );
 }
 
 // -- Match: nullary branches --
@@ -259,8 +315,14 @@ fn test_match_branch0() {
             ])),
         )),
     ]);
-    let result = run_define(&m, 3, &[ctor(0), ctor(10), ctor(20), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(
+        resolve_one(&m),
+        let_(loc(Global(0)),
+            match_(Local(0), 0, vec![
+                (0, fin(Global(1))),
+                (0, fin(Global(2))),
+            ]))
+    );
 }
 
 #[test]
@@ -277,8 +339,14 @@ fn test_match_branch1() {
             ])),
         )),
     ]);
-    let result = run_define(&m, 3, &[ctor(1), ctor(10), ctor(20), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 20);
+    assert_eq!(
+        resolve_one(&m),
+        let_(loc(Global(0)),
+            match_(Local(0), 0, vec![
+                (0, fin(Global(1))),
+                (0, fin(Global(2))),
+            ]))
+    );
 }
 
 // -- Match: field extraction via binds --
@@ -302,8 +370,15 @@ fn test_match_with_binds() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(
+        resolve_one(&m),
+        let_(ctor(1, vec![]),
+            let_(ctor(2, vec![]),
+                let_(ctor(0, vec![Local(0), Local(1)]),
+                    match_(Local(2), 0, vec![
+                        (2, fin(Local(4))),
+                    ]))))
+    );
 }
 
 #[test]
@@ -325,18 +400,21 @@ fn test_match_binds_first_field() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 1);
+    assert_eq!(
+        resolve_one(&m),
+        let_(ctor(1, vec![]),
+            let_(ctor(2, vec![]),
+                let_(ctor(0, vec![Local(0), Local(1)]),
+                    match_(Local(2), 0, vec![
+                        (2, fin(Local(3))),
+                    ]))))
+    );
 }
 
-// -- Letrec: simple function that returns its arg via continuation --
+// -- Letrec: simple function --
 
 #[test]
 fn test_letrec_simple() {
-    // define main =
-    //   letrec f = fun(x, k). return k x
-    //   in let k0 = cont(r). fin r
-    //   in encore f main k0
     let m = module(vec![
         define("main", cps::Expr::Letrec(
             "f".into(),
@@ -355,25 +433,18 @@ fn test_letrec_simple() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(42)]);
-    assert_eq!(result.ctor_tag(), 42);
+    assert_eq!(
+        resolve_one(&m),
+        letrec(vec![], ret(Cont, Arg),
+            let_(cont(vec![], fin(Arg)),
+                encore(Local(0), Global(0), Local(1))))
+    );
 }
 
-// -- Peano countdown: letrec + match + recursion --
+// -- Peano countdown --
 
 #[test]
 fn test_peano_countdown() {
-    // define main =
-    //   let zero = ctor(0, []);
-    //   let s1 = ctor(1, ["zero"]);
-    //   let s2 = ctor(1, ["s1"]);
-    //   letrec f = fun(n, k).
-    //     match "n" base=0 [
-    //       Case { binds: [], body: return k n },
-    //       Case { binds: ["pred"], body: encore f pred k }
-    //     ]
-    //   in let k0 = cont(r). fin r
-    //   in encore f s2 k0
     let m = module(vec![
         define("main", cps::Expr::Let(
             "zero".into(), cps::Val::Ctor(0, vec![]),
@@ -410,11 +481,22 @@ fn test_peano_countdown() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(
+        resolve_one(&m),
+        let_(ctor(0, vec![]),
+            let_(ctor(1, vec![Local(0)]),
+                let_(ctor(1, vec![Local(1)]),
+                    letrec(vec![],
+                        match_(Arg, 0, vec![
+                            (0, ret(Cont, Arg)),
+                            (1, encore(SelfRef, Local(0), Cont)),
+                        ]),
+                        let_(cont(vec![], fin(Arg)),
+                            encore(Local(3), Local(2), Local(4)))))))
+    );
 }
 
-// -- Peano countdown from 5: stress test --
+// -- Peano countdown from 5 --
 
 #[test]
 fn test_peano_countdown_5() {
@@ -463,22 +545,28 @@ fn test_peano_countdown_5() {
             )),
         )),
     ]);
-    let result = run_define(&m, 0, &[ctor(0)]);
-    assert_eq!(result.ctor_tag(), 0);
+    assert_eq!(
+        resolve_one(&m),
+        let_(ctor(0, vec![]),
+            let_(ctor(1, vec![Local(0)]),
+                let_(ctor(1, vec![Local(1)]),
+                    let_(ctor(1, vec![Local(2)]),
+                        let_(ctor(1, vec![Local(3)]),
+                            let_(ctor(1, vec![Local(4)]),
+                                letrec(vec![],
+                                    match_(Arg, 0, vec![
+                                        (0, ret(Cont, Arg)),
+                                        (1, encore(SelfRef, Local(0), Cont)),
+                                    ]),
+                                    let_(cont(vec![], fin(Arg)),
+                                        encore(Local(6), Local(5), Local(7))))))))))
+    );
 }
 
 // -- Cont called with different arg than capture --
 
 #[test]
 fn test_cont_capture_vs_arg() {
-    // define g0 = ...; define g1 = ...
-    // define main =
-    //   let v = var("g0");
-    //   let f = cont(x).
-    //     let pair = ctor(0, ["v", "x"]);
-    //     let result = field("pair", 0);
-    //     fin result
-    //   in return f g1
     let m = module(vec![
         define("g0", cps::Expr::Fin("g0".into())),
         define("g1", cps::Expr::Fin("g1".into())),
@@ -500,20 +588,21 @@ fn test_cont_capture_vs_arg() {
             )),
         )),
     ]);
-    let result = run_define(&m, 2, &[ctor(10), ctor(20), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(
+        resolve_one(&m),
+        let_(loc(Global(0)),
+            let_(cont(vec![Local(0)],
+                    let_(ctor(0, vec![Capture(0), Arg]),
+                        let_(field(Local(0), 0),
+                            fin(Local(1))))),
+                ret(Local(1), Global(1))))
+    );
 }
 
 // -- Nested cont: inner captures from outer --
 
 #[test]
 fn test_nested_cont() {
-    // define g = ...
-    // define main =
-    //   let outer = cont(x).
-    //     let inner = cont(y). fin x
-    //     in return inner g
-    //   in return outer g
     let m = module(vec![
         define("g", cps::Expr::Fin("g".into())),
         define("main", cps::Expr::Let(
@@ -532,6 +621,11 @@ fn test_nested_cont() {
             Box::new(cps::Expr::Return("outer".into(), "g".into())),
         )),
     ]);
-    let result = run_define(&m, 1, &[ctor(10), ctor(0)]);
-    assert_eq!(result.ctor_tag(), 10);
+    assert_eq!(
+        resolve_one(&m),
+        let_(cont(vec![],
+                let_(cont(vec![Arg], fin(Capture(0))),
+                    ret(Local(0), Global(0)))),
+            ret(Local(0), Global(0)))
+    );
 }

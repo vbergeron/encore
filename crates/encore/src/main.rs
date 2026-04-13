@@ -5,7 +5,7 @@ use clap::{Parser, Subcommand};
 use encore_compiler::pass::asm_emit::Metadata;
 use encore_compiler::pass::cps_optimize::OptimizeConfig;
 use encore_vm::program::Program;
-use encore_vm::value::{CodeAddress, Value};
+use encore_vm::value::Value;
 use encore_vm::vm::Vm;
 
 const DEFAULT_HEAP_SIZE: usize = 1 << 16;
@@ -177,27 +177,17 @@ fn cmd_run(path: &str, entry: &str, heap_size: usize) {
     let entry_idx = resolve_entry(entry, &prog);
 
     let mut heap = vec![Value::from_u32(0); heap_size];
-    let mut globals = vec![Value::from_u32(0); prog.n_globals()];
-    prog.load_globals(&mut globals);
+    let mut vm = Vm::init(&mut heap);
 
-    // Evaluate each define in order to populate globals with computed values.
-    // Function defines produce closure values; the entry define produces the final result.
-    for i in 0..globals.len() {
-        let addr = CodeAddress::new(globals[i].closure_addr().raw());
-        let val = {
-            let mut vm = Vm::new(prog.code, prog.arity_table, &globals, &mut heap);
-            vm.call(addr, Value::from_u32(0)).unwrap_or_else(|e| {
-                eprintln!("runtime error in define {i}: {e:?}");
-                process::exit(2);
-            })
-        };
-        globals[i] = val;
-    }
+    vm.load(&prog).unwrap_or_else(|e| {
+        eprintln!("runtime error: {e:?}");
+        process::exit(2);
+    });
 
     #[cfg(feature = "stats")]
-    eprintln!("(stats not available in module-init mode)");
+    eprintln!("{}", vm.stats());
 
-    print_value(globals[entry_idx]);
+    print_value(vm.global(entry_idx));
 }
 
 fn resolve_entry(entry: &str, prog: &Program) -> usize {
