@@ -3,6 +3,7 @@ const TYP_CTOR: u32 = 1;
 const TYP_HDR: u32 = 2;
 const TYP_GC: u32 = 3;
 const TYP_INT: u32 = 4;
+const TYP_FUNC: u32 = 5;
 
 const GC_MARK_BIT: u32 = 0x80 << 8;
 
@@ -26,28 +27,36 @@ impl CodeAddress {
     pub fn raw(self) -> u16 { self.0 }
 }
 
-/// Packed 32-bit value: [typ:8 | meta:8 | addr:16]
+/// Packed 32-bit value: [typ:8 | meta:8 | payload:16]
 #[derive(Clone, Copy)]
 pub struct Value(u32);
 
 impl Value {
+    pub const ZERO: Self = Self(0);
+
     // -- Constructors --
 
-    pub fn closure(ncap: u8, addr: HeapAddress) -> Self {
-        debug_assert!(ncap > 0, "use Value::function() for zero-capture closures");
-        Self(TYP_CLOS | (ncap as u32) << 8 | (addr.raw() as u32) << 16)
+    /// Bare function (no captures): [TYP_FUNC | stack_delta | code_ptr]
+    pub fn function(stack_delta: u8, code_ptr: CodeAddress) -> Self {
+        Self(TYP_FUNC | (stack_delta as u32) << 8 | (code_ptr.raw() as u32) << 16)
     }
 
-    pub fn function(code_ptr: CodeAddress) -> Self {
-        Self(TYP_CLOS | (code_ptr.raw() as u32) << 16)
+    pub const fn function_const(stack_delta: u8, code_ptr_raw: u16) -> Self {
+        Self(TYP_FUNC | (stack_delta as u32) << 8 | (code_ptr_raw as u32) << 16)
+    }
+
+    /// Heap closure: [TYP_CLOS | stack_delta | heap_addr]
+    pub fn closure(stack_delta: u8, addr: HeapAddress) -> Self {
+        Self(TYP_CLOS | (stack_delta as u32) << 8 | (addr.raw() as u32) << 16)
     }
 
     pub fn ctor(tag: u8, addr: HeapAddress) -> Self {
         Self(TYP_CTOR | (tag as u32) << 8 | (addr.raw() as u32) << 16)
     }
 
-    pub fn closure_header(code_ptr: CodeAddress) -> Self {
-        Self(TYP_HDR | (code_ptr.raw() as u32) << 16)
+    /// Closure header on heap: [TYP_HDR | env_len | code_ptr]
+    pub fn closure_header(env_len: u8, code_ptr: CodeAddress) -> Self {
+        Self(TYP_HDR | (env_len as u32) << 8 | (code_ptr.raw() as u32) << 16)
     }
 
     pub fn int(n: i32) -> Self {
@@ -56,14 +65,16 @@ impl Value {
 
     // -- Type discrimination --
 
+    pub fn is_function(self) -> bool { self.0 & 0xFF == TYP_FUNC }
     pub fn is_closure(self) -> bool { self.0 & 0xFF == TYP_CLOS }
     pub fn is_ctor(self) -> bool { self.0 & 0xFF == TYP_CTOR }
     pub fn is_header(self) -> bool { self.0 & 0xFF == TYP_HDR }
     pub fn is_int(self) -> bool { self.0 & 0xFF == TYP_INT }
 
-    // -- Closure accessors --
+    // -- Function / closure accessors --
 
-    pub fn closure_ncap(self) -> u8 { (self.0 >> 8) as u8 }
+    pub fn code_ptr(self) -> CodeAddress { CodeAddress((self.0 >> 16) as u16) }
+    pub fn stack_delta(self) -> u8 { (self.0 >> 8) as u8 }
     pub fn closure_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
 
     // -- Constructor accessors --
@@ -80,6 +91,7 @@ impl Value {
     // -- Header accessors --
 
     pub fn header_code_ptr(self) -> CodeAddress { CodeAddress((self.0 >> 16) as u16) }
+    pub fn header_env_len(self) -> u8 { (self.0 >> 8) as u8 }
 
     // -- GC header: [TYP_GC:8 | mark:1+size:7 :8 | fwd:16] --
 
@@ -109,7 +121,7 @@ impl Value {
     }
 
     pub fn has_heap_addr(self) -> bool {
-        (self.is_closure() && self.closure_ncap() > 0)
+        self.is_closure()
             || (self.is_ctor() && !self.heap_addr().is_null())
     }
 

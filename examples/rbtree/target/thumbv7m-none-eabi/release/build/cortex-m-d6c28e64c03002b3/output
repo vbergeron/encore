@@ -1,0 +1,4 @@
+cargo:rustc-link-lib=static=cortex-m
+cargo:rustc-link-search=/home/vbergeron/perso/encore/examples/rbtree/target/thumbv7m-none-eabi/release/build/cortex-m-d6c28e64c03002b3/out
+cargo:rustc-cfg=cortex_m
+cargo:rustc-cfg=armv7m

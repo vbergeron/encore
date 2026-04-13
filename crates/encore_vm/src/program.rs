@@ -9,7 +9,7 @@ pub const MAGIC: [u8; 4] = *b"ENCR";
 ///   [n_globals: u16 LE]
 ///   [code_len: u16 LE]
 ///   [arity_table: n_arities bytes]
-///   [globals: n_globals * 2 bytes, each u16 LE code offset]
+///   [globals: n_globals * 3 bytes, each u16 LE code offset + u8 stack_delta]
 ///   [code: code_len bytes]
 ///
 /// Optional metadata (appended after code):
@@ -24,6 +24,7 @@ pub struct Program<'a> {
     pub arity_table: &'a [u8],
     pub code: &'a [u8],
     globals: [CodeAddress; 64],
+    global_sds: [u8; 64],
     n_globals: u8,
     metadata: &'a [u8],
 }
@@ -39,6 +40,24 @@ impl<'a> Program<'a> {
             arity_table,
             code,
             globals: arr,
+            global_sds: [0; 64],
+            n_globals: n as u8,
+            metadata: &[],
+        }
+    }
+
+    pub fn with_sds(code: &'a [u8], arity_table: &'a [u8], globals: &[CodeAddress], sds: &[u8]) -> Self {
+        let mut arr = [CodeAddress::new(0); 64];
+        let mut sd_arr = [0u8; 64];
+        let n = globals.len().min(64);
+        arr[..n].copy_from_slice(&globals[..n]);
+        let sd_n = sds.len().min(n);
+        sd_arr[..sd_n].copy_from_slice(&sds[..sd_n]);
+        Self {
+            arity_table,
+            code,
+            globals: arr,
+            global_sds: sd_arr,
             n_globals: n as u8,
             metadata: &[],
         }
@@ -52,25 +71,28 @@ impl<'a> Program<'a> {
         let n_globals = u16::from_le_bytes([bytes[6], bytes[7]]) as usize;
         let code_len = u16::from_le_bytes([bytes[8], bytes[9]]) as usize;
 
-        let expected = HEADER + n_arities + n_globals * 2 + code_len;
+        let expected = HEADER + n_arities + n_globals * 3 + code_len;
         if bytes.len() < expected { return Err(VmError::Truncated); }
 
         let arity_start = HEADER;
         let globals_start = arity_start + n_arities;
-        let code_start = globals_start + n_globals * 2;
+        let code_start = globals_start + n_globals * 3;
         let code_end = code_start + code_len;
 
         let mut globals = [CodeAddress::new(0); 64];
+        let mut global_sds = [0u8; 64];
         for i in 0..n_globals {
-            let off = globals_start + i * 2;
+            let off = globals_start + i * 3;
             let raw = u16::from_le_bytes([bytes[off], bytes[off + 1]]);
             globals[i] = CodeAddress::new(raw);
+            global_sds[i] = bytes[off + 2];
         }
 
         Ok(Self {
             arity_table: &bytes[arity_start..globals_start],
             code: &bytes[code_start..code_end],
             globals,
+            global_sds,
             n_globals: n_globals as u8,
             metadata: &bytes[code_end..],
         })
@@ -80,6 +102,10 @@ impl<'a> Program<'a> {
 
     pub fn global(&self, idx: usize) -> CodeAddress {
         self.globals[idx]
+    }
+
+    pub fn global_sd(&self, idx: usize) -> u8 {
+        self.global_sds[idx]
     }
 
     pub fn has_metadata(&self) -> bool {

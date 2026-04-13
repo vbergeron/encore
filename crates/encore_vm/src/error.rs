@@ -4,6 +4,7 @@ pub enum VmError {
     StackOverflow,
     InvalidOpcode(u8),
     NotRegistered(u16),
+    MatchFail,
     BadMagic,
     Truncated,
 }

@@ -45,9 +45,9 @@ fn test_closure_and_enter() {
     let code = [
         PACK, 0,                    // cont = ctor(0) (dummy)
         PACK, 0,                    // arg = ctor(0)
-        FUNCTION, 8, 0,             // function with code_ptr=8
+        FUNCTION, 9, 0, 1,          // function with code_ptr=9, sd=1
         ENCORE,                     // pop clo, pop arg, pop cont, enter
-        // function body at byte 8:
+        // function body at byte 9:
         ARG,                        // push arg register
         FIN,
     ];
@@ -63,9 +63,9 @@ fn test_load_capture() {
         PACK, 0,                    // cont = ctor(0) (dummy)
         PACK, 0,                    // arg = ctor(0)
         PACK, 1,                    // value to capture = ctor(1)
-        CLOSURE, 11, 0, 1,          // closure with code_ptr=11, ncap=1
+        CLOSURE, 12, 0, 1, 1,      // closure with code_ptr=12, ncap=1, sd=1
         ENCORE,                     // pop clo, pop arg, pop cont, enter
-        // closure body at byte 11:
+        // closure body at byte 12:
         CAPTURE, 0,                 // push capture 0 = ctor(1)
         FIN,
     ];
@@ -124,17 +124,17 @@ fn test_self_recursive() {
         PACK, 0,                    // Zero
         PACK, 1,                    // Succ(Zero)
         PACK, 1,                    // Succ(Succ(Zero))  — arg
-        FUNCTION, 12, 0,            // function code_ptr=12
+        FUNCTION, 13, 0, 3,         // function code_ptr=13, sd=3
         ENCORE,                     // pop clo, pop arg, pop cont, enter
-        // countdown body at byte 12:
+        // countdown body at byte 13:
         ARG,                        // push arg
         MATCH, 0, 2,                // base=0, n=2
-        20, 0,                      // off[0] = 20 (Zero branch)
-        22, 0,                      // off[1] = 22 (Succ branch)
-        // byte 20: Zero branch
+        21, 0,                      // off[0] = 21 (Zero branch)
+        23, 0,                      // off[1] = 23 (Succ branch)
+        // byte 21: Zero branch
         ARG,
         FIN,
-        // byte 22: Succ branch
+        // byte 23: Succ branch
         CONT,                       // push cont (pass along)
         ARG,                        // push arg (the Succ ctor)
         FIELD, 0,                   // pop Succ(pred), push pred
@@ -261,7 +261,11 @@ fn test_stack_overflow() {
         GLOBAL, 0,
         GLOBAL, 0,
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0), CodeAddress::new(2)]);
+    let prog = Program::with_sds(
+        &code, &[],
+        &[CodeAddress::new(0), CodeAddress::new(2)],
+        &[1, 5],
+    );
     let mut mem = [Value::from_u32(0); 4];
     let mut vm = Vm::init(&mut mem);
     let result = vm.load(&prog);
@@ -280,9 +284,9 @@ fn test_invalid_opcode() {
 #[test]
 fn test_gc_reclaims_dead_closures() {
     let code = [
-        // global 0 thunk: produce function(@4)
-        FUNCTION, 4, 0, FIN,
-        // function body at offset 4:
+        // global 0 thunk: produce function(@5)
+        FUNCTION, 5, 0, 1, FIN,
+        // function body at offset 5:
         ARG, FIN,
     ];
     let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
@@ -304,21 +308,21 @@ fn test_gc_preserves_live_data() {
         PACK, 0,                    // byte 0: dummy cont
         PACK, 0,                    // byte 2: arg = ctor(0)
         PACK, 1,                    // byte 4: dummy capture for garbage_func
-        CLOSURE, 11, 0, 1,          // byte 6: garbage_func at byte 11, ncap=1. alloc 3. hp=3
-        ENCORE,                     // byte 10: enter garbage_func
+        CLOSURE, 12, 0, 1, 3,      // byte 6: garbage_func at byte 12, ncap=1, sd=3. alloc 3. hp=3
+        ENCORE,                     // byte 11: enter garbage_func
 
-        // garbage_func body at byte 11:
-        NULLADDR,                   // byte 11: push null cont for ENCORE
-        ARG,                        // byte 12: push result
-        PACK, 1,                    // byte 13: capture = ctor(1)
-        CLOSURE, 20, 0, 1,          // byte 15: real closure at byte 20, ncap=1. alloc 3. hp=6
-        ENCORE,                     // byte 19: ENCORE into real closure. garbage closure is now dead.
+        // garbage_func body at byte 12:
+        NULLADDR,                   // byte 12: push null cont for ENCORE
+        ARG,                        // byte 13: push result
+        PACK, 1,                    // byte 14: capture = ctor(1)
+        CLOSURE, 22, 0, 1, 2,      // byte 16: real closure at byte 22, ncap=1, sd=2. alloc 3. hp=6
+        ENCORE,                     // byte 21: ENCORE into real closure. garbage closure is now dead.
 
-        // real_closure body at byte 20:
-        ARG,                        // byte 20: push arg = ctor(0)
-        PACK, 2,                    // byte 21: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
-        CAPTURE, 0,                 // byte 23: push capture 0 — should be ctor(1)
-        FIN,                        // byte 25
+        // real_closure body at byte 22:
+        ARG,                        // byte 22: push arg = ctor(0)
+        PACK, 2,                    // byte 23: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
+        CAPTURE, 0,                 // byte 25: push capture 0 — should be ctor(1)
+        FIN,                        // byte 27
     ];
     let arity_table = [0, 0, 1];
     let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
@@ -335,16 +339,16 @@ fn test_gc_preserves_live_data() {
 #[test]
 fn test_call() {
     let code = [
-        // global 0 thunk: produce function(@4)
-        FUNCTION, 4, 0, FIN,
-        // function body at offset 4:
+        // global 0 thunk: produce function(@5)
+        FUNCTION, 5, 0, 2, FIN,
+        // function body at offset 5:
         ARG,                        // push arg
         MATCH, 0, 2,
-        12, 0,                      // off[0] = 12 (Zero branch)
-        14, 0,                      // off[1] = 14 (Succ branch)
-        ARG,                        // byte 12: Zero -> push arg
-        FIN,                        // byte 13
-        ARG,                        // byte 14: Succ -> push arg
+        13, 0,                      // off[0] = 13 (Zero branch)
+        15, 0,                      // off[1] = 15 (Succ branch)
+        ARG,                        // byte 13: Zero -> push arg
+        FIN,                        // byte 14
+        ARG,                        // byte 15: Succ -> push arg
         FIELD, 0,                   // push pred
         FIN,
     ];

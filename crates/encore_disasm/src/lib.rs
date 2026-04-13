@@ -18,8 +18,8 @@ pub enum Op {
     Arg,
     SelfRef,
     Cont,
-    Closure { target: u16, ncap: u8 },
-    Function { target: u16 },
+    Closure { target: u16, ncap: u8, sd: u8 },
+    Function { target: u16, sd: u8 },
     Pack { tag: u8 },
     Field(u8),
     Unpack { tag: u8 },
@@ -167,8 +167,8 @@ impl fmt::Display for Op {
             Op::Arg => write!(f, "ARG"),
             Op::SelfRef => write!(f, "SELF"),
             Op::Cont => write!(f, "CONT"),
-            Op::Closure { target, ncap } => write!(f, "CLOSURE @{target:04x} ncap={ncap}"),
-            Op::Function { target } => write!(f, "FUNCTION @{target:04x}"),
+            Op::Closure { target, ncap, sd } => write!(f, "CLOSURE @{target:04x} ncap={ncap} sd={sd}"),
+            Op::Function { target, sd } => write!(f, "FUNCTION @{target:04x} sd={sd}"),
             Op::Pack { tag } => write!(f, "PACK tag={tag}"),
             Op::Field(i) => write!(f, "FIELD {i}"),
             Op::Unpack { tag } => write!(f, "UNPACK tag={tag}"),
@@ -252,13 +252,13 @@ fn collect_fn_targets(code: &[u8]) -> BTreeSet<u16> {
                 let lo = code[pc] as u16;
                 let hi = code[pc + 1] as u16;
                 targets.insert(lo | (hi << 8));
-                pc += 3;
+                pc += 4;
             }
             opcode::FUNCTION => {
                 let lo = code[pc] as u16;
                 let hi = code[pc + 1] as u16;
                 targets.insert(lo | (hi << 8));
-                pc += 2;
+                pc += 3;
             }
             opcode::MATCH => {
                 let _base = code[pc];
@@ -308,10 +308,13 @@ fn decode_instructions(code: &[u8]) -> Vec<Instr> {
             opcode::CLOSURE => {
                 let target = read_u16(&mut pc);
                 let ncap = read_u8(&mut pc);
-                Op::Closure { target, ncap }
+                let sd = read_u8(&mut pc);
+                Op::Closure { target, ncap, sd }
             }
-            opcode::FUNCTION => Op::Function {
-                target: read_u16(&mut pc),
+            opcode::FUNCTION => {
+                let target = read_u16(&mut pc);
+                let sd = read_u8(&mut pc);
+                Op::Function { target, sd }
             },
             opcode::PACK => Op::Pack {
                 tag: read_u8(&mut pc),

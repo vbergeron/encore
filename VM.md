@@ -12,15 +12,18 @@ Every runtime value is a **packed 32-bit word**:
 
 | Type | `typ` byte | Meta | Payload (high 16 bits) |
 |------|-----------|------|------------------------|
-| Closure | `0` | `ncap` (capture count) | `HeapAddress` |
+| Closure | `0` | `stack_delta` | `HeapAddress` |
 | Constructor | `1` | `tag` | `HeapAddress` (or `NULL` if nullary) |
-| Closure header | `2` | `0` | `CodeAddress` |
+| Closure header | `2` | `env_len` (capture count) | `CodeAddress` |
 | GC header | `3` | mark bit + 7-bit size | forwarding `HeapAddress` |
 | Integer | `4` | upper 24 bits encode a signed integer | (part of the 24-bit value) |
+| Function | `5` | `stack_delta` | `CodeAddress` |
+
+**Functions** (`TYP_FUNC`) are bare function values with no captures. The code pointer is stored inline — no heap allocation needed. **Closures** (`TYP_CLOS`) always point to a heap object whose header carries `env_len` (capture count) and `code_ptr`. Both carry a `stack_delta` field encoding the maximum stack depth the function body will use; this is computed at compile time and used at function entry for a single upfront stack reservation.
 
 **Integers** use the upper 24 bits as a signed value (approx. \(\pm 8\text{M}\) range). `int_value()` recovers the `i32` via arithmetic right shift.
 
-**`HeapAddress::NULL`** (`0xFFFF`) marks nullary constructors and zero-capture closures that have no heap allocation.
+**`HeapAddress::NULL`** (`0xFFFF`) marks nullary constructors that have no heap allocation.
 
 ## Memory model
 
@@ -33,16 +36,17 @@ The VM operates on a single `&mut [Value]` buffer split into two regions:
 
 - **Heap** (`0..hp`): objects allocated by `CLOSURE` and `PACK`, growing upward.
 - **Stack** (`sp..len`): evaluation stack, growing downward.
-- Allocation fails if `hp + n > sp` after a GC attempt.
+- **Stack floor** (`stack_floor`): lowest address the stack may reach, set by `stack_reserve(sd)` at function entry. Heap allocations check against `stack_floor` instead of `sp`, ensuring reserved stack space is never consumed by the heap.
+- Allocation fails if `hp + n > stack_floor` after a GC attempt.
 
 ### Heap objects
 
-**Closure** (size `2 + ncap`):
+**Closure** (size `2 + env_len`):
 
 | Slot | Content |
 |------|---------|
-| 0 | `gc_header(2 + ncap)` |
-| 1 | `closure_header(code_ptr)` |
+| 0 | `gc_header(2 + env_len)` |
+| 1 | `closure_header(env_len, code_ptr)` |
 | 2.. | captured values |
 
 **Constructor** with arity `k > 0` (size `1 + k`):
@@ -82,8 +86,8 @@ There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `CLOSURE` | `06` | `addr: u16 LE`, `ncap: u8` | Pop `ncap` values as captures, allocate closure on heap, push closure value |
-| `FUNCTION` | `0D` | `addr: u16 LE` | Push a zero-capture closure value with code pointer packed directly in the value (no heap allocation) |
+| `CLOSURE` | `06` | `addr: u16 LE`, `ncap: u8`, `sd: u8` | Pop `ncap` values as captures, allocate closure on heap, push closure value with `stack_delta=sd` |
+| `FUNCTION` | `0D` | `addr: u16 LE`, `sd: u8` | Push a `TYP_FUNC` value with code pointer and `stack_delta=sd` packed directly in the value (no heap allocation) |
 | `PACK tag` | `07 tag` | `tag: u8` | Look up arity from arity table. Pop `arity` values as fields (0 = nullary, no heap alloc), push constructor value |
 
 ### Destructuring
@@ -97,7 +101,7 @@ There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `ENCORE` | `0A` | — | Pop closure, pop argument, pop continuation. Set `self_ref`, `arg`, `cont`, reset stack, jump to closure's code pointer. For zero-capture closures (`ncap=0`) the code pointer is read from the value itself; otherwise from the heap |
+| `ENCORE` | `0A` | — | Pop closure, pop argument, pop continuation. Set `self_ref`, `arg`, `cont`, reset stack, reserve `stack_delta` slots, jump to closure's code pointer. For `TYP_FUNC` values the code pointer is read inline; for `TYP_CLOS` values it is read from the heap closure header |
 | `NULLADDR` | `0C` | — | Push a sentinel value (`0xFFFF`). Used as a dead continuation argument when invoking a continuation via `ENCORE` |
 | `FIN` | `00` | — | Halt, return top of stack |
 
@@ -132,7 +136,7 @@ Offset  Content
 6..8    n_globals: u16 LE
 8..10   code_len: u16 LE
 10..    Arity table (n_arities bytes)
-        Global slots (n_globals × 4 bytes, u32 LE each)
+        Global slots (n_globals × 3 bytes: u16 LE code offset + u8 stack_delta)
         Bytecode (code_len bytes)
 ```
 

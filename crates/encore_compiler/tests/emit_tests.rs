@@ -82,13 +82,14 @@ fn test_letrec_deferred_body() {
     assert_eq!(code[2], opcode::CLOSURE);
     let body_addr = u16::from_le_bytes([code[3], code[4]]);
     assert_eq!(code[5], 1); // ncap
-    assert_eq!(code[6], opcode::GLOBAL);
-    assert_eq!(code[7], 1);
-    assert_eq!(code[8], opcode::FIN);
-    assert_eq!(body_addr, 9);
-    assert_eq!(code[9], opcode::CAPTURE);
-    assert_eq!(code[10], 0);
-    assert_eq!(code[11], opcode::FIN);
+    assert_eq!(code[6], 1); // sd
+    assert_eq!(code[7], opcode::GLOBAL);
+    assert_eq!(code[8], 1);
+    assert_eq!(code[9], opcode::FIN);
+    assert_eq!(body_addr, 10);
+    assert_eq!(code[10], opcode::CAPTURE);
+    assert_eq!(code[11], 0);
+    assert_eq!(code[12], opcode::FIN);
 }
 
 #[test]
@@ -106,7 +107,7 @@ fn test_serialize_roundtrip() {
     let expr = Expr::Fin(Loc::Global(0));
     let mut emitter = Emitter::new();
     emitter.emit_toplevel(&expr);
-    let binary = emitter.serialize(&[0], None);
+    let binary = emitter.serialize(&[(0, 2)], None);
 
     let prog = encore_vm::program::Program::parse(&binary).unwrap();
     assert_eq!(prog.n_globals(), 1);
@@ -137,4 +138,5 @@ fn test_extern_stub_and_function() {
     assert_eq!(code[7], opcode::FUNCTION);
     assert_eq!(code[8], 0); // stub addr lo
     assert_eq!(code[9], 0); // stub addr hi
+    assert_eq!(code[10], 3); // sd for extern stub
 }

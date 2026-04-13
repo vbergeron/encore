@@ -100,9 +100,11 @@ impl<'a> Emitter<'a> {
     }
 
     fn emit_fun(&mut self, fun: &'a Fun) {
+        let sd = compute_stack_delta(&fun.body);
         if fun.captures.is_empty() {
             self.emit_u8(opcode::FUNCTION);
             let hole = self.emit_u16_placeholder();
+            self.emit_u8(sd);
             self.deferred.push((hole, &fun.body));
         } else {
             for cap in &fun.captures {
@@ -111,14 +113,17 @@ impl<'a> Emitter<'a> {
             self.emit_u8(opcode::CLOSURE);
             let hole = self.emit_u16_placeholder();
             self.emit_u8(fun.captures.len() as u8);
+            self.emit_u8(sd);
             self.deferred.push((hole, &fun.body));
         }
     }
 
     fn emit_cont_lam(&mut self, cont: &'a ContLam) {
+        let sd = compute_stack_delta(&cont.body);
         if cont.captures.is_empty() {
             self.emit_u8(opcode::FUNCTION);
             let hole = self.emit_u16_placeholder();
+            self.emit_u8(sd);
             self.deferred.push((hole, &cont.body));
         } else {
             for cap in &cont.captures {
@@ -127,6 +132,7 @@ impl<'a> Emitter<'a> {
             self.emit_u8(opcode::CLOSURE);
             let hole = self.emit_u16_placeholder();
             self.emit_u8(cont.captures.len() as u8);
+            self.emit_u8(sd);
             self.deferred.push((hole, &cont.body));
         }
     }
@@ -183,6 +189,7 @@ impl<'a> Emitter<'a> {
                 self.emit_u8(opcode::FUNCTION);
                 self.emit_u8(addr as u8);
                 self.emit_u8((addr >> 8) as u8);
+                self.emit_u8(EXTERN_STUB_SD);
             }
         }
     }
@@ -246,31 +253,37 @@ impl<'a> Emitter<'a> {
 
     pub fn emit_module(module: &Module, metadata: Option<&Metadata>) -> Vec<u8> {
         let mut emitter = Self::new();
+        // Return stub at code address 0: acts as the identity continuation
+        // for Vm::call — receives result as ARG and halts.
+        emitter.emit_u8(opcode::ARG);
+        emitter.emit_u8(opcode::FIN);
         let mut extern_slots = Vec::new();
         collect_extern_slots_module(module, &mut extern_slots);
         for slot in &extern_slots {
             emitter.emit_extern_stub(*slot);
         }
-        let mut entry_addrs = Vec::with_capacity(module.defines.len());
+        let mut entries: Vec<(u16, u8)> = Vec::with_capacity(module.defines.len());
         for define in &module.defines {
-            entry_addrs.push(emitter.pos() as u16);
+            let sd = compute_stack_delta(&define.body);
+            entries.push((emitter.pos() as u16, sd));
             emitter.emit_toplevel(&define.body);
         }
-        emitter.serialize(&entry_addrs, metadata)
+        emitter.serialize(&entries, metadata)
     }
 
-    pub fn serialize(self, entry_addrs: &[u16], metadata: Option<&Metadata>) -> Vec<u8> {
+    pub fn serialize(self, entries: &[(u16, u8)], metadata: Option<&Metadata>) -> Vec<u8> {
         let arity_table = self.arity_table;
         let code = self.buf;
-        let n_globals = entry_addrs.len() as u16;
+        let n_globals = entries.len() as u16;
         let mut out = Vec::new();
         out.extend_from_slice(&encore_vm::program::MAGIC);
         out.extend_from_slice(&(arity_table.len() as u16).to_le_bytes());
         out.extend_from_slice(&n_globals.to_le_bytes());
         out.extend_from_slice(&(code.len() as u16).to_le_bytes());
         out.extend_from_slice(&arity_table);
-        for &addr in entry_addrs {
+        for &(addr, sd) in entries {
             out.extend_from_slice(&addr.to_le_bytes());
+            out.push(sd);
         }
         out.extend_from_slice(&code);
         if let Some(meta) = metadata {
@@ -288,6 +301,57 @@ fn serialize_name_section(out: &mut Vec<u8>, entries: &[(u8, String)]) {
         out.push(name.len() as u8);
         out.extend_from_slice(name.as_bytes());
     }
+}
+
+const EXTERN_STUB_SD: u8 = 3;
+
+pub fn compute_stack_delta(expr: &Expr) -> u8 {
+    expr_peak(expr, 0) as u8
+}
+
+fn expr_peak(expr: &Expr, d: usize) -> usize {
+    match expr {
+        Expr::Let(val, body) => {
+            let vp = val_peak(val, d);
+            let bp = expr_peak(body, d + 1);
+            vp.max(bp)
+        }
+        Expr::Letrec(fun, body) => {
+            let fp = fun_peak(fun, d);
+            let bp = expr_peak(body, d + 1);
+            fp.max(bp)
+        }
+        Expr::Encore(_, _, _) => d + 3,
+        Expr::Fin(_) => d + 1,
+        Expr::Match(_, _, cases) => {
+            let mut peak = d + 1;
+            for case in cases {
+                let case_depth = if case.arity > 0 {
+                    (d + 1).max(d + case.arity as usize)
+                } else {
+                    d
+                };
+                let bp = expr_peak(&case.body, case_depth);
+                peak = peak.max(case_depth).max(bp);
+            }
+            peak
+        }
+    }
+}
+
+fn val_peak(val: &Val, d: usize) -> usize {
+    match val {
+        Val::Loc(_) | Val::Int(_) | Val::Field(_, _) | Val::Extern(_) => d + 1,
+        Val::Prim(_, locs) => d + locs.len(),
+        Val::Ctor(_, fields) => d + 1.max(fields.len()),
+        Val::ContLam(c) => {
+            if c.captures.is_empty() { d + 1 } else { d + c.captures.len() }
+        }
+    }
+}
+
+fn fun_peak(fun: &Fun, d: usize) -> usize {
+    if fun.captures.is_empty() { d + 1 } else { d + fun.captures.len() }
 }
 
 fn collect_extern_slots_module(module: &Module, slots: &mut Vec<u16>) {

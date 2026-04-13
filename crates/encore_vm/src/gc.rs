@@ -8,11 +8,14 @@ use crate::value::{HeapAddress, Value};
 ///   2. Forward — assign new (compacted) addresses to marked objects
 ///   3. Update — rewrite all heap pointers to use forwarding addresses
 ///   4. Compact — slide live objects down, reset heap pointer
-pub fn collect(arena: &mut Arena, roots: &mut [Value]) {
+pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
     // Phase 1: Mark (iterative, using the fwd field as an intrusive worklist)
     let mut wl = HeapAddress::NULL;
     for root in roots.iter() {
         enqueue(arena, &mut wl, *root);
+    }
+    for g in globals.iter() {
+        enqueue(arena, &mut wl, *g);
     }
     for i in arena.sp..arena.mem.len() {
         enqueue(arena, &mut wl, arena.mem[i]);
@@ -32,6 +35,9 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value]) {
     // Phase 3: Update references
     for root in roots.iter_mut() {
         *root = update_value(arena.mem, *root);
+    }
+    for g in globals.iter_mut() {
+        *g = update_value(arena.mem, *g);
     }
     for i in arena.sp..arena.mem.len() {
         arena.mem[i] = update_value(arena.mem, arena.mem[i]);

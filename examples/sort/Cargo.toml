@@ -1,0 +1,23 @@
+[package]
+name = "encore-baremetal-sort"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+encore_vm = { path = "../../crates/encore_vm" }
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+cortex-m-semihosting = "0.5"
+panic-halt = "1.0"
+
+[build-dependencies]
+encore_scheme = { path = "../../crates/encore_scheme" }
+encore_compiler = { path = "../../crates/encore_compiler" }
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+opt-level = "s"
+lto = true

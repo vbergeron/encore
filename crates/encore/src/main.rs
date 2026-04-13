@@ -74,12 +74,15 @@ enum Frontend {
     Fleche {
         /// Path to the .fleche source file
         file: String,
-        /// Output binary path
-        #[arg(short, long, default_value = "out.bin")]
+        /// Output directory
+        #[arg(short, long, default_value = "out")]
         out: String,
         /// Include debug metadata (constructor names) in the binary
         #[arg(long)]
         include_metadata: bool,
+        /// Generate Rust bindings (funcs/ctors constants) in the output directory
+        #[arg(long)]
+        include_bindings: bool,
         #[command(flatten)]
         opt: OptimizeFlags,
     },
@@ -87,12 +90,15 @@ enum Frontend {
     Scheme {
         /// Path to the .scm source file
         file: String,
-        /// Output binary path
-        #[arg(short, long, default_value = "out.bin")]
+        /// Output directory
+        #[arg(short, long, default_value = "out")]
         out: String,
         /// Include debug metadata (constructor names) in the binary
         #[arg(long)]
         include_metadata: bool,
+        /// Generate Rust bindings (funcs/ctors constants) in the output directory
+        #[arg(long)]
+        include_bindings: bool,
         #[command(flatten)]
         opt: OptimizeFlags,
     },
@@ -167,13 +173,13 @@ fn main() {
     match cli.command {
         Command::Run { file, entry, heap_size } => cmd_run(&file, &entry, heap_size),
         Command::Compile { frontend } => match frontend {
-            Frontend::Fleche { file, out, include_metadata, opt } => {
+            Frontend::Fleche { file, out, include_metadata, include_bindings, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile_fleche(&file, &out, config, include_metadata);
+                cmd_compile_fleche(&file, &out, config, include_metadata, include_bindings);
             }
-            Frontend::Scheme { file, out, include_metadata, opt } => {
+            Frontend::Scheme { file, out, include_metadata, include_bindings, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile_scheme(&file, &out, config, include_metadata);
+                cmd_compile_scheme(&file, &out, config, include_metadata, include_bindings);
             }
         },
         Command::Disasm { file, interactive } => cmd_disasm(&file, interactive),
@@ -181,8 +187,13 @@ fn main() {
 }
 
 fn cmd_run(path: &str, entry: &str, heap_size: usize) {
-    let bytes = fs::read(path).unwrap_or_else(|e| {
-        eprintln!("error: cannot read {path}: {e}");
+    let bin_path = if std::path::Path::new(path).is_dir() {
+        std::path::Path::new(path).join("bytecode.bin").to_string_lossy().into_owned()
+    } else {
+        path.to_string()
+    };
+    let bytes = fs::read(&bin_path).unwrap_or_else(|e| {
+        eprintln!("error: cannot read {bin_path}: {e}");
         process::exit(1);
     });
 
@@ -235,56 +246,84 @@ fn resolve_entry(entry: &str, prog: &Program) -> usize {
     process::exit(1);
 }
 
-fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool) {
+fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool, include_bindings: bool) {
     let source = fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
     });
 
     let (module, ctor_names) = encore_fleche::parse_with_metadata(&source);
-    let metadata = if include_metadata {
-        let global_names = module.defines.iter()
-            .enumerate()
-            .map(|(i, d)| (i as u8, d.name.clone()))
-            .collect();
-        Some(Metadata { ctor_names, global_names })
+
+    if include_bindings {
+        encore_compiler::pipeline::compile_to_dir_with_ctors(
+            &module, config, true, std::path::Path::new(out), &ctor_names,
+        ).unwrap_or_else(|e| {
+            eprintln!("error: compile_to_dir: {e}");
+            process::exit(1);
+        });
+        eprintln!("compiled {path} -> {out}/");
     } else {
-        None
-    };
-    let binary = encore_compiler::pipeline::compile_module(module,config, metadata.as_ref());
-
-    fs::write(out, &binary).unwrap_or_else(|e| {
-        eprintln!("error: cannot write {out}: {e}");
-        process::exit(1);
-    });
-
-    eprintln!("compiled {path} -> {out} ({} bytes)", binary.len());
+        let metadata = if include_metadata {
+            let global_names = module.defines.iter()
+                .enumerate()
+                .map(|(i, d)| (i as u8, d.name.clone()))
+                .collect();
+            Some(Metadata { ctor_names, global_names })
+        } else {
+            None
+        };
+        let binary = encore_compiler::pipeline::compile_module(module, config, metadata.as_ref());
+        fs::create_dir_all(out).unwrap_or_else(|e| {
+            eprintln!("error: cannot create {out}: {e}");
+            process::exit(1);
+        });
+        let bin_path = std::path::Path::new(out).join("bytecode.bin");
+        fs::write(&bin_path, &binary).unwrap_or_else(|e| {
+            eprintln!("error: cannot write {}: {e}", bin_path.display());
+            process::exit(1);
+        });
+        eprintln!("compiled {path} -> {} ({} bytes)", bin_path.display(), binary.len());
+    }
 }
 
-fn cmd_compile_scheme(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool) {
+fn cmd_compile_scheme(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool, include_bindings: bool) {
     let source = fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
     });
 
     let (module, ctor_names) = encore_scheme::parse_with_metadata(&source);
-    let metadata = if include_metadata {
-        let global_names = module.defines.iter()
-            .enumerate()
-            .map(|(i, d)| (i as u8, d.name.clone()))
-            .collect();
-        Some(Metadata { ctor_names, global_names })
+
+    if include_bindings {
+        encore_compiler::pipeline::compile_to_dir_with_ctors(
+            &module, config, true, std::path::Path::new(out), &ctor_names,
+        ).unwrap_or_else(|e| {
+            eprintln!("error: compile_to_dir: {e}");
+            process::exit(1);
+        });
+        eprintln!("compiled {path} -> {out}/");
     } else {
-        None
-    };
-    let binary = encore_compiler::pipeline::compile_module(module, config, metadata.as_ref());
-
-    fs::write(out, &binary).unwrap_or_else(|e| {
-        eprintln!("error: cannot write {out}: {e}");
-        process::exit(1);
-    });
-
-    eprintln!("compiled {path} -> {out} ({} bytes)", binary.len());
+        let metadata = if include_metadata {
+            let global_names = module.defines.iter()
+                .enumerate()
+                .map(|(i, d)| (i as u8, d.name.clone()))
+                .collect();
+            Some(Metadata { ctor_names, global_names })
+        } else {
+            None
+        };
+        let binary = encore_compiler::pipeline::compile_module(module, config, metadata.as_ref());
+        fs::create_dir_all(out).unwrap_or_else(|e| {
+            eprintln!("error: cannot create {out}: {e}");
+            process::exit(1);
+        });
+        let bin_path = std::path::Path::new(out).join("bytecode.bin");
+        fs::write(&bin_path, &binary).unwrap_or_else(|e| {
+            eprintln!("error: cannot write {}: {e}", bin_path.display());
+            process::exit(1);
+        });
+        eprintln!("compiled {path} -> {} ({} bytes)", bin_path.display(), binary.len());
+    }
 }
 
 fn print_value(val: Value) {
@@ -292,16 +331,23 @@ fn print_value(val: Value) {
         println!("{}", val.int_value());
     } else if val.is_ctor() {
         println!("ctor(tag={})", val.ctor_tag());
+    } else if val.is_function() {
+        println!("function(@{:04x})", val.code_ptr().raw());
     } else if val.is_closure() {
-        println!("closure(ncap={})", val.closure_ncap());
+        println!("closure");
     } else {
         println!("value(0x{:08x})", val.to_u32());
     }
 }
 
 fn cmd_disasm(path: &str, interactive: bool) {
-    let bytes = fs::read(path).unwrap_or_else(|e| {
-        eprintln!("error: cannot read {path}: {e}");
+    let bin_path = if std::path::Path::new(path).is_dir() {
+        std::path::Path::new(path).join("bytecode.bin").to_string_lossy().into_owned()
+    } else {
+        path.to_string()
+    };
+    let bytes = fs::read(&bin_path).unwrap_or_else(|e| {
+        eprintln!("error: cannot read {bin_path}: {e}");
         process::exit(1);
     });
 

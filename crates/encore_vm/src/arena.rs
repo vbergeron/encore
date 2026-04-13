@@ -8,6 +8,7 @@ pub struct Arena<'a> {
     pub(crate) mem: &'a mut [Value],
     pub(crate) hp: usize,
     pub(crate) sp: usize,
+    stack_floor: usize,
     #[cfg(feature = "stats")]
     pub(crate) stats: ArenaStats,
 }
@@ -19,6 +20,7 @@ impl<'a> Arena<'a> {
             mem,
             hp: 0,
             sp,
+            stack_floor: sp,
             #[cfg(feature = "stats")]
             stats: ArenaStats::default(),
         }
@@ -26,20 +28,19 @@ impl<'a> Arena<'a> {
 
     pub fn hp(&self) -> usize { self.hp }
 
-    fn overflowing(&self, n: usize) -> bool {
-        self.hp + n > self.sp
-    }
-
     // -- Heap (grows up from 0) --
 
     pub fn alloc(
         &mut self,
         n: usize,
         roots: &mut [Value],
+        globals: &mut [Value],
     ) -> Result<HeapAddress, VmError> {
-        if self.overflowing(n) {
-            gc::collect(self, roots);
-            if self.overflowing(n) {
+        let limit = self.stack_floor.min(self.sp);
+        if self.hp + n > limit {
+            gc::collect(self, roots, globals);
+            let limit = self.stack_floor.min(self.sp);
+            if self.hp + n > limit {
                 return Err(VmError::HeapOverflow);
             }
         }
@@ -60,13 +61,19 @@ impl<'a> Arena<'a> {
 
     // -- Stack (grows down from end) --
 
-    pub fn stack_ensure(&mut self, n: usize, roots: &mut [Value]) -> Result<(), VmError> {
-        if self.sp < self.hp + n {
-            gc::collect(self, roots);
-            if self.sp < self.hp + n {
+    pub fn stack_reserve(
+        &mut self,
+        sd: usize,
+        roots: &mut [Value],
+        globals: &mut [Value],
+    ) -> Result<(), VmError> {
+        if sd > self.sp || self.sp - sd < self.hp {
+            gc::collect(self, roots, globals);
+            if sd > self.sp || self.sp - sd < self.hp {
                 return Err(VmError::StackOverflow);
             }
         }
+        self.stack_floor = self.sp - sd;
         Ok(())
     }
 
@@ -96,5 +103,6 @@ impl<'a> Arena<'a> {
 
     pub fn stack_reset(&mut self) {
         self.sp = self.mem.len();
+        self.stack_floor = self.sp;
     }
 }

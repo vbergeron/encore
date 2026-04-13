@@ -11,6 +11,7 @@ fn build(n_arities: u16, n_globals: u16, arities: &[u8], globals: &[u16], code: 
     buf.extend_from_slice(arities);
     for &g in globals {
         buf.extend_from_slice(&g.to_le_bytes());
+        buf.push(0); // stack_delta
     }
     buf.extend_from_slice(code);
     buf

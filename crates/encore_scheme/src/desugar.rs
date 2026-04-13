@@ -525,13 +525,28 @@ impl Lowering {
                     .collect();
 
                 let base_tag = tagged_cases.iter().map(|(t, _)| *t).min().unwrap_or(0);
+                let max_tag = tagged_cases.iter().map(|(t, _)| *t).max().unwrap_or(0);
+                let unreachable_case = ds::Case {
+                    binds: vec![],
+                    body: ds::Expr::Let(
+                        "__err".to_string(),
+                        Box::new(ds::Expr::Lam(
+                            "x".to_string(),
+                            Box::new(ds::Expr::Var("x".to_string())),
+                        )),
+                        Box::new(ds::Expr::App(
+                            Box::new(ds::Expr::Var("__err".to_string())),
+                            Box::new(ds::Expr::Var("__err".to_string())),
+                        )),
+                    ),
+                };
                 let mut sorted: Vec<ds::Case> = Vec::new();
-                for tag in base_tag..base_tag + tagged_cases.len() as u8 {
-                    let (_, case) = tagged_cases
-                        .iter()
-                        .find(|(t, _)| *t == tag)
-                        .unwrap_or_else(|| panic!("missing case for tag {tag}"));
-                    sorted.push(case.clone());
+                for tag in base_tag..=max_tag {
+                    if let Some((_, case)) = tagged_cases.iter().find(|(t, _)| *t == tag) {
+                        sorted.push(case.clone());
+                    } else {
+                        sorted.push(unreachable_case.clone());
+                    }
                 }
 
                 ds::Expr::Match(Box::new(scrutinee), base_tag, sorted)

@@ -24,11 +24,13 @@ pub struct Case {
     pub body: Expr,
 }
 
+#[derive(Clone)]
 pub struct Define {
     pub name: Name,
     pub body: Expr,
 }
 
+#[derive(Clone)]
 pub struct Module {
     pub defines: Vec<Define>,
 }
