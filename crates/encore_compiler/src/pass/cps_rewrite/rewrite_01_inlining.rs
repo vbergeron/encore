@@ -2,7 +2,7 @@
 // exposing new redexes for shrinking passes.
 //
 //   let double = cont(x). builtin add x x
-//   in return double 3     ──►   builtin add 3 3
+//   in let _nc = nullcont in encore double 3 _nc     ──►   builtin add 3 3
 //
 
 use std::collections::HashMap;
@@ -21,7 +21,6 @@ fn expr_size(expr: &Expr) -> usize {
         Expr::Let(_, val, body) => 1 + val_size(val) + expr_size(body),
         Expr::Letrec(_, fun, body) => 1 + expr_size(&fun.body) + expr_size(body),
         Expr::Encore(_, _, _) => 1,
-        Expr::Return(_, _) => 1,
         Expr::Match(_, _, cases) => {
             1 + cases.iter().map(|c| expr_size(&c.body)).sum::<usize>()
         }
@@ -64,13 +63,13 @@ fn inline_expr(expr: Expr, threshold: usize, env: &Env) -> Expr {
             let body = inline_expr(*body, threshold, env);
             Expr::Letrec(name, fun, Box::new(body))
         }
-        Expr::Return(k, x) => {
-            if let Some(cont) = env.get(&k) {
+        Expr::Encore(ref f, ref x, _) => {
+            if let Some(cont) = env.get(f) {
                 let mut body = *cont.body.clone();
-                subst_expr(&cont.param, &x, &mut body);
+                subst_expr(&cont.param, x, &mut body);
                 body
             } else {
-                Expr::Return(k, x)
+                expr
             }
         }
         Expr::Match(name, base, cases) => {

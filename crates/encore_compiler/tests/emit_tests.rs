@@ -125,15 +125,16 @@ fn test_extern_stub_and_function() {
     emitter.emit_toplevel(&define_body);
     let code = emitter.into_bytes();
 
-    // stub: ARG, EXTERN 0x00 0x00, CONT, RETURN = 6 bytes at offset 0
-    assert_eq!(code[0], opcode::ARG);
-    assert_eq!(code[1], opcode::EXTERN);
-    assert_eq!(code[2], 0); // slot lo
-    assert_eq!(code[3], 0); // slot hi
-    assert_eq!(code[4], opcode::CONT);
-    assert_eq!(code[5], opcode::RETURN);
+    // stub: NULLADDR, ARG, EXTERN 0x00 0x00, CONT, ENCORE = 7 bytes at offset 0
+    assert_eq!(code[0], opcode::NULLADDR);
+    assert_eq!(code[1], opcode::ARG);
+    assert_eq!(code[2], opcode::EXTERN);
+    assert_eq!(code[3], 0); // slot lo
+    assert_eq!(code[4], 0); // slot hi
+    assert_eq!(code[5], opcode::CONT);
+    assert_eq!(code[6], opcode::ENCORE);
     // Val::Extern(0) emits FUNCTION pointing to stub at offset 0
-    assert_eq!(code[6], opcode::FUNCTION);
-    assert_eq!(code[7], 0); // stub addr lo
-    assert_eq!(code[8], 0); // stub addr hi
+    assert_eq!(code[7], opcode::FUNCTION);
+    assert_eq!(code[8], 0); // stub addr lo
+    assert_eq!(code[9], 0); // stub addr hi
 }

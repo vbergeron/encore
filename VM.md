@@ -1,6 +1,6 @@
 # Encore VM
 
-A `#![no_std]` bytecode virtual machine for a functional language. Function calls use `ENCORE` (enter a closure with an argument and continuation) and `RETURN` (resume a continuation with a result). Both are tail operations that reset the stack — there is no `CALL`/`RET` pair.
+A `#![no_std]` bytecode virtual machine for a functional language. Function calls use a single `ENCORE` opcode (enter a closure with an argument and continuation). Continuation resumption is an `ENCORE` with a `NULLADDR` sentinel as the dead continuation. Both are tail operations that reset the stack — there is no `CALL`/`RET` pair.
 
 ## Value representation
 
@@ -63,7 +63,7 @@ Nullary constructors (`k = 0`) are not heap-allocated.
 | `self_ref` | Current closure value, accessible via `SELF` |
 | `pc` | Program counter into the bytecode stream |
 
-There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`, `self_ref`, and `pc`. `RETURN` resets the stack and overwrites `arg`, `self_ref`, and `pc`.
+There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`, `self_ref`, and `pc`.
 
 ## Opcodes
 
@@ -98,7 +98,7 @@ There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
 | `ENCORE` | `0A` | — | Pop closure, pop argument, pop continuation. Set `self_ref`, `arg`, `cont`, reset stack, jump to closure's code pointer. For zero-capture closures (`ncap=0`) the code pointer is read from the value itself; otherwise from the heap |
-| `RETURN` | `0C` | — | Pop continuation closure, pop result. Set `self_ref` to the continuation, `arg` to the result, reset stack, jump to continuation's code pointer |
+| `NULLADDR` | `0C` | — | Push a sentinel value (`0xFFFF`). Used as a dead continuation argument when invoking a continuation via `ENCORE` |
 | `FIN` | `00` | — | Halt, return top of stack |
 
 ### Integer arithmetic

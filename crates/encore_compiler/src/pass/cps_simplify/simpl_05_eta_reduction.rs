@@ -1,6 +1,8 @@
 // Collapse a continuation that just forwards its argument to another continuation.
 //
-//   let g = cont(x). return f x in return g arg     ──►   return f arg
+//   let g = cont(x). let _nc = nullcont in encore f x _nc
+//   in let _nc2 = nullcont in encore g arg _nc2
+//   ──►   let g = var(f) in let _nc2 = nullcont in encore g arg _nc2
 //
 
 use crate::ir::cps::{self, Expr, Fun, Cont, Val};
@@ -9,9 +11,11 @@ pub fn eta_reduction(expr: Expr) -> Expr {
     match expr {
         Expr::Let(name, Val::Cont(cont), body) => {
             let body = eta_reduction(*body);
-            if let Expr::Return(ref f, ref x) = *cont.body {
-                if *x == cont.param && *f != cont.param {
-                    return Expr::Let(name, Val::Var(f.clone()), Box::new(body));
+            if let Expr::Let(_, Val::NullCont, ref inner) = *cont.body {
+                if let Expr::Encore(ref f, ref x, _) = **inner {
+                    if *x == cont.param && *f != cont.param {
+                        return Expr::Let(name, Val::Var(f.clone()), Box::new(body));
+                    }
                 }
             }
             Expr::Let(name, Val::Cont(eta_reduction_cont(cont)), Box::new(body))

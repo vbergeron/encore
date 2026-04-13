@@ -33,12 +33,13 @@ impl<'a> Emitter<'a> {
     pub fn emit_extern_stub(&mut self, slot: u16) {
         let addr = self.pos() as u16;
         self.extern_stubs.push((slot, addr));
+        self.emit_u8(opcode::NULLADDR);
         self.emit_u8(opcode::ARG);
         self.emit_u8(opcode::EXTERN);
         self.emit_u8(slot as u8);
         self.emit_u8((slot >> 8) as u8);
         self.emit_u8(opcode::CONT);
-        self.emit_u8(opcode::RETURN);
+        self.emit_u8(opcode::ENCORE);
     }
 
     fn extern_stub_addr(&self, slot: u16) -> u16 {
@@ -76,6 +77,9 @@ impl<'a> Emitter<'a> {
             }
             Loc::Cont => {
                 self.emit_u8(opcode::CONT);
+            }
+            Loc::NullCont => {
+                self.emit_u8(opcode::NULLADDR);
             }
             Loc::Local(idx) => {
                 self.emit_u8(opcode::LOCAL);
@@ -202,12 +206,6 @@ impl<'a> Emitter<'a> {
                 self.emit_u8(opcode::ENCORE);
             }
 
-            Expr::Return(cont, result) => {
-                self.emit_loc(result);
-                self.emit_loc(cont);
-                self.emit_u8(opcode::RETURN);
-            }
-
             Expr::Match(loc, base, cases) => {
                 self.emit_loc(loc);
                 self.emit_u8(opcode::MATCH);
@@ -315,7 +313,7 @@ fn collect_extern_slots_expr(expr: &Expr, slots: &mut Vec<u16>) {
                 collect_extern_slots_expr(&case.body, slots);
             }
         }
-        Expr::Encore(_, _, _) | Expr::Return(_, _) | Expr::Fin(_) => {}
+        Expr::Encore(_, _, _) | Expr::Fin(_) => {}
     }
 }
 

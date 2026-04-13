@@ -25,7 +25,7 @@ pub enum Op {
     Unpack { tag: u8 },
     Match { table: Vec<(u8, u16)> },
     Encore,
-    Return,
+    NullAddr,
     Int(i32),
     Int0,
     Int1,
@@ -183,7 +183,7 @@ impl fmt::Display for Op {
                 write!(f, "]")
             }
             Op::Encore => write!(f, "ENCORE"),
-            Op::Return => write!(f, "RETURN"),
+            Op::NullAddr => write!(f, "NULLADDR"),
             Op::Int(n) => write!(f, "INT {n}"),
             Op::Int0 => write!(f, "INT_0"),
             Op::Int1 => write!(f, "INT_1"),
@@ -328,7 +328,7 @@ fn decode_instructions(code: &[u8]) -> Vec<Instr> {
                 Op::Match { table }
             }
             opcode::ENCORE => Op::Encore,
-            opcode::RETURN => Op::Return,
+            opcode::NULLADDR => Op::NullAddr,
             opcode::INT => {
                 let b0 = read_u8(&mut pc) as u32;
                 let b1 = read_u8(&mut pc) as u32;

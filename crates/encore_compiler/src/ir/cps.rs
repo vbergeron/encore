@@ -26,6 +26,7 @@ pub struct Case {
 pub enum Val {
     Var(Name),
     Cont(Cont),
+    NullCont,
     Ctor(Tag, Vec<Name>),
     Field(Name, u8),
     Int(i32),
@@ -38,7 +39,6 @@ pub enum Expr {
     Let(Name, Val, Box<Expr>),
     Letrec(Name, Fun, Box<Expr>),
     Encore(Name, Name, Name),
-    Return(Name, Name),
     Match(Name, Tag, Vec<Case>),
     Fin(Name),
 }

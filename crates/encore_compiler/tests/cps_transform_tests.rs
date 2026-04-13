@@ -76,7 +76,6 @@ fn count_ctor(expr: &cps::Expr, tag: u8) -> usize {
             count_ctor(&fun.body, tag) + count_ctor(body, tag)
         }
         cps::Expr::Encore(_, _, _) => 0,
-        cps::Expr::Return(_, _) => 0,
         cps::Expr::Match(_, _, cases) => {
             cases.iter().map(|c| count_ctor(&c.body, tag)).sum()
         }

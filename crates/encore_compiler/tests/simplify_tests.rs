@@ -32,7 +32,7 @@ fn letrec(name: &str, fun: Fun, body: Expr) -> Expr {
 }
 
 fn return_(k: &str, x: &str) -> Expr {
-    Expr::Return(n(k), n(x))
+    Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(n(k), n(x), "_nc".into())))
 }
 
 fn encore(f: &str, x: &str, k: &str) -> Expr {
@@ -526,10 +526,12 @@ fn test_const_fold_then_dead_code() {
 
 #[test]
 fn test_inline_small_cont() {
-    // let f = cont(x). fin x in return f arg  ──►  let f = cont(x). fin x in fin arg
+    // let f = cont(x). fin x in let _nc = nullcont in encore f arg _nc
+    // ──►  let f = cont(x). fin x in let _nc = nullcont in fin arg
     let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
     let result = cps_rewrite::inlining(expr, 20);
-    let expected = let_("f", cont_("x", fin("x")), fin("arg"));
+    let expected = let_("f", cont_("x", fin("x")),
+        let_("_nc", Val::NullCont, fin("arg")));
     assert_eq!(result, expected);
 }
 
@@ -564,8 +566,8 @@ fn test_inline_multiple_call_sites() {
         ]));
     let expected = let_("f", cont_("x", fin("x")),
         match_("a", 0, vec![
-            case(&[], fin("x")),
-            case(&[], fin("y")),
+            case(&[], let_("_nc", Val::NullCont, fin("x"))),
+            case(&[], let_("_nc", Val::NullCont, fin("y"))),
         ]));
     let result = cps_rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
@@ -574,13 +576,13 @@ fn test_inline_multiple_call_sites() {
 #[test]
 fn test_inline_with_substitution() {
     // let f = cont(x). let r = field 0 of x in fin r in return f arg
-    // ──►  let f = (...) in let r = field 0 of arg in fin r
+    // ──►  let f = (...) in let _nc = nullcont in let r = field 0 of arg in fin r
     let expr = let_("f",
         cont_("x", let_("r", field("x", 0), fin("r"))),
         return_("f", "arg"));
     let expected = let_("f",
         cont_("x", let_("r", field("x", 0), fin("r"))),
-        let_("r", field("arg", 0), fin("r")));
+        let_("_nc", Val::NullCont, let_("r", field("arg", 0), fin("r"))));
     let result = cps_rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
 }
@@ -588,11 +590,11 @@ fn test_inline_with_substitution() {
 #[test]
 fn test_inline_nested_let() {
     // let f = cont(x). fin x in let y = 1 in return f arg
-    // ──►  let f = (...) in let y = 1 in fin arg
+    // ──►  let f = (...) in let y = 1 in let _nc = nullcont in fin arg
     let expr = let_("f", cont_("x", fin("x")),
         let_("y", int(1), return_("f", "arg")));
     let expected = let_("f", cont_("x", fin("x")),
-        let_("y", int(1), fin("arg")));
+        let_("y", int(1), let_("_nc", Val::NullCont, fin("arg"))));
     let result = cps_rewrite::inlining(expr, 20);
     assert_eq!(result, expected);
 }
@@ -612,31 +614,36 @@ fn test_inline_then_dead_code() {
 #[test]
 fn test_hoist_int_constant() {
     // letrec f(n, k) = let one = 1 in return k one in fin f
-    // ──►  let one = 1 in letrec f(n, k) = return k one in fin f
+    // ──►  let one = 1 in let _nc = nullcont in letrec f(n, k) = encore k one _nc in fin f
     let expr = letrec("f",
         fun_("n", "k", let_("one", int(1), return_("k", "one"))),
         fin("f"));
     let expected = let_("one", int(1),
-        letrec("f",
-            fun_("n", "k", return_("k", "one")),
-            fin("f")));
+        let_("_nc", Val::NullCont,
+            letrec("f",
+                fun_("n", "k", encore("k", "one", "_nc")),
+                fin("f"))));
     assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 
 #[test]
 fn test_hoist_nothing_variant() {
     // letrec f(n, k) = let r = field 0 of n in return k r in fin f
-    // r depends on n → nothing to hoist
+    // r depends on n → r stays, but _nc is hoisted
     let expr = letrec("f",
         fun_("n", "k", let_("r", field("n", 0), return_("k", "r"))),
         fin("f"));
-    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+    let expected = let_("_nc", Val::NullCont,
+        letrec("f",
+            fun_("n", "k", let_("r", field("n", 0), encore("k", "r", "_nc"))),
+            fin("f")));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 
 #[test]
 fn test_hoist_chain() {
     // letrec f(n, k) = let a = 1 in let b = 2 in let c = add(a,b) in return k c in fin f
-    // a, b, c are all invariant → all hoisted
+    // a, b, c, _nc are all invariant → all hoisted
     let expr = letrec("f",
         fun_("n", "k",
             let_("a", int(1),
@@ -648,16 +655,17 @@ fn test_hoist_chain() {
         let_("a", int(1),
             let_("b", int(2),
                 let_("c", prim(PrimOp::Add, &["a", "b"]),
-                    letrec("f",
-                        fun_("n", "k", return_("k", "c")),
-                        fin("f")))));
+                    let_("_nc", Val::NullCont,
+                        letrec("f",
+                            fun_("n", "k", encore("k", "c", "_nc")),
+                            fin("f"))))));
     assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 
 #[test]
 fn test_hoist_interleaved() {
     // letrec f(n, k) = let a = 1 in let b = n in let c = 2 in return k c in fin f
-    // a hoistable, b variant (uses n), c hoistable (doesn't use b)
+    // a hoistable, b variant (uses n), c hoistable, _nc hoistable
     let expr = letrec("f",
         fun_("n", "k",
             let_("a", int(1),
@@ -668,50 +676,63 @@ fn test_hoist_interleaved() {
     let expected =
         let_("a", int(1),
             let_("c", int(2),
-                letrec("f",
-                    fun_("n", "k",
-                        let_("b", var("n"),
-                            return_("k", "c"))),
-                    fin("f"))));
+                let_("_nc", Val::NullCont,
+                    letrec("f",
+                        fun_("n", "k",
+                            let_("b", var("n"),
+                                encore("k", "c", "_nc"))),
+                        fin("f")))));
     assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 
 #[test]
 fn test_hoist_transitive_variant() {
     // letrec f(n, k) = let a = n in let b = add(a, x) in return k b in fin f
-    // a is variant (uses n), b is variant (uses a) → nothing hoisted
+    // a is variant (uses n), b is variant (uses a), but _nc is hoisted
     let expr = letrec("f",
         fun_("n", "k",
             let_("a", var("n"),
                 let_("b", prim(PrimOp::Add, &["a", "x"]),
                     return_("k", "b")))),
         fin("f"));
-    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+    let expected = let_("_nc", Val::NullCont,
+        letrec("f",
+            fun_("n", "k",
+                let_("a", var("n"),
+                    let_("b", prim(PrimOp::Add, &["a", "x"]),
+                        encore("k", "b", "_nc")))),
+            fin("f")));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 
 #[test]
 fn test_hoist_does_not_hoist_self_ref() {
     // letrec f(n, k) = let g = f in return k g in fin f
-    // g references f (the letrec name) → not hoistable
+    // g references f (the letrec name) → not hoistable, but _nc is hoisted
     let expr = letrec("f",
         fun_("n", "k", let_("g", var("f"), return_("k", "g"))),
         fin("f"));
-    assert_eq!(cps_rewrite::hoisting(expr.clone()), expr);
+    let expected = let_("_nc", Val::NullCont,
+        letrec("f",
+            fun_("n", "k", let_("g", var("f"), encore("k", "g", "_nc"))),
+            fin("f")));
+    assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 
 #[test]
 fn test_hoist_recurses_into_nested_letrec() {
     // let x = 1 in letrec f(n, k) = let a = 2 in return k a in fin f
-    // The inner letrec should be processed
+    // The inner letrec should be processed, _nc is also hoisted
     let expr = let_("x", int(1),
         letrec("f",
             fun_("n", "k", let_("a", int(2), return_("k", "a"))),
             fin("f")));
     let expected = let_("x", int(1),
         let_("a", int(2),
-            letrec("f",
-                fun_("n", "k", return_("k", "a")),
-                fin("f"))));
+            let_("_nc", Val::NullCont,
+                letrec("f",
+                    fun_("n", "k", encore("k", "a", "_nc")),
+                    fin("f")))));
     assert_eq!(cps_rewrite::hoisting(expr), expected);
 }
 

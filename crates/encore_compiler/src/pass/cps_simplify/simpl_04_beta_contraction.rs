@@ -2,7 +2,7 @@
 // The CPS transform produces an administrative continuation per application;
 // nearly all of them are single-use and this pass eliminates them.
 //
-//   let k = cont(x). x in return k arg     ──►   arg
+//   let k = cont(x). x in let _nc = nullcont in encore k arg _nc     ──►   arg
 //
 
 use crate::ir::cps::{self, Expr, Fun, Cont, Val};
@@ -59,14 +59,19 @@ fn beta_contraction_cont(cont: Cont) -> Cont {
     Cont { param: cont.param, body: Box::new(beta_contraction(*cont.body)) }
 }
 
-/// Walk the continuation looking for `Return(name, arg)` and replace it
-/// with the cont body where `param := arg`.
+/// Walk the expression looking for `Let(_, NullCont, Encore(k, arg, _))` where
+/// `k == name` and replace it with the cont body where `param := arg`.
 fn try_inline(name: &str, cont: &Cont, expr: Expr) -> Option<Expr> {
     match expr {
-        Expr::Return(ref k, ref x) if k == name => {
-            let mut body = *cont.body.clone();
-            subst_expr(&cont.param, x, &mut body);
-            Some(body)
+        Expr::Let(_, Val::NullCont, ref body) => {
+            if let Expr::Encore(ref k, ref x, _) = **body {
+                if k == name {
+                    let mut result = *cont.body.clone();
+                    subst_expr(&cont.param, x, &mut result);
+                    return Some(result);
+                }
+            }
+            None
         }
         Expr::Let(n, val, body) => {
             try_inline(name, cont, *body)

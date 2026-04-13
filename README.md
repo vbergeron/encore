@@ -1,4 +1,4 @@
-# Encore
+# Encore!
 
 Encore is a lightweight bytecode virtual machine where every function call is a tail call. There is no call stack — continuations are first-class values and control flow is expressed entirely through the `ENCORE` opcode, which enters a closure, resets the evaluation stack, and never returns. A CPS-transforming compiler targeting the VM is included, along with [Fleche](FLECHE.md), a small functional language that serves as its frontend.
 
@@ -66,7 +66,7 @@ A `#![no_std]` bytecode interpreter with:
 - Packed 32-bit values (closures, constructors, integers)
 - Unified heap + stack arena
 - Mark-compact garbage collector
-- Two-opcode calling convention: `ENCORE` (enter closure) and `RETURN` (resume continuation)
+- Single-opcode calling convention: `ENCORE` (enter closure with argument and continuation). Continuation resumption uses `ENCORE` with a `NULLADDR` sentinel as the dead continuation
 
 See [VM.md](VM.md) for details.
 

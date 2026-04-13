@@ -42,8 +42,8 @@ fn cont(captures: Vec<asm::Loc>, body: asm::Expr) -> asm::Val {
     asm::Val::ContLam(asm::ContLam { captures, body: Box::new(body) })
 }
 
-fn ret(cont: asm::Loc, val: asm::Loc) -> asm::Expr {
-    asm::Expr::Return(cont, val)
+fn ret(nc_local: u8, cont: asm::Loc, val: asm::Loc) -> asm::Expr {
+    let_(loc(NullCont), encore(cont, val, Local(nc_local)))
 }
 
 fn encore(f: asm::Loc, arg: asm::Loc, k: asm::Loc) -> asm::Expr {
@@ -206,12 +206,15 @@ fn test_cont_identity() {
                 param: "x".into(),
                 body: Box::new(cps::Expr::Fin("x".into())),
             }),
-            Box::new(cps::Expr::Return("f".into(), "main".into())),
+            Box::new(cps::Expr::Let(
+                "_nc".into(), cps::Val::NullCont,
+                Box::new(cps::Expr::Encore("f".into(), "main".into(), "_nc".into())),
+            )),
         )),
     ]);
     assert_eq!(
         resolve_one(&m),
-        let_(cont(vec![], fin(Arg)), ret(Local(0), Global(0)))
+        let_(cont(vec![], fin(Arg)), ret(1, Local(0), Global(0)))
     );
 }
 
@@ -227,12 +230,15 @@ fn test_cont_global_not_captured() {
                 param: "x".into(),
                 body: Box::new(cps::Expr::Fin("g".into())),
             }),
-            Box::new(cps::Expr::Return("f".into(), "main".into())),
+            Box::new(cps::Expr::Let(
+                "_nc".into(), cps::Val::NullCont,
+                Box::new(cps::Expr::Encore("f".into(), "main".into(), "_nc".into())),
+            )),
         )),
     ]);
     assert_eq!(
         resolve_one(&m),
-        let_(cont(vec![], fin(Global(0))), ret(Local(0), Global(1)))
+        let_(cont(vec![], fin(Global(0))), ret(1, Local(0), Global(1)))
     );
 }
 
@@ -251,7 +257,10 @@ fn test_cont_captures_local() {
                     param: "x".into(),
                     body: Box::new(cps::Expr::Fin("v".into())),
                 }),
-                Box::new(cps::Expr::Return("f".into(), "g1".into())),
+                Box::new(cps::Expr::Let(
+                    "_nc".into(), cps::Val::NullCont,
+                    Box::new(cps::Expr::Encore("f".into(), "g1".into(), "_nc".into())),
+                )),
             )),
         )),
     ]);
@@ -259,7 +268,7 @@ fn test_cont_captures_local() {
         resolve_one(&m),
         let_(loc(Global(0)),
             let_(cont(vec![Local(0)], fin(Capture(0))),
-                ret(Local(1), Global(1))))
+                ret(2, Local(1), Global(1))))
     );
 }
 
@@ -282,7 +291,10 @@ fn test_cont_captures_two_locals() {
                             Box::new(cps::Expr::Fin("pair".into())),
                         )),
                     }),
-                    Box::new(cps::Expr::Return("f".into(), "main".into())),
+                    Box::new(cps::Expr::Let(
+                        "_nc".into(), cps::Val::NullCont,
+                        Box::new(cps::Expr::Encore("f".into(), "main".into(), "_nc".into())),
+                    )),
                 )),
             )),
         )),
@@ -295,7 +307,7 @@ fn test_cont_captures_two_locals() {
                 let_(cont(vec![Local(0), Local(1)],
                         let_(ctor(0, vec![Capture(0), Capture(1)]),
                             fin(Local(0)))),
-                    ret(Local(2), Global(0)))))
+                    ret(3, Local(2), Global(0)))))
     );
 }
 
@@ -421,7 +433,10 @@ fn test_letrec_simple() {
             cps::Fun {
                 arg: "x".into(),
                 cont: "k".into(),
-                body: Box::new(cps::Expr::Return("k".into(), "x".into())),
+                body: Box::new(cps::Expr::Let(
+                    "_nc".into(), cps::Val::NullCont,
+                    Box::new(cps::Expr::Encore("k".into(), "x".into(), "_nc".into())),
+                )),
             },
             Box::new(cps::Expr::Let(
                 "k0".into(),
@@ -435,7 +450,7 @@ fn test_letrec_simple() {
     ]);
     assert_eq!(
         resolve_one(&m),
-        letrec(vec![], ret(Cont, Arg),
+        letrec(vec![], ret(0, Cont, Arg),
             let_(cont(vec![], fin(Arg)),
                 encore(Local(0), Global(0), Local(1))))
     );
@@ -460,7 +475,10 @@ fn test_peano_countdown() {
                             body: Box::new(cps::Expr::Match("n".into(), 0, vec![
                                 cps::Case {
                                     binds: vec![],
-                                    body: cps::Expr::Return("k".into(), "n".into()),
+                                    body: cps::Expr::Let(
+                                        "_nc".into(), cps::Val::NullCont,
+                                        Box::new(cps::Expr::Encore("k".into(), "n".into(), "_nc".into())),
+                                    ),
                                 },
                                 cps::Case {
                                     binds: vec!["pred".into()],
@@ -488,7 +506,7 @@ fn test_peano_countdown() {
                 let_(ctor(1, vec![Local(1)]),
                     letrec(vec![],
                         match_(Arg, 0, vec![
-                            (0, ret(Cont, Arg)),
+                            (0, ret(0, Cont, Arg)),
                             (1, encore(SelfRef, Local(0), Cont)),
                         ]),
                         let_(cont(vec![], fin(Arg)),
@@ -521,7 +539,10 @@ fn test_peano_countdown_5() {
                                         body: Box::new(cps::Expr::Match("n".into(), 0, vec![
                                             cps::Case {
                                                 binds: vec![],
-                                                body: cps::Expr::Return("k".into(), "n".into()),
+                                                body: cps::Expr::Let(
+                                                    "_nc".into(), cps::Val::NullCont,
+                                                    Box::new(cps::Expr::Encore("k".into(), "n".into(), "_nc".into())),
+                                                ),
                                             },
                                             cps::Case {
                                                 binds: vec!["pred".into()],
@@ -555,7 +576,7 @@ fn test_peano_countdown_5() {
                             let_(ctor(1, vec![Local(4)]),
                                 letrec(vec![],
                                     match_(Arg, 0, vec![
-                                        (0, ret(Cont, Arg)),
+                                        (0, ret(0, Cont, Arg)),
                                         (1, encore(SelfRef, Local(0), Cont)),
                                     ]),
                                     let_(cont(vec![], fin(Arg)),
@@ -584,7 +605,10 @@ fn test_cont_capture_vs_arg() {
                         )),
                     )),
                 }),
-                Box::new(cps::Expr::Return("f".into(), "g1".into())),
+                Box::new(cps::Expr::Let(
+                    "_nc".into(), cps::Val::NullCont,
+                    Box::new(cps::Expr::Encore("f".into(), "g1".into(), "_nc".into())),
+                )),
             )),
         )),
     ]);
@@ -595,7 +619,7 @@ fn test_cont_capture_vs_arg() {
                     let_(ctor(0, vec![Capture(0), Arg]),
                         let_(field(Local(0), 0),
                             fin(Local(1))))),
-                ret(Local(1), Global(1))))
+                ret(2, Local(1), Global(1))))
     );
 }
 
@@ -615,17 +639,23 @@ fn test_nested_cont() {
                         param: "y".into(),
                         body: Box::new(cps::Expr::Fin("x".into())),
                     }),
-                    Box::new(cps::Expr::Return("inner".into(), "g".into())),
+                    Box::new(cps::Expr::Let(
+                        "_nc".into(), cps::Val::NullCont,
+                        Box::new(cps::Expr::Encore("inner".into(), "g".into(), "_nc".into())),
+                    )),
                 )),
             }),
-            Box::new(cps::Expr::Return("outer".into(), "g".into())),
+            Box::new(cps::Expr::Let(
+                "_nc".into(), cps::Val::NullCont,
+                Box::new(cps::Expr::Encore("outer".into(), "g".into(), "_nc".into())),
+            )),
         )),
     ]);
     assert_eq!(
         resolve_one(&m),
         let_(cont(vec![],
                 let_(cont(vec![Arg], fin(Capture(0))),
-                    ret(Local(0), Global(0)))),
-            ret(Local(0), Global(0)))
+                    ret(1, Local(0), Global(0)))),
+            ret(1, Local(0), Global(0)))
     );
 }

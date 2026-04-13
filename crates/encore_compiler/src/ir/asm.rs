@@ -6,6 +6,7 @@ pub type Tag = u8;
 pub enum Loc {
     Arg,
     Cont,
+    NullCont,
     Local(u8),
     Capture(u8),
     Global(u8),
@@ -46,7 +47,6 @@ pub enum Expr {
     Let(Val, Box<Expr>),
     Letrec(Fun, Box<Expr>),
     Encore(Loc, Loc, Loc),
-    Return(Loc, Loc),
     Match(Loc, Tag, Vec<Case>),
     Fin(Loc),
 }

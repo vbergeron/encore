@@ -72,10 +72,6 @@ fn resolve_expr(env: &mut Env, expr: &cps::Expr) -> asm::Expr {
             asm::Expr::Encore(env.lookup(f), env.lookup(x), env.lookup(k))
         }
 
-        cps::Expr::Return(k, x) => {
-            asm::Expr::Return(env.lookup(k), env.lookup(x))
-        }
-
         cps::Expr::Match(name, base, cases) => {
             let loc = env.lookup(name);
 
@@ -126,6 +122,8 @@ fn resolve_val(env: &Env, val: &cps::Val) -> asm::Val {
         }
 
         cps::Val::Extern(slot) => asm::Val::Extern(*slot),
+
+        cps::Val::NullCont => asm::Val::Loc(asm::Loc::NullCont),
     }
 }
 
@@ -210,10 +208,6 @@ fn free_vars_expr(expr: &cps::Expr, bound: &mut HashSet<String>, free: &mut Hash
             use_name(x, bound, free);
             use_name(k, bound, free);
         }
-        cps::Expr::Return(k, x) => {
-            use_name(k, bound, free);
-            use_name(x, bound, free);
-        }
         cps::Expr::Match(name, _, cases) => {
             use_name(name, bound, free);
             for case in cases {
@@ -240,7 +234,7 @@ fn free_vars_val(val: &cps::Val, bound: &mut HashSet<String>, free: &mut HashSet
             }
         }
         cps::Val::Field(name, _) => use_name(name, bound, free),
-        cps::Val::Int(_) => {}
+        cps::Val::Int(_) | cps::Val::NullCont => {}
         cps::Val::Prim(_, names) => {
             for name in names {
                 use_name(name, bound, free);

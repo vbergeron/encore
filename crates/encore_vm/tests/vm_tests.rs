@@ -308,20 +308,21 @@ fn test_gc_preserves_live_data() {
         ENCORE,                     // byte 10: enter garbage_func
 
         // garbage_func body at byte 11:
-        ARG,                        // byte 11: push result for RETURN
-        PACK, 1,                    // byte 12: capture = ctor(1)
-        CLOSURE, 19, 0, 1,          // byte 14: real closure at byte 19, ncap=1. alloc 3. hp=6
-        RETURN,                     // byte 18: RETURN into real closure. garbage closure is now dead.
+        NULLADDR,                   // byte 11: push null cont for ENCORE
+        ARG,                        // byte 12: push result
+        PACK, 1,                    // byte 13: capture = ctor(1)
+        CLOSURE, 20, 0, 1,          // byte 15: real closure at byte 20, ncap=1. alloc 3. hp=6
+        ENCORE,                     // byte 19: ENCORE into real closure. garbage closure is now dead.
 
-        // real_closure body at byte 19:
-        ARG,                        // byte 19: push arg = ctor(0)
-        PACK, 2,                    // byte 20: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
-        CAPTURE, 0,                 // byte 22: push capture 0 — should be ctor(1)
-        FIN,                        // byte 24
+        // real_closure body at byte 20:
+        ARG,                        // byte 20: push arg = ctor(0)
+        PACK, 2,                    // byte 21: ctor(2, arity=1): pops ctor(0), alloc 2. GC!
+        CAPTURE, 0,                 // byte 23: push capture 0 — should be ctor(1)
+        FIN,                        // byte 25
     ];
     let arity_table = [0, 0, 1];
     let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
-    let mut mem = [Value::from_u32(0); 8];
+    let mut mem = [Value::from_u32(0); 10];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
     let result = vm.global(0);

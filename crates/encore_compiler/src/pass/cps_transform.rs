@@ -58,8 +58,10 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
                 cps::Fun {
                     arg: x,
                     cont: kv,
-                    body: Box::new(transform(fg, &env_body, *body, Box::new(move |_fg, r| {
-                        cps::Expr::Return(kv2, r)
+                    body: Box::new(transform(fg, &env_body, *body, Box::new(move |fg, r| {
+                        let nc = fg.fresh("nc");
+                        cps::Expr::Let(nc.clone(), cps::Val::NullCont,
+                            Box::new(cps::Expr::Encore(kv2, r, nc)))
                     }))),
                 },
                 Box::new(k(fg, f)),
@@ -109,8 +111,10 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
                 cps::Fun {
                     arg: x,
                     cont: kv,
-                    body: Box::new(transform(fg, &env_fx, *fun_body, Box::new(move |_fg, r| {
-                        cps::Expr::Return(kv2, r)
+                    body: Box::new(transform(fg, &env_fx, *fun_body, Box::new(move |fg, r| {
+                        let nc = fg.fresh("nc");
+                        cps::Expr::Let(nc.clone(), cps::Val::NullCont,
+                            Box::new(cps::Expr::Encore(kv2, r, nc)))
                     }))),
                 },
                 Box::new(transform(fg, &env_f, *rest, k)),
@@ -176,8 +180,10 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
                             }
                             cps::Case {
                                 binds,
-                                body: transform(fg, &env_case, c.body, Box::new(move |_fg, r| {
-                                    cps::Expr::Return(kn_ref, r)
+                                body: transform(fg, &env_case, c.body, Box::new(move |fg, r| {
+                                    let nc = fg.fresh("nc");
+                                    cps::Expr::Let(nc.clone(), cps::Val::NullCont,
+                                        Box::new(cps::Expr::Encore(kn_ref, r, nc)))
                                 })),
                             }
                         })

@@ -20,7 +20,7 @@ pub fn subst_val(from: &str, to: &str, val: &mut Val) {
             }
         }
         Val::Field(n, _) => subst_name(from, to, n),
-        Val::Int(_) => {}
+        Val::Int(_) | Val::NullCont => {}
         Val::Prim(_, args) => {
             for a in args {
                 subst_name(from, to, a);
@@ -50,10 +50,6 @@ pub fn subst_expr(from: &str, to: &str, expr: &mut Expr) {
             subst_name(from, to, f);
             subst_name(from, to, x);
             subst_name(from, to, k);
-        }
-        Expr::Return(k, x) => {
-            subst_name(from, to, k);
-            subst_name(from, to, x);
         }
         Expr::Match(n, _, cases) => {
             subst_name(from, to, n);

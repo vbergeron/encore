@@ -153,7 +153,7 @@ Implemented in `pass/asm_resolve.rs`. Computes free variables of each function a
 
 ### Zero-env closure detection
 
-After closure conversion, closures with no captures use a cheaper representation. The `FUNCTION` opcode packs the code address directly into the 32-bit value (in the addr field, with `ncap=0`), skipping both the heap allocation and the heap indirection at call time. `ENCORE` and `RETURN` branch on `ncap` to decide whether to read the code pointer from the value or from the heap. This pairs naturally with hoisting, which is likely to produce zero-capture closures by moving bindings to outer scopes.
+After closure conversion, closures with no captures use a cheaper representation. The `FUNCTION` opcode packs the code address directly into the 32-bit value (in the addr field, with `ncap=0`), skipping both the heap allocation and the heap indirection at call time. `ENCORE` branches on `ncap` to decide whether to read the code pointer from the value or from the heap. This pairs naturally with hoisting, which is likely to produce zero-capture closures by moving bindings to outer scopes.
 
 ## References
 

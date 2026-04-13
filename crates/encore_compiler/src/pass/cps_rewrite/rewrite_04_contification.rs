@@ -135,11 +135,6 @@ fn classify_expr(name: &str, expr: &Expr, calls: &mut usize, escapes: &mut bool)
                 *escapes = true;
             }
         }
-        Expr::Return(k, x) => {
-            if k == name || x == name {
-                *escapes = true;
-            }
-        }
         Expr::Match(n, _, cases) => {
             if n == name {
                 *escapes = true;
@@ -311,7 +306,7 @@ fn inline_call_val(name: &str, fun: &Fun, val: Val) -> Val {
     }
 }
 
-// Multi-use: substitute cont param in body, rewrite Encore→Return in outer.
+// Multi-use: substitute cont param in body, rewrite Encore(name,x,k) → Let(_nc, NullCont, Encore(name,x,_nc)).
 fn contify_to_cont(name: String, fun: Fun, outer: Expr, k0: &str) -> Expr {
     let mut body = *fun.body;
     subst_expr(&fun.cont, k0, &mut body);
@@ -323,10 +318,11 @@ fn contify_to_cont(name: String, fun: Fun, outer: Expr, k0: &str) -> Expr {
     Expr::Let(name, cont, Box::new(outer))
 }
 
-// Replace Encore(name, x, _) with Return(name, x) throughout the expression.
 fn rewrite_calls(name: &str, expr: Expr) -> Expr {
     match expr {
-        Expr::Encore(f, x, _) if f == name => Expr::Return(f, x),
+        Expr::Encore(f, x, _) if f == name => {
+            Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(f, x, "_nc".into())))
+        }
         Expr::Let(n, val, body) => {
             let val = rewrite_calls_val(name, val);
             Expr::Let(n, val, Box::new(rewrite_calls(name, *body)))

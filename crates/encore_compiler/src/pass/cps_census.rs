@@ -18,7 +18,7 @@ pub fn census_val(census: &mut Census, val: &Val) {
             }
         }
         Val::Field(n, _) => census_name(census, n),
-        Val::Int(_) => {}
+        Val::Int(_) | Val::NullCont => {}
         Val::Prim(_, args) => {
             for a in args {
                 census_name(census, a);
@@ -51,10 +51,6 @@ pub fn census_expr(census: &mut Census, expr: &Expr) {
             census_name(census, x);
             census_name(census, k);
         }
-        Expr::Return(k, x) => {
-            census_name(census, k);
-            census_name(census, x);
-        }
         Expr::Match(n, _, cases) => {
             census_name(census, n);
             for case in cases {
@@ -73,7 +69,7 @@ pub fn count(census: &Census, name: &str) -> usize {
 
 pub fn is_pure(val: &Val) -> bool {
     match val {
-        Val::Var(_) | Val::Int(_) | Val::Cont(_) | Val::Extern(_) => true,
+        Val::Var(_) | Val::Int(_) | Val::NullCont | Val::Cont(_) | Val::Extern(_) => true,
         Val::Ctor(_, _) | Val::Field(_, _) | Val::Prim(_, _) => true,
     }
 }

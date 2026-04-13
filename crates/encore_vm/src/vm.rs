@@ -232,18 +232,9 @@ impl<'a> Vm<'a> {
                     self.code.jump(code_ptr);
                 }
 
-                opcode::RETURN => {
-                    let clo = self.arena.stack_pop();
-                    let result = self.arena.stack_pop();
-                    let code_ptr = if clo.closure_ncap() == 0 {
-                        CodeAddress::new(clo.closure_addr().raw())
-                    } else {
-                        self.arena.heap_read(clo.closure_addr(), 1).header_code_ptr()
-                    };
-                    self.registers[SELF_REF] = clo;
-                    self.registers[ARG] = result;
-                    self.arena.stack_reset();
-                    self.code.jump(code_ptr);
+                opcode::NULLADDR => {
+                    self.stack_ensure(1)?;
+                    self.arena.stack_push(Value::from_u32(0xFFFF));
                 }
 
                 opcode::INT => {
