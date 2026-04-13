@@ -83,6 +83,19 @@ enum Frontend {
         #[command(flatten)]
         opt: OptimizeFlags,
     },
+    /// Compile a Rocq-extracted .scm source file
+    Scheme {
+        /// Path to the .scm source file
+        file: String,
+        /// Output binary path
+        #[arg(short, long, default_value = "out.bin")]
+        out: String,
+        /// Include debug metadata (constructor names) in the binary
+        #[arg(long)]
+        include_metadata: bool,
+        #[command(flatten)]
+        opt: OptimizeFlags,
+    },
 }
 
 #[derive(Parser)]
@@ -157,6 +170,10 @@ fn main() {
             Frontend::Fleche { file, out, include_metadata, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
                 cmd_compile_fleche(&file, &out, config, include_metadata);
+            }
+            Frontend::Scheme { file, out, include_metadata, opt } => {
+                let config: Option<OptimizeConfig> = opt.into();
+                cmd_compile_scheme(&file, &out, config, include_metadata);
             }
         },
         Command::Disasm { file, interactive } => cmd_disasm(&file, interactive),
@@ -235,6 +252,32 @@ fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>, inc
         None
     };
     let binary = encore_compiler::pipeline::compile_module(module,config, metadata.as_ref());
+
+    fs::write(out, &binary).unwrap_or_else(|e| {
+        eprintln!("error: cannot write {out}: {e}");
+        process::exit(1);
+    });
+
+    eprintln!("compiled {path} -> {out} ({} bytes)", binary.len());
+}
+
+fn cmd_compile_scheme(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool) {
+    let source = fs::read_to_string(path).unwrap_or_else(|e| {
+        eprintln!("error: cannot read {path}: {e}");
+        process::exit(1);
+    });
+
+    let (module, ctor_names) = encore_scheme::parse_with_metadata(&source);
+    let metadata = if include_metadata {
+        let global_names = module.defines.iter()
+            .enumerate()
+            .map(|(i, d)| (i as u8, d.name.clone()))
+            .collect();
+        Some(Metadata { ctor_names, global_names })
+    } else {
+        None
+    };
+    let binary = encore_compiler::pipeline::compile_module(module, config, metadata.as_ref());
 
     fs::write(out, &binary).unwrap_or_else(|e| {
         eprintln!("error: cannot write {out}: {e}");

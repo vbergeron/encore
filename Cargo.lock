@@ -218,6 +218,7 @@ dependencies = [
  "encore_compiler",
  "encore_disasm",
  "encore_fleche",
+ "encore_scheme",
  "encore_vm",
 ]
 
@@ -240,6 +241,13 @@ dependencies = [
 
 [[package]]
 name = "encore_fleche"
+version = "0.1.0"
+dependencies = [
+ "encore_compiler",
+]
+
+[[package]]
+name = "encore_scheme"
 version = "0.1.0"
 dependencies = [
  "encore_compiler",
