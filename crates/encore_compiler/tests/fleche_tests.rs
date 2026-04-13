@@ -340,3 +340,68 @@ fn test_arithmetic_let() {
     assert!(result.is_int());
     assert_eq!(result.int_value(), 30);
 }
+
+// -- Extern / FFI --
+
+fn run_with_externs(source: &str, externs: &[(u16, encore_vm::vm::ExternFn)]) -> Value {
+    let module = encore_fleche::parse(source);
+    let binary = pipeline::compile_module(module, None, None);
+    let prog = Program::parse(&binary).unwrap();
+    let last = prog.n_globals() - 1;
+    let mut mem = [Value::from_u32(0); 4096];
+    let mut vm = Vm::init(&mut mem);
+    for &(slot, f) in externs {
+        vm.register_extern(slot, f);
+    }
+    vm.load(&prog).unwrap();
+    vm.global(last)
+}
+
+#[test]
+fn test_extern_basic() {
+    fn triple(v: Value) -> Value {
+        Value::int(v.int_value() * 3)
+    }
+
+    let result = run_with_externs("
+        define extern triple_it 0
+
+        define main as triple_it 7
+    ", &[(0, triple)]);
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 21);
+}
+
+#[test]
+fn test_extern_composed() {
+    fn double(v: Value) -> Value {
+        Value::int(v.int_value() * 2)
+    }
+    fn negate(v: Value) -> Value {
+        Value::int(-v.int_value())
+    }
+
+    let result = run_with_externs("
+        define extern dbl 0
+        define extern neg 1
+
+        define main as neg (dbl 5)
+    ", &[(0, double), (1, negate)]);
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), -10);
+}
+
+#[test]
+fn test_extern_with_wrapper() {
+    fn raw_add(v: Value) -> Value {
+        let a = v.ctor_tag();
+        Value::int(a as i32 * 100)
+    }
+
+    let result = run_with_externs("
+        define extern raw_add 0
+        define main as raw_add True
+    ", &[(0, raw_add)]);
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 100);
+}

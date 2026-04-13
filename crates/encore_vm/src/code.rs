@@ -16,11 +16,15 @@ impl<'a> Code<'a> {
         b
     }
 
-    pub fn read_address(&mut self) -> CodeAddress {
+    pub fn read_u16(&mut self) -> u16 {
         let lo = self.bytes[self.pc] as u16;
         let hi = self.bytes[self.pc + 1] as u16;
         self.pc += 2;
-        CodeAddress::new(lo | (hi << 8))
+        lo | (hi << 8)
+    }
+
+    pub fn read_address(&mut self) -> CodeAddress {
+        CodeAddress::new(self.read_u16())
     }
 
     pub fn read_address_at(&self, pos: usize) -> CodeAddress {

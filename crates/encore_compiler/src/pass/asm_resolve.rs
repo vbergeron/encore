@@ -124,6 +124,8 @@ fn resolve_val(env: &Env, val: &cps::Val) -> asm::Val {
         cps::Val::Prim(op, names) => {
             asm::Val::Prim(*op, names.iter().map(|n| env.lookup(n)).collect())
         }
+
+        cps::Val::Extern(slot) => asm::Val::Extern(*slot),
     }
 }
 
@@ -244,6 +246,7 @@ fn free_vars_val(val: &cps::Val, bound: &mut HashSet<String>, free: &mut HashSet
                 use_name(name, bound, free);
             }
         }
+        cps::Val::Extern(_) => {}
     }
 }
 

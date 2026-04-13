@@ -145,6 +145,11 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             transform_prim_fields(fg, env, fields, vec![], op, k)
         }
 
+        dsi::Expr::Extern(slot) => {
+            let tmp = fg.fresh("ext");
+            cps::Expr::Let(tmp.clone(), cps::Val::Extern(slot), Box::new(k(fg, tmp)))
+        }
+
         dsi::Expr::Match(e, base, cases) => {
             let kn = fg.fresh("k");
             let r = fg.fresh("r");

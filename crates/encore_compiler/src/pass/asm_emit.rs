@@ -11,11 +11,12 @@ pub struct Emitter<'a> {
     buf: Vec<u8>,
     arity_table: Vec<u8>,
     deferred: Vec<(usize, &'a Expr)>,
+    extern_stubs: Vec<(u16, u16)>,
 }
 
 impl<'a> Emitter<'a> {
     pub fn new() -> Self {
-        Self { buf: Vec::new(), arity_table: Vec::new(), deferred: Vec::new() }
+        Self { buf: Vec::new(), arity_table: Vec::new(), deferred: Vec::new(), extern_stubs: Vec::new() }
     }
 
     fn record_arity(&mut self, tag: u8, arity: u8) {
@@ -27,6 +28,24 @@ impl<'a> Emitter<'a> {
 
     pub fn arity_table(&self) -> &[u8] {
         &self.arity_table
+    }
+
+    pub fn emit_extern_stub(&mut self, slot: u16) {
+        let addr = self.pos() as u16;
+        self.extern_stubs.push((slot, addr));
+        self.emit_u8(opcode::ARG);
+        self.emit_u8(opcode::EXTERN);
+        self.emit_u8(slot as u8);
+        self.emit_u8((slot >> 8) as u8);
+        self.emit_u8(opcode::CONT);
+        self.emit_u8(opcode::RETURN);
+    }
+
+    fn extern_stub_addr(&self, slot: u16) -> u16 {
+        self.extern_stubs.iter()
+            .find(|(s, _)| *s == slot)
+            .expect("extern stub not emitted")
+            .1
     }
 
     pub fn pos(&self) -> usize {
@@ -155,6 +174,12 @@ impl<'a> Emitter<'a> {
                     PrimOp::Lt  => self.emit_u8(opcode::INT_LT),
                 }
             }
+            Val::Extern(slot) => {
+                let addr = self.extern_stub_addr(*slot);
+                self.emit_u8(opcode::FUNCTION);
+                self.emit_u8(addr as u8);
+                self.emit_u8((addr >> 8) as u8);
+            }
         }
     }
 
@@ -223,6 +248,11 @@ impl<'a> Emitter<'a> {
 
     pub fn emit_module(module: &Module, metadata: Option<&Metadata>) -> Vec<u8> {
         let mut emitter = Self::new();
+        let mut extern_slots = Vec::new();
+        collect_extern_slots_module(module, &mut extern_slots);
+        for slot in &extern_slots {
+            emitter.emit_extern_stub(*slot);
+        }
         let mut entry_addrs = Vec::with_capacity(module.defines.len());
         for define in &module.defines {
             entry_addrs.push(emitter.pos() as u16);
@@ -259,5 +289,40 @@ fn serialize_name_section(out: &mut Vec<u8>, entries: &[(u8, String)]) {
         out.push(*idx);
         out.push(name.len() as u8);
         out.extend_from_slice(name.as_bytes());
+    }
+}
+
+fn collect_extern_slots_module(module: &Module, slots: &mut Vec<u16>) {
+    for define in &module.defines {
+        collect_extern_slots_expr(&define.body, slots);
+    }
+    slots.sort();
+    slots.dedup();
+}
+
+fn collect_extern_slots_expr(expr: &Expr, slots: &mut Vec<u16>) {
+    match expr {
+        Expr::Let(val, body) => {
+            collect_extern_slots_val(val, slots);
+            collect_extern_slots_expr(body, slots);
+        }
+        Expr::Letrec(fun, body) => {
+            collect_extern_slots_expr(&fun.body, slots);
+            collect_extern_slots_expr(body, slots);
+        }
+        Expr::Match(_, _, cases) => {
+            for case in cases {
+                collect_extern_slots_expr(&case.body, slots);
+            }
+        }
+        Expr::Encore(_, _, _) | Expr::Return(_, _) | Expr::Fin(_) => {}
+    }
+}
+
+fn collect_extern_slots_val(val: &Val, slots: &mut Vec<u16>) {
+    match val {
+        Val::Extern(slot) => slots.push(*slot),
+        Val::ContLam(cont) => collect_extern_slots_expr(&cont.body, slots),
+        _ => {}
     }
 }

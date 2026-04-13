@@ -38,6 +38,7 @@ pub enum Val {
     Field(Loc, u8),
     Int(i32),
     Prim(PrimOp, Vec<Loc>),
+    Extern(u16),
 }
 
 #[derive(Debug, PartialEq)]

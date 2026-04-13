@@ -100,6 +100,15 @@ impl Parser {
 
     fn parse_define(&mut self) -> ds::Define {
         self.lexer.expect(&Token::Define);
+        if *self.lexer.peek() == Token::Extern {
+            self.lexer.next();
+            let name = self.expect_lower_ident();
+            let slot = match self.lexer.next() {
+                Token::Number(n) => n as u16,
+                tok => panic!("expected extern slot index, got {tok:?}"),
+            };
+            return ds::Define { name, body: ds::Expr::Extern(slot) };
+        }
         let name = self.expect_lower_ident();
         self.lexer.expect(&Token::As);
         let body = self.parse_expr();

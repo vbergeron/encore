@@ -3,6 +3,7 @@ pub enum VmError {
     HeapOverflow,
     StackOverflow,
     InvalidOpcode(u8),
+    NotRegistered(u16),
     BadMagic,
     Truncated,
 }

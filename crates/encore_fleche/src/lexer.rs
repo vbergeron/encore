@@ -21,6 +21,7 @@ pub enum Token {
     Field,
     Of,
     Builtin,
+    Extern,
     Eof,
 }
 
@@ -130,6 +131,7 @@ impl Lexer {
             "field" => Token::Field,
             "of" => Token::Of,
             "builtin" => Token::Builtin,
+            "extern" => Token::Extern,
             _ if s.chars().next().unwrap().is_uppercase() => Token::UpperIdent(s),
             _ => Token::LowerIdent(s),
         }

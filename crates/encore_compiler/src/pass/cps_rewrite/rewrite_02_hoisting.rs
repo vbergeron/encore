@@ -76,6 +76,7 @@ fn val_uses_any(val: &Val, names: &HashSet<String>) -> bool {
         Val::Field(n, _) => names.contains(n),
         Val::Int(_) => false,
         Val::Prim(_, args) => args.iter().any(|a| names.contains(a)),
+        Val::Extern(_) => false,
     }
 }
 

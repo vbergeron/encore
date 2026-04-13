@@ -15,6 +15,7 @@ pub enum Expr {
     Match(Box<Expr>, Tag, Vec<Case>),
     Int(i32),
     Prim(PrimOp, Vec<Expr>),
+    Extern(u16),
 }
 
 #[derive(Clone)]

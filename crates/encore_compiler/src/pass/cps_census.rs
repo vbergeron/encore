@@ -24,6 +24,7 @@ pub fn census_val(census: &mut Census, val: &Val) {
                 census_name(census, a);
             }
         }
+        Val::Extern(_) => {}
     }
 }
 
@@ -72,7 +73,7 @@ pub fn count(census: &Census, name: &str) -> usize {
 
 pub fn is_pure(val: &Val) -> bool {
     match val {
-        Val::Var(_) | Val::Int(_) | Val::Cont(_) => true,
+        Val::Var(_) | Val::Int(_) | Val::Cont(_) | Val::Extern(_) => true,
         Val::Ctor(_, _) | Val::Field(_, _) | Val::Prim(_, _) => true,
     }
 }

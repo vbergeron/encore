@@ -35,6 +35,7 @@ pub enum Op {
     IntMul,
     IntEq,
     IntLt,
+    Extern(u16),
     Unknown(u8),
 }
 
@@ -192,6 +193,7 @@ impl fmt::Display for Op {
             Op::IntMul => write!(f, "INT_MUL"),
             Op::IntEq => write!(f, "INT_EQ"),
             Op::IntLt => write!(f, "INT_LT"),
+            Op::Extern(idx) => write!(f, "EXTERN {idx}"),
             Op::Unknown(op) => write!(f, "??? (0x{op:02x})"),
         }
     }
@@ -266,6 +268,9 @@ fn collect_fn_targets(code: &[u8]) -> BTreeSet<u16> {
             opcode::INT => {
                 pc += 3;
             }
+            opcode::EXTERN => {
+                pc += 2;
+            }
             _ => {}
         }
     }
@@ -339,6 +344,7 @@ fn decode_instructions(code: &[u8]) -> Vec<Instr> {
             opcode::INT_MUL => Op::IntMul,
             opcode::INT_EQ => Op::IntEq,
             opcode::INT_LT => Op::IntLt,
+            opcode::EXTERN => Op::Extern(read_u16(&mut pc)),
             _ => Op::Unknown(op_byte),
         };
         instrs.push(Instr {

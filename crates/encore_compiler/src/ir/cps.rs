@@ -30,6 +30,7 @@ pub enum Val {
     Field(Name, u8),
     Int(i32),
     Prim(PrimOp, Vec<Name>),
+    Extern(u16),
 }
 
 #[derive(Debug, Clone, PartialEq)]

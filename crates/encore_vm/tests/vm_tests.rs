@@ -358,3 +358,41 @@ fn test_call() {
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 0);
 }
+
+// -- Extern tests --
+
+#[test]
+fn test_extern_dispatch() {
+    fn double_it(v: Value) -> Value {
+        Value::int(v.int_value() * 2)
+    }
+
+    let code = [
+        // global 0: push 21, call extern 0, return result
+        INT, 21, 0, 0,     // push int(21)
+        EXTERN, 0, 0,      // pop 21, call double_it, push 42
+        FIN,
+    ];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+    vm.register_extern(0, double_it);
+    vm.load(&prog).unwrap();
+
+    assert_eq!(vm.global(0).int_value(), 42);
+}
+
+#[test]
+fn test_extern_not_registered() {
+    let code = [
+        INT, 1, 0, 0,
+        EXTERN, 7, 0,
+        FIN,
+    ];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+
+    let result = vm.load(&prog);
+    assert!(matches!(result, Err(VmError::NotRegistered(7))));
+}

@@ -26,6 +26,7 @@ fn val_mentions(val: &Val, name: &str) -> bool {
         Val::Field(n, _) => n == name,
         Val::Int(_) => false,
         Val::Prim(_, args) => args.iter().any(|a| a == name),
+        Val::Extern(_) => false,
     }
 }
 

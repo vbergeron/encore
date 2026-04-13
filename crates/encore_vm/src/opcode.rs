@@ -24,3 +24,5 @@ pub const INT_LT: u8 = 0x15;
 pub const INT_0: u8 = 0x18;
 pub const INT_1: u8 = 0x19;
 pub const INT_2: u8 = 0x1A;
+
+pub const EXTERN: u8 = 0x20;

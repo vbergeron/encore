@@ -83,5 +83,7 @@ fn resolve(env: &[String], expr: ds::Expr) -> dsi::Expr {
         ds::Expr::Prim(op, args) => {
             dsi::Expr::Prim(op, args.into_iter().map(|a| resolve(env, a)).collect())
         }
+
+        ds::Expr::Extern(slot) => dsi::Expr::Extern(slot),
     }
 }

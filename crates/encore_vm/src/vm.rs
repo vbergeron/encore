@@ -11,11 +11,15 @@ const SELF_REF: usize = 0;
 const ARG: usize = 1;
 const CONT: usize = 2;
 
+pub type ExternFn = fn(Value) -> Value;
+const MAX_EXTERN: usize = 32;
+
 pub struct Vm<'a> {
     code: Code<'a>,
     arity_table: &'a [u8],
     globals: [Value; 64],
     n_globals: u8,
+    extern_fns: [Option<ExternFn>; MAX_EXTERN],
     arena: Arena<'a>,
     registers: [Value; 3],
     #[cfg(feature = "stats")]
@@ -29,6 +33,7 @@ impl<'a> Vm<'a> {
             arity_table: &[],
             globals: [Value::from_u32(0); 64],
             n_globals: 0,
+            extern_fns: [None; MAX_EXTERN],
             arena: Arena::new(mem),
             registers: [
                 Value::function(CodeAddress::new(0)),
@@ -38,6 +43,10 @@ impl<'a> Vm<'a> {
             #[cfg(feature = "stats")]
             stats: VmStats::default(),
         }
+    }
+
+    pub fn register_extern(&mut self, slot: u16, f: ExternFn) {
+        self.extern_fns[slot as usize] = Some(f);
     }
 
     pub fn load(&mut self, prog: &'a Program) -> Result<(), VmError> {
@@ -292,6 +301,15 @@ impl<'a> Vm<'a> {
                     let a = self.arena.stack_pop().int_value();
                     let tag = if a < b { 1 } else { 0 };
                     self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
+                }
+
+                opcode::EXTERN => {
+                    let idx = self.code.read_u16();
+                    let arg = self.arena.stack_pop();
+                    let f = self.extern_fns[idx as usize]
+                        .ok_or(VmError::NotRegistered(idx))?;
+                    let result = f(arg);
+                    self.arena.stack_push(result);
                 }
 
                 opcode::FIN => {

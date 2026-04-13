@@ -26,6 +26,7 @@ pub fn subst_val(from: &str, to: &str, val: &mut Val) {
                 subst_name(from, to, a);
             }
         }
+        Val::Extern(_) => {}
     }
 }
 
