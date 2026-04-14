@@ -3,7 +3,7 @@ use crate::ir::{asm, cps};
 
 #[derive(Clone)]
 struct Env {
-    bindings: HashMap<String, asm::Loc>,
+    bindings: HashMap<String, asm::Reg>,
     local_count: u8,
 }
 
@@ -12,22 +12,20 @@ impl Env {
         Self { bindings: HashMap::new(), local_count: 0 }
     }
 
-    fn lookup(&self, name: &str) -> asm::Loc {
+    fn lookup(&self, name: &str) -> asm::Reg {
         self.bindings[name]
     }
 
-    fn bind_local(&mut self, name: String) {
-        self.bindings.insert(name, asm::Loc::Local(self.local_count));
-        self.local_count += 1;
+    fn bind(&mut self, name: String, reg: asm::Reg) {
+        self.bindings.insert(name, reg);
     }
 
-    fn globals(&self) -> HashMap<String, u8> {
-        self.bindings.iter()
-            .filter_map(|(name, loc)| match loc {
-                asm::Loc::Global(idx) => Some((name.clone(), *idx)),
-                _ => None,
-            })
-            .collect()
+    fn bind_local(&mut self, name: String) -> asm::Reg {
+        assert!(self.local_count < 17, "register overflow: more than 17 locals needed");
+        let reg = asm::X01 + self.local_count;
+        self.local_count += 1;
+        self.bindings.insert(name, reg);
+        reg
     }
 }
 
@@ -41,12 +39,30 @@ pub fn resolve_module(module: &cps::Module) -> asm::Module {
         .enumerate()
         .map(|(i, define)| {
             let mut env = Env::new();
-            for (name, idx) in &globals {
-                env.bindings.insert(name.clone(), asm::Loc::Global(*idx));
+
+            let mut free = HashSet::new();
+            free_vars_expr(&define.body, &mut HashSet::new(), &mut free);
+            let mut used_globals: Vec<(String, u8)> = free.iter()
+                .filter_map(|n| globals.get(n).map(|idx| (n.clone(), *idx)))
+                .collect();
+            used_globals.sort_by_key(|(_, idx)| *idx);
+
+            let global_regs: Vec<(asm::Reg, u8)> = used_globals.iter()
+                .map(|(name, idx)| {
+                    let reg = env.bind_local(name.clone());
+                    (reg, *idx)
+                })
+                .collect();
+
+            let mut body = resolve_expr(&mut env, &define.body, &globals);
+
+            for (reg, idx) in global_regs.into_iter().rev() {
+                body = asm::Expr::Let(reg, asm::Val::Global(idx), Box::new(body));
             }
+
             asm::Define {
                 global: i as u8,
-                body: resolve_expr(&mut env, &define.body),
+                body,
             }
         })
         .collect();
@@ -54,18 +70,23 @@ pub fn resolve_module(module: &cps::Module) -> asm::Module {
     asm::Module { defines }
 }
 
-fn resolve_expr(env: &mut Env, expr: &cps::Expr) -> asm::Expr {
+fn resolve_expr(env: &mut Env, expr: &cps::Expr, globals: &HashMap<String, u8>) -> asm::Expr {
     match expr {
         cps::Expr::Let(name, val, body) => {
-            let ir_val = resolve_val(env, val);
-            env.bind_local(name.clone());
-            asm::Expr::Let(ir_val, Box::new(resolve_expr(env, body)))
+            if matches!(val, cps::Val::NullCont) {
+                env.bind(name.clone(), asm::NULL);
+                return resolve_expr(env, body, globals);
+            }
+
+            let ir_val = resolve_val(env, val, globals);
+            let dest = env.bind_local(name.clone());
+            asm::Expr::Let(dest, ir_val, Box::new(resolve_expr(env, body, globals)))
         }
 
         cps::Expr::Letrec(name, fun, body) => {
-            let ir_fun = resolve_fun(env, fun, Some(name));
-            env.bind_local(name.clone());
-            asm::Expr::Letrec(ir_fun, Box::new(resolve_expr(env, body)))
+            let ir_fun = resolve_fun(env, fun, Some(name), globals);
+            let dest = env.bind_local(name.clone());
+            asm::Expr::Letrec(dest, ir_fun, Box::new(resolve_expr(env, body, globals)))
         }
 
         cps::Expr::Encore(f, x, k) => {
@@ -73,20 +94,22 @@ fn resolve_expr(env: &mut Env, expr: &cps::Expr) -> asm::Expr {
         }
 
         cps::Expr::Match(name, base, cases) => {
-            let loc = env.lookup(name);
+            let reg = env.lookup(name);
 
             let ir_cases = cases.iter().map(|case| {
                 let mut case_env = env.clone();
+                let unpack_base = asm::X01 + case_env.local_count;
                 for bind in &case.binds {
                     case_env.bind_local(bind.clone());
                 }
                 asm::Case {
                     arity: case.binds.len() as u8,
-                    body: resolve_expr(&mut case_env, &case.body),
+                    unpack_base,
+                    body: resolve_expr(&mut case_env, &case.body, globals),
                 }
             }).collect();
 
-            asm::Expr::Match(loc, *base, ir_cases)
+            asm::Expr::Match(reg, *base, ir_cases)
         }
 
         cps::Expr::Fin(name) => {
@@ -95,14 +118,14 @@ fn resolve_expr(env: &mut Env, expr: &cps::Expr) -> asm::Expr {
     }
 }
 
-fn resolve_val(env: &Env, val: &cps::Val) -> asm::Val {
+fn resolve_val(env: &Env, val: &cps::Val, globals: &HashMap<String, u8>) -> asm::Val {
     match val {
         cps::Val::Var(name) => {
-            asm::Val::Loc(env.lookup(name))
+            asm::Val::Reg(env.lookup(name))
         }
 
         cps::Val::Cont(cont) => {
-            asm::Val::ContLam(resolve_cont(env, cont))
+            asm::Val::ContLam(resolve_cont(env, cont, globals))
         }
 
         cps::Val::Ctor(tag, fields) => {
@@ -123,11 +146,11 @@ fn resolve_val(env: &Env, val: &cps::Val) -> asm::Val {
 
         cps::Val::Extern(slot) => asm::Val::Extern(*slot),
 
-        cps::Val::NullCont => asm::Val::Loc(asm::Loc::NullCont),
+        cps::Val::NullCont => asm::Val::Reg(asm::NULL),
     }
 }
 
-fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>) -> asm::Fun {
+fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &HashMap<String, u8>) -> asm::Fun {
     let mut free = HashSet::new();
     free_vars_expr(&fun.body, &mut HashSet::new(), &mut free);
     free.remove(&fun.arg);
@@ -136,58 +159,104 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>) -> asm::Fun {
         free.remove(name);
     }
 
-    let globals = env.globals();
-    let mut capture_names: Vec<String> = free.into_iter()
-        .filter(|n| !globals.contains_key(n))
-        .collect();
+    let mut capture_names: Vec<String> = Vec::new();
+    let mut used_globals: Vec<(String, u8)> = Vec::new();
+    for name in &free {
+        if let Some(idx) = globals.get(name) {
+            used_globals.push((name.clone(), *idx));
+        } else {
+            capture_names.push(name.clone());
+        }
+    }
     capture_names.sort();
+    used_globals.sort_by_key(|(_, idx)| *idx);
 
-    let captures: Vec<asm::Loc> = capture_names.iter()
+    let captures: Vec<asm::Reg> = capture_names.iter()
         .map(|n| env.lookup(n))
         .collect();
 
     let mut inner = Env::new();
-    inner.bindings.insert(fun.arg.clone(), asm::Loc::Arg);
-    inner.bindings.insert(fun.cont.clone(), asm::Loc::Cont);
-    for (name, idx) in &globals {
-        inner.bindings.insert(name.clone(), asm::Loc::Global(*idx));
-    }
-    for (i, name) in capture_names.iter().enumerate() {
-        inner.bindings.insert(name.clone(), asm::Loc::Capture(i as u8));
-    }
+    inner.bind(fun.cont.clone(), asm::CONT);
     if let Some(name) = rec_name {
-        inner.bindings.insert(name.to_string(), asm::Loc::SelfRef);
+        inner.bind(name.to_string(), asm::SELF);
     }
+    let arg_reg = inner.bind_local(fun.arg.clone());
 
-    let body = resolve_expr(&mut inner, &fun.body);
+    let capture_regs: Vec<(asm::Reg, u8)> = capture_names.iter().enumerate()
+        .map(|(i, name)| {
+            let reg = inner.bind_local(name.clone());
+            (reg, i as u8)
+        })
+        .collect();
+
+    let global_regs: Vec<(asm::Reg, u8)> = used_globals.iter()
+        .map(|(name, idx)| {
+            let reg = inner.bind_local(name.clone());
+            (reg, *idx)
+        })
+        .collect();
+
+    let mut body = resolve_expr(&mut inner, &fun.body, globals);
+
+    for (reg, idx) in global_regs.into_iter().rev() {
+        body = asm::Expr::Let(reg, asm::Val::Global(idx), Box::new(body));
+    }
+    for (reg, cap_idx) in capture_regs.into_iter().rev() {
+        body = asm::Expr::Let(reg, asm::Val::Capture(cap_idx), Box::new(body));
+    }
+    body = asm::Expr::Let(arg_reg, asm::Val::Reg(asm::A1), Box::new(body));
+
     asm::Fun { captures, body: Box::new(body) }
 }
 
-fn resolve_cont(env: &Env, cont: &cps::Cont) -> asm::ContLam {
+fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> asm::ContLam {
     let mut free = HashSet::new();
     free_vars_expr(&cont.body, &mut HashSet::new(), &mut free);
     free.remove(&cont.param);
 
-    let globals = env.globals();
-    let mut capture_names: Vec<String> = free.into_iter()
-        .filter(|n| !globals.contains_key(n))
-        .collect();
+    let mut capture_names: Vec<String> = Vec::new();
+    let mut used_globals: Vec<(String, u8)> = Vec::new();
+    for name in &free {
+        if let Some(idx) = globals.get(name) {
+            used_globals.push((name.clone(), *idx));
+        } else {
+            capture_names.push(name.clone());
+        }
+    }
     capture_names.sort();
+    used_globals.sort_by_key(|(_, idx)| *idx);
 
-    let captures: Vec<asm::Loc> = capture_names.iter()
+    let captures: Vec<asm::Reg> = capture_names.iter()
         .map(|n| env.lookup(n))
         .collect();
 
     let mut inner = Env::new();
-    inner.bindings.insert(cont.param.clone(), asm::Loc::Arg);
-    for (name, idx) in &globals {
-        inner.bindings.insert(name.clone(), asm::Loc::Global(*idx));
-    }
-    for (i, name) in capture_names.iter().enumerate() {
-        inner.bindings.insert(name.clone(), asm::Loc::Capture(i as u8));
-    }
+    let param_reg = inner.bind_local(cont.param.clone());
 
-    let body = resolve_expr(&mut inner, &cont.body);
+    let capture_regs: Vec<(asm::Reg, u8)> = capture_names.iter().enumerate()
+        .map(|(i, name)| {
+            let reg = inner.bind_local(name.clone());
+            (reg, i as u8)
+        })
+        .collect();
+
+    let global_regs: Vec<(asm::Reg, u8)> = used_globals.iter()
+        .map(|(name, idx)| {
+            let reg = inner.bind_local(name.clone());
+            (reg, *idx)
+        })
+        .collect();
+
+    let mut body = resolve_expr(&mut inner, &cont.body, globals);
+
+    for (reg, idx) in global_regs.into_iter().rev() {
+        body = asm::Expr::Let(reg, asm::Val::Global(idx), Box::new(body));
+    }
+    for (reg, cap_idx) in capture_regs.into_iter().rev() {
+        body = asm::Expr::Let(reg, asm::Val::Capture(cap_idx), Box::new(body));
+    }
+    body = asm::Expr::Let(param_reg, asm::Val::Reg(asm::A1), Box::new(body));
+
     asm::ContLam { captures, body: Box::new(body) }
 }
 

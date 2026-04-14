@@ -8,8 +8,9 @@ use crate::stats::VmStats;
 use crate::value::{CodeAddress, HeapAddress, Value};
 
 const SELF_REF: usize = 0;
-const ARG: usize = 1;
-const CONT: usize = 2;
+const CONT: usize = 1;
+const A1: usize = 2;
+const N_REGS: usize = 27;
 
 pub type ExternFn = fn(Value) -> Value;
 const MAX_EXTERN: usize = 32;
@@ -21,7 +22,7 @@ pub struct Vm<'a> {
     n_globals: u8,
     extern_fns: [Option<ExternFn>; MAX_EXTERN],
     arena: Arena<'a>,
-    registers: [Value; 3],
+    regs: [Value; N_REGS],
     #[cfg(feature = "stats")]
     stats: VmStats,
 }
@@ -35,11 +36,7 @@ impl<'a> Vm<'a> {
             n_globals: 0,
             extern_fns: [None; MAX_EXTERN],
             arena: Arena::new(mem),
-            registers: [
-                Value::function(0, CodeAddress::new(0)),
-                Value::int(0),
-                Self::RETURN_CONT,
-            ],
+            regs: [Value::from_u32(0); N_REGS],
             #[cfg(feature = "stats")]
             stats: VmStats::default(),
         }
@@ -55,8 +52,7 @@ impl<'a> Vm<'a> {
         self.n_globals = prog.n_globals() as u8;
         for i in 0..self.n_globals as usize {
             let addr = prog.global(i);
-            let sd = prog.global_sd(i);
-            self.globals[i] = self.call_address(addr, sd, Value::from_u32(0))?;
+            self.globals[i] = self.call_address(addr, Value::from_u32(0))?;
         }
         Ok(())
     }
@@ -69,12 +65,16 @@ impl<'a> Vm<'a> {
         self.arena.heap_read(val.ctor_addr(), 1 + idx)
     }
 
-    fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
-        self.arena.alloc(n, &mut self.registers, &mut self.globals[..self.n_globals as usize])
+    fn read_reg(&self, r: u8) -> Value {
+        if r == opcode::NULL {
+            Value::from_u32(0xFFFF)
+        } else {
+            self.regs[r as usize]
+        }
     }
 
-    fn stack_reserve(&mut self, sd: u8) -> Result<(), VmError> {
-        self.arena.stack_reserve(sd as usize, &mut self.registers, &mut self.globals[..self.n_globals as usize])
+    fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
+        self.arena.alloc(n, &mut self.regs, &mut self.globals[..self.n_globals as usize])
     }
 
     fn resolve_code_ptr(&self, func: Value) -> CodeAddress {
@@ -85,37 +85,31 @@ impl<'a> Vm<'a> {
         }
     }
 
-    const RETURN_CONT: Value = Value::function_const(0, 0);
+    const RETURN_CONT: Value = Value::function_const(0);
 
     pub fn call(&mut self, global_idx: usize, arg: Value) -> Result<Value, VmError> {
         let func = self.globals[global_idx];
         let code_ptr = self.resolve_code_ptr(func);
-        self.registers[SELF_REF] = func;
-        self.arena.stack_reset();
-        self.stack_reserve(func.stack_delta())?;
-        self.registers[ARG] = arg;
-        self.registers[CONT] = Self::RETURN_CONT;
+        self.regs[SELF_REF] = func;
+        self.regs[A1] = arg;
+        self.regs[CONT] = Self::RETURN_CONT;
         self.code.jump(code_ptr);
         self.run()
     }
 
     pub fn call_value(&mut self, func: Value, arg: Value) -> Result<Value, VmError> {
         let code_ptr = self.resolve_code_ptr(func);
-        self.registers[SELF_REF] = func;
-        self.arena.stack_reset();
-        self.stack_reserve(func.stack_delta())?;
-        self.registers[ARG] = arg;
-        self.registers[CONT] = Self::RETURN_CONT;
+        self.regs[SELF_REF] = func;
+        self.regs[A1] = arg;
+        self.regs[CONT] = Self::RETURN_CONT;
         self.code.jump(code_ptr);
         self.run()
     }
 
-    fn call_address(&mut self, entry: CodeAddress, sd: u8, arg: Value) -> Result<Value, VmError> {
-        self.registers[SELF_REF] = Value::function(sd, entry);
-        self.arena.stack_reset();
-        self.stack_reserve(sd)?;
-        self.registers[ARG] = arg;
-        self.registers[CONT] = Self::RETURN_CONT;
+    fn call_address(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
+        self.regs[SELF_REF] = Value::function(entry);
+        self.regs[A1] = arg;
+        self.regs[CONT] = Self::RETURN_CONT;
         self.code.jump(entry);
         self.run()
     }
@@ -134,97 +128,97 @@ impl<'a> Vm<'a> {
             { self.stats.op_count += 1; }
             let op = self.code.read_u8();
             match op {
-                opcode::GLOBAL => {
-                    let idx = self.code.read_u8();
-                    self.arena.stack_push(self.globals[idx as usize]);
+                opcode::MOV => {
+                    let rd = self.code.read_u8() as usize;
+                    let rs = self.code.read_u8();
+                    self.regs[rd] = self.read_reg(rs);
                 }
 
                 opcode::CAPTURE => {
-                    let idx = self.code.read_u8();
-                    let addr = self.registers[SELF_REF].closure_addr();
-                    let val = self.arena.heap_read(addr, 2 + idx as usize);
-                    self.arena.stack_push(val);
+                    let rd = self.code.read_u8() as usize;
+                    let idx = self.code.read_u8() as usize;
+                    let addr = self.regs[SELF_REF].closure_addr();
+                    self.regs[rd] = self.arena.heap_read(addr, 2 + idx);
                 }
 
-                opcode::LOCAL => {
-                    let idx = self.code.read_u8();
-                    let val = self.arena.stack_local(idx);
-                    self.arena.stack_push(val);
-                }
-
-                opcode::ARG => {
-                    self.arena.stack_push(self.registers[ARG]);
-                }
-
-                opcode::SELF => {
-                    self.arena.stack_push(self.registers[SELF_REF]);
-                }
-
-                opcode::CONT => {
-                    self.arena.stack_push(self.registers[CONT]);
+                opcode::GLOBAL => {
+                    let rd = self.code.read_u8() as usize;
+                    let idx = self.code.read_u8() as usize;
+                    self.regs[rd] = self.globals[idx];
                 }
 
                 opcode::CLOSURE => {
+                    let rd = self.code.read_u8() as usize;
                     let code_ptr = self.code.read_address();
                     let ncap = self.code.read_u8();
-                    let sd = self.code.read_u8();
                     let size = 2 + ncap as usize;
+                    let mut caps = [0u8; 17];
+                    for i in 0..ncap as usize {
+                        caps[i] = self.code.read_u8();
+                    }
                     let addr = self.alloc(size)?;
                     self.arena.heap_write(addr, 0, Value::gc_header(size as u8));
                     self.arena.heap_write(addr, 1, Value::closure_header(ncap, code_ptr));
                     for i in 0..ncap as usize {
-                        let val = self.arena.stack_pop();
-                        self.arena.heap_write(addr, 2 + ncap as usize - 1 - i, val);
+                        self.arena.heap_write(addr, 2 + i, self.read_reg(caps[i]));
                     }
-                    self.arena.stack_push(Value::closure(sd, addr));
+                    self.regs[rd] = Value::closure(addr);
                 }
 
                 opcode::FUNCTION => {
+                    let rd = self.code.read_u8() as usize;
                     let code_ptr = self.code.read_address();
-                    let sd = self.code.read_u8();
-                    self.arena.stack_push(Value::function(sd, code_ptr));
+                    self.regs[rd] = Value::function(code_ptr);
                 }
 
                 opcode::PACK => {
+                    let rd = self.code.read_u8() as usize;
                     let tag = self.code.read_u8();
                     let arity = self.arity_table[tag as usize] as usize;
                     if arity == 0 {
-                        self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
+                        self.regs[rd] = Value::ctor(tag, HeapAddress::NULL);
                     } else {
+                        let mut fields = [0u8; 17];
+                        for i in 0..arity {
+                            fields[i] = self.code.read_u8();
+                        }
                         let size = 1 + arity;
                         let addr = self.alloc(size)?;
                         self.arena.heap_write(addr, 0, Value::gc_header(size as u8));
                         for i in 0..arity {
-                            let val = self.arena.stack_pop();
-                            self.arena.heap_write(addr, 1 + arity - 1 - i, val);
+                            self.arena.heap_write(addr, 1 + i, self.read_reg(fields[i]));
                         }
-                        self.arena.stack_push(Value::ctor(tag, addr));
+                        self.regs[rd] = Value::ctor(tag, addr);
                     }
                 }
 
                 opcode::FIELD => {
-                    let i = self.code.read_u8();
-                    let ctor = self.arena.stack_pop();
-                    let val = self.arena.heap_read(ctor.ctor_addr(), 1 + i as usize);
-                    self.arena.stack_push(val);
+                    let rd = self.code.read_u8() as usize;
+                    let rs = self.code.read_u8();
+                    let idx = self.code.read_u8() as usize;
+                    let ctor = self.read_reg(rs);
+                    self.regs[rd] = self.arena.heap_read(ctor.ctor_addr(), 1 + idx);
                 }
 
                 opcode::UNPACK => {
+                    let rd = self.code.read_u8() as usize;
                     let tag = self.code.read_u8();
+                    let rs = self.code.read_u8();
                     let arity = self.arity_table[tag as usize] as usize;
-                    let ctor = self.arena.stack_pop();
+                    let ctor = self.read_reg(rs);
                     let addr = ctor.ctor_addr();
                     for i in 0..arity {
-                        self.arena.stack_push(self.arena.heap_read(addr, 1 + i));
+                        self.regs[rd + i] = self.arena.heap_read(addr, 1 + i);
                     }
                 }
 
                 opcode::MATCH => {
+                    let rs = self.code.read_u8();
                     let base = self.code.read_u8();
                     let n = self.code.read_u8();
                     let table = self.code.pc();
                     self.code.skip(n as usize * 2);
-                    let ctor = self.arena.stack_pop();
+                    let ctor = self.read_reg(rs);
                     let branch = ctor.ctor_tag().wrapping_sub(base) as usize;
                     if branch >= n as usize {
                         return Err(VmError::MatchFail);
@@ -234,86 +228,102 @@ impl<'a> Vm<'a> {
                 }
 
                 opcode::ENCORE => {
-                    let clo = self.arena.stack_pop();
-                    let arg = self.arena.stack_pop();
-                    let cont = self.arena.stack_pop();
-                    let code_ptr = self.resolve_code_ptr(clo);
-                    self.registers[SELF_REF] = clo;
-                    self.registers[ARG] = arg;
-                    self.registers[CONT] = cont;
-                    self.arena.stack_reset();
-                    self.stack_reserve(clo.stack_delta())?;
+                    let rf = self.code.read_u8();
+                    let rk = self.code.read_u8();
+                    let fun = self.read_reg(rf);
+                    let cont = self.read_reg(rk);
+                    let code_ptr = self.resolve_code_ptr(fun);
+                    self.regs[SELF_REF] = fun;
+                    self.regs[CONT] = cont;
                     self.code.jump(code_ptr);
                 }
 
-                opcode::NULLADDR => {
-                    self.arena.stack_push(Value::from_u32(0xFFFF));
-                }
-
                 opcode::INT => {
+                    let rd = self.code.read_u8() as usize;
                     let b0 = self.code.read_u8() as u32;
                     let b1 = self.code.read_u8() as u32;
                     let b2 = self.code.read_u8() as u32;
                     let raw = b0 | (b1 << 8) | (b2 << 16);
                     let n = ((raw as i32) << 8) >> 8;
-                    self.arena.stack_push(Value::int(n));
+                    self.regs[rd] = Value::int(n);
                 }
 
                 opcode::INT_0 => {
-                    self.arena.stack_push(Value::int(0));
+                    let rd = self.code.read_u8() as usize;
+                    self.regs[rd] = Value::int(0);
                 }
 
                 opcode::INT_1 => {
-                    self.arena.stack_push(Value::int(1));
+                    let rd = self.code.read_u8() as usize;
+                    self.regs[rd] = Value::int(1);
                 }
 
                 opcode::INT_2 => {
-                    self.arena.stack_push(Value::int(2));
+                    let rd = self.code.read_u8() as usize;
+                    self.regs[rd] = Value::int(2);
                 }
 
                 opcode::INT_ADD => {
-                    let b = self.arena.stack_pop().int_value();
-                    let a = self.arena.stack_pop().int_value();
-                    self.arena.stack_push(Value::int(a.wrapping_add(b)));
+                    let rd = self.code.read_u8() as usize;
+                    let ra = self.code.read_u8();
+                    let rb = self.code.read_u8();
+                    let a = self.read_reg(ra).int_value();
+                    let b = self.read_reg(rb).int_value();
+                    self.regs[rd] = Value::int(a.wrapping_add(b));
                 }
 
                 opcode::INT_SUB => {
-                    let b = self.arena.stack_pop().int_value();
-                    let a = self.arena.stack_pop().int_value();
-                    self.arena.stack_push(Value::int(a.wrapping_sub(b)));
+                    let rd = self.code.read_u8() as usize;
+                    let ra = self.code.read_u8();
+                    let rb = self.code.read_u8();
+                    let a = self.read_reg(ra).int_value();
+                    let b = self.read_reg(rb).int_value();
+                    self.regs[rd] = Value::int(a.wrapping_sub(b));
                 }
 
                 opcode::INT_MUL => {
-                    let b = self.arena.stack_pop().int_value();
-                    let a = self.arena.stack_pop().int_value();
-                    self.arena.stack_push(Value::int(a.wrapping_mul(b)));
+                    let rd = self.code.read_u8() as usize;
+                    let ra = self.code.read_u8();
+                    let rb = self.code.read_u8();
+                    let a = self.read_reg(ra).int_value();
+                    let b = self.read_reg(rb).int_value();
+                    self.regs[rd] = Value::int(a.wrapping_mul(b));
                 }
 
                 opcode::INT_EQ => {
-                    let b = self.arena.stack_pop().int_value();
-                    let a = self.arena.stack_pop().int_value();
+                    let rd = self.code.read_u8() as usize;
+                    let ra = self.code.read_u8();
+                    let rb = self.code.read_u8();
+                    let a = self.read_reg(ra).int_value();
+                    let b = self.read_reg(rb).int_value();
                     let tag = if a == b { 1 } else { 0 };
-                    self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
+                    self.regs[rd] = Value::ctor(tag, HeapAddress::NULL);
                 }
 
                 opcode::INT_LT => {
-                    let b = self.arena.stack_pop().int_value();
-                    let a = self.arena.stack_pop().int_value();
+                    let rd = self.code.read_u8() as usize;
+                    let ra = self.code.read_u8();
+                    let rb = self.code.read_u8();
+                    let a = self.read_reg(ra).int_value();
+                    let b = self.read_reg(rb).int_value();
                     let tag = if a < b { 1 } else { 0 };
-                    self.arena.stack_push(Value::ctor(tag, HeapAddress::NULL));
+                    self.regs[rd] = Value::ctor(tag, HeapAddress::NULL);
                 }
 
                 opcode::EXTERN => {
+                    let rd = self.code.read_u8() as usize;
                     let idx = self.code.read_u16();
-                    let arg = self.arena.stack_pop();
+                    let ra = self.code.read_u8();
+                    let arg = self.read_reg(ra);
                     let f = self.extern_fns[idx as usize]
                         .ok_or(VmError::NotRegistered(idx))?;
                     let result = f(arg);
-                    self.arena.stack_push(result);
+                    self.regs[rd] = result;
                 }
 
                 opcode::FIN => {
-                    return Ok(self.arena.stack_peek());
+                    let rs = self.code.read_u8();
+                    return Ok(self.read_reg(rs));
                 }
 
                 _ => {

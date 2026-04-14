@@ -17,9 +17,6 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
     for g in globals.iter() {
         enqueue(arena, &mut wl, *g);
     }
-    for i in arena.sp..arena.mem.len() {
-        enqueue(arena, &mut wl, arena.mem[i]);
-    }
     while !wl.is_null() {
         let addr = wl.raw() as usize;
         let gc = arena.mem[addr];
@@ -38,9 +35,6 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
     }
     for g in globals.iter_mut() {
         *g = update_value(arena.mem, *g);
-    }
-    for i in arena.sp..arena.mem.len() {
-        arena.mem[i] = update_value(arena.mem, arena.mem[i]);
     }
     update_heap_refs(arena);
 

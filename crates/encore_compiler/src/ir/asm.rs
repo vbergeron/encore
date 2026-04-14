@@ -1,54 +1,53 @@
 use super::prim::PrimOp;
 
 pub type Tag = u8;
+pub type Reg = u8;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Loc {
-    Arg,
-    Cont,
-    NullCont,
-    Local(u8),
-    Capture(u8),
-    Global(u8),
-    SelfRef,
-}
+pub const SELF: Reg = 0;
+pub const CONT: Reg = 1;
+pub const A1: Reg = 2;
+pub const X01: Reg = 10;
+pub const NULL: Reg = 0xFF;
 
 #[derive(Debug, PartialEq)]
 pub struct Fun {
-    pub captures: Vec<Loc>,
+    pub captures: Vec<Reg>,
     pub body: Box<Expr>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct ContLam {
-    pub captures: Vec<Loc>,
+    pub captures: Vec<Reg>,
     pub body: Box<Expr>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct Case {
     pub arity: u8,
+    pub unpack_base: Reg,
     pub body: Expr,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Val {
-    Loc(Loc),
+    Reg(Reg),
+    Capture(u8),
+    Global(u8),
     ContLam(ContLam),
-    Ctor(Tag, Vec<Loc>),
-    Field(Loc, u8),
+    Ctor(Tag, Vec<Reg>),
+    Field(Reg, u8),
     Int(i32),
-    Prim(PrimOp, Vec<Loc>),
+    Prim(PrimOp, Vec<Reg>),
     Extern(u16),
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Expr {
-    Let(Val, Box<Expr>),
-    Letrec(Fun, Box<Expr>),
-    Encore(Loc, Loc, Loc),
-    Match(Loc, Tag, Vec<Case>),
-    Fin(Loc),
+    Let(Reg, Val, Box<Expr>),
+    Letrec(Reg, Fun, Box<Expr>),
+    Encore(Reg, Reg, Reg),
+    Match(Reg, Tag, Vec<Case>),
+    Fin(Reg),
 }
 
 #[derive(Debug)]

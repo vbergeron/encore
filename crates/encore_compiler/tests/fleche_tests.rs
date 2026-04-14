@@ -405,3 +405,4 @@ fn test_extern_with_wrapper() {
     assert!(result.is_int());
     assert_eq!(result.int_value(), 100);
 }
+

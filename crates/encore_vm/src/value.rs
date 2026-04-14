@@ -36,18 +36,16 @@ impl Value {
 
     // -- Constructors --
 
-    /// Bare function (no captures): [TYP_FUNC | stack_delta | code_ptr]
-    pub fn function(stack_delta: u8, code_ptr: CodeAddress) -> Self {
-        Self(TYP_FUNC | (stack_delta as u32) << 8 | (code_ptr.raw() as u32) << 16)
+    pub fn function(code_ptr: CodeAddress) -> Self {
+        Self(TYP_FUNC | (code_ptr.raw() as u32) << 16)
     }
 
-    pub const fn function_const(stack_delta: u8, code_ptr_raw: u16) -> Self {
-        Self(TYP_FUNC | (stack_delta as u32) << 8 | (code_ptr_raw as u32) << 16)
+    pub const fn function_const(code_ptr_raw: u16) -> Self {
+        Self(TYP_FUNC | (code_ptr_raw as u32) << 16)
     }
 
-    /// Heap closure: [TYP_CLOS | stack_delta | heap_addr]
-    pub fn closure(stack_delta: u8, addr: HeapAddress) -> Self {
-        Self(TYP_CLOS | (stack_delta as u32) << 8 | (addr.raw() as u32) << 16)
+    pub fn closure(addr: HeapAddress) -> Self {
+        Self(TYP_CLOS | (addr.raw() as u32) << 16)
     }
 
     pub fn ctor(tag: u8, addr: HeapAddress) -> Self {
@@ -74,7 +72,6 @@ impl Value {
     // -- Function / closure accessors --
 
     pub fn code_ptr(self) -> CodeAddress { CodeAddress((self.0 >> 16) as u16) }
-    pub fn stack_delta(self) -> u8 { (self.0 >> 8) as u8 }
     pub fn closure_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
 
     // -- Constructor accessors --

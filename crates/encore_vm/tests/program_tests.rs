@@ -11,7 +11,6 @@ fn build(n_arities: u16, n_globals: u16, arities: &[u8], globals: &[u16], code: 
     buf.extend_from_slice(arities);
     for &g in globals {
         buf.extend_from_slice(&g.to_le_bytes());
-        buf.push(0); // stack_delta
     }
     buf.extend_from_slice(code);
     buf
@@ -44,7 +43,7 @@ fn test_globals_roundtrip() {
 
 #[test]
 fn test_code_slice() {
-    let code = &[0x01, 0x02, 0x03, 0xFF];
+    let code = &[0x01, 0x02, 0x03, 0xFE];
     let bytes = build(0, 0, &[], &[], code);
     let prog = Program::parse(&bytes).unwrap();
     assert_eq!(prog.code, code);
@@ -98,8 +97,8 @@ fn test_truncated_payload() {
 
 #[test]
 fn test_extra_trailing_bytes_ignored() {
-    let mut bytes = build(0, 0, &[], &[], &[0xFF]);
+    let mut bytes = build(0, 0, &[], &[], &[0xFE]);
     bytes.extend_from_slice(&[0x00; 100]);
     let prog = Program::parse(&bytes).unwrap();
-    assert_eq!(prog.code, &[0xFF]);
+    assert_eq!(prog.code, &[0xFE]);
 }
