@@ -56,21 +56,22 @@ fn inline_expr(expr: Expr, threshold: usize, env: &Env) -> Expr {
         }
         Expr::Letrec(name, fun, body) => {
             let fun = Fun {
-                arg: fun.arg,
+                args: fun.args,
                 cont: fun.cont,
                 body: Box::new(inline_expr(*fun.body, threshold, env)),
             };
             let body = inline_expr(*body, threshold, env);
             Expr::Letrec(name, fun, Box::new(body))
         }
-        Expr::Encore(ref f, ref x, _) => {
-            if let Some(cont) = env.get(f) {
-                let mut body = *cont.body.clone();
-                subst_expr(&cont.param, x, &mut body);
-                body
-            } else {
-                expr
+        Expr::Encore(ref f, ref args, _) => {
+            if args.len() == 1 {
+                if let Some(cont) = env.get(f) {
+                    let mut body = *cont.body.clone();
+                    subst_expr(&cont.param, &args[0], &mut body);
+                    return body;
+                }
             }
+            expr
         }
         Expr::Match(name, base, cases) => {
             let cases = cases

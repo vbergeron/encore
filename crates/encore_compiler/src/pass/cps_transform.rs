@@ -56,12 +56,38 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             cps::Expr::Letrec(
                 f.clone(),
                 cps::Fun {
-                    arg: x,
+                    args: vec![x],
                     cont: kv,
                     body: Box::new(transform(fg, &env_body, *body, Box::new(move |fg, r| {
                         let nc = fg.fresh("nc");
                         cps::Expr::Let(nc.clone(), cps::Val::NullCont,
-                            Box::new(cps::Expr::Encore(kv2, r, nc)))
+                            Box::new(cps::Expr::Encore(kv2, vec![r], nc)))
+                    }))),
+                },
+                Box::new(k(fg, f)),
+            )
+        }
+
+        dsi::Expr::LamN(n, body) => {
+            let f = fg.fresh("f");
+            let kv = fg.fresh("k");
+            let kv2 = kv.clone();
+            let mut env_body = env.to_vec();
+            let mut args = Vec::with_capacity(n);
+            for _ in 0..n {
+                let x = fg.fresh("x");
+                env_body.push(x.clone());
+                args.push(x);
+            }
+            cps::Expr::Letrec(
+                f.clone(),
+                cps::Fun {
+                    args,
+                    cont: kv,
+                    body: Box::new(transform(fg, &env_body, *body, Box::new(move |fg, r| {
+                        let nc = fg.fresh("nc");
+                        cps::Expr::Let(nc.clone(), cps::Val::NullCont,
+                            Box::new(cps::Expr::Encore(kv2, vec![r], nc)))
                     }))),
                 },
                 Box::new(k(fg, f)),
@@ -81,9 +107,16 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
                             param: r,
                             body: Box::new(k(fg, r2)),
                         }),
-                        Box::new(cps::Expr::Encore(f, x, kn)),
+                        Box::new(cps::Expr::Encore(f, vec![x], kn)),
                     )
                 }))
+            }))
+        }
+
+        dsi::Expr::AppN(ef, eargs) => {
+            let env2 = env.to_vec();
+            transform(fg, env, *ef, Box::new(move |fg, f| {
+                transform_appn_args(fg, &env2, eargs, vec![], f, k)
             }))
         }
 
@@ -109,12 +142,12 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             cps::Expr::Letrec(
                 f,
                 cps::Fun {
-                    arg: x,
+                    args: vec![x],
                     cont: kv,
                     body: Box::new(transform(fg, &env_fx, *fun_body, Box::new(move |fg, r| {
                         let nc = fg.fresh("nc");
                         cps::Expr::Let(nc.clone(), cps::Val::NullCont,
-                            Box::new(cps::Expr::Encore(kv2, r, nc)))
+                            Box::new(cps::Expr::Encore(kv2, vec![r], nc)))
                     }))),
                 },
                 Box::new(transform(fg, &env_f, *rest, k)),
@@ -183,7 +216,7 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
                                 body: transform(fg, &env_case, c.body, Box::new(move |fg, r| {
                                     let nc = fg.fresh("nc");
                                     cps::Expr::Let(nc.clone(), cps::Val::NullCont,
-                                        Box::new(cps::Expr::Encore(kn_ref, r, nc)))
+                                        Box::new(cps::Expr::Encore(kn_ref, vec![r], nc)))
                                 })),
                             }
                         })
@@ -217,6 +250,36 @@ fn transform_prim_fields(
         let mut acc = acc;
         acc.push(v);
         transform_prim_fields(fg, &env_owned, fields, acc, op, k)
+    }))
+}
+
+fn transform_appn_args(
+    fg: &mut FreshGen,
+    env: &[String],
+    mut args: Vec<dsi::Expr>,
+    acc: Vec<String>,
+    f: String,
+    k: Cont,
+) -> cps::Expr {
+    if args.is_empty() {
+        let kn = fg.fresh("k");
+        let r = fg.fresh("r");
+        let r2 = r.clone();
+        return cps::Expr::Let(
+            kn.clone(),
+            cps::Val::Cont(cps::Cont {
+                param: r,
+                body: Box::new(k(fg, r2)),
+            }),
+            Box::new(cps::Expr::Encore(f, acc, kn)),
+        );
+    }
+    let head = args.remove(0);
+    let env_owned = env.to_vec();
+    transform(fg, env, head, Box::new(move |fg, v| {
+        let mut acc = acc;
+        acc.push(v);
+        transform_appn_args(fg, &env_owned, args, acc, f, k)
     }))
 }
 

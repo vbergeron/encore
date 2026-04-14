@@ -46,9 +46,11 @@ pub fn census_expr(census: &mut Census, expr: &Expr) {
             census_fun(census, fun);
             census_expr(census, body);
         }
-        Expr::Encore(f, x, k) => {
+        Expr::Encore(f, args, k) => {
             census_name(census, f);
-            census_name(census, x);
+            for a in args {
+                census_name(census, a);
+            }
             census_name(census, k);
         }
         Expr::Match(n, _, cases) => {

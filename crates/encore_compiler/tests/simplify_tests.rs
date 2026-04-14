@@ -20,7 +20,7 @@ fn cont_(param: &str, body: Expr) -> Val {
 }
 
 fn fun_(arg: &str, cont: &str, body: Expr) -> Fun {
-    Fun { arg: n(arg), cont: n(cont), body: Box::new(body) }
+    Fun { args: vec![n(arg)], cont: n(cont), body: Box::new(body) }
 }
 
 fn let_(name: &str, val: Val, body: Expr) -> Expr {
@@ -32,11 +32,11 @@ fn letrec(name: &str, fun: Fun, body: Expr) -> Expr {
 }
 
 fn return_(k: &str, x: &str) -> Expr {
-    Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(n(k), n(x), "_nc".into())))
+    Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(n(k), vec![n(x)], "_nc".into())))
 }
 
 fn encore(f: &str, x: &str, k: &str) -> Expr {
-    Expr::Encore(n(f), n(x), n(k))
+    Expr::Encore(n(f), vec![n(x)], n(k))
 }
 
 fn fin(name: &str) -> Expr {

@@ -22,14 +22,16 @@ fn hoist_expr(expr: Expr) -> Expr {
 
             let mut variant = HashSet::new();
             variant.insert(name.clone());
-            variant.insert(fun.arg.clone());
+            for a in &fun.args {
+                variant.insert(a.clone());
+            }
             variant.insert(fun.cont.clone());
 
             let mut hoisted = Vec::new();
             let remaining = extract_hoistable(inner_body, &mut variant, &mut hoisted);
 
             let fun = Fun {
-                arg: fun.arg,
+                args: fun.args,
                 cont: fun.cont,
                 body: Box::new(remaining),
             };

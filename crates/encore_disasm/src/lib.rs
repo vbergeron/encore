@@ -106,11 +106,29 @@ pub fn decode_program(prog: &Program) -> Disasm {
         .collect();
 
     let fn_targets = collect_fn_targets(prog.code, &arity_table);
+    let match_targets = collect_match_targets(prog.code, &arity_table);
+
+    let mut labels: BTreeMap<u16, String> = BTreeMap::new();
+    for i in 0..prog.n_globals() {
+        let addr = prog.global(i).raw();
+        let name = match global_names.get(&(i as u8)) {
+            Some(n) => n.clone(),
+            None => format!("g{i}"),
+        };
+        labels.insert(addr, name);
+    }
+    for &addr in &fn_targets {
+        labels.entry(addr).or_insert_with(|| format!("fn_{addr:04x}"));
+    }
+    for &addr in &match_targets {
+        labels.entry(addr).or_insert_with(|| format!("case_{addr:04x}"));
+    }
+
     let mut instructions = decode_instructions(prog.code, &arity_table);
 
     for instr in &mut instructions {
-        if fn_targets.contains(&instr.addr) {
-            instr.label = Some(format!("fn_{:04x}", instr.addr));
+        if let Some(label) = labels.get(&instr.addr) {
+            instr.label = Some(label.clone());
         }
         match &instr.op {
             Op::Global { idx, .. } => {
@@ -140,11 +158,19 @@ pub fn decode_program(prog: &Program) -> Disasm {
                 }
             }
             Op::Match { table, .. } => {
-                let named: Vec<String> = table.iter()
-                    .filter_map(|(tag, _)| ctor_names.get(tag).map(|n| n.clone()))
+                let branches: Vec<String> = table.iter()
+                    .map(|(tag, addr)| {
+                        let label = labels.get(addr)
+                            .cloned()
+                            .unwrap_or_else(|| format!("{addr:04x}"));
+                        match ctor_names.get(tag) {
+                            Some(name) => format!("{name} -> {label}"),
+                            None => format!("{tag} -> {label}"),
+                        }
+                    })
                     .collect();
-                if !named.is_empty() {
-                    instr.comment = Some(named.join(" | "));
+                if !branches.is_empty() {
+                    instr.comment = Some(branches.join(" | "));
                 }
             }
             _ => {}
@@ -230,7 +256,7 @@ impl fmt::Display for Disasm {
 
         writeln!(f)?;
         writeln!(f, "--- Code ({} bytes) ---", self.code_len)?;
-        for instr in &self.instructions {
+        for (i, instr) in self.instructions.iter().enumerate() {
             if let Some(label) = &instr.label {
                 writeln!(f)?;
                 writeln!(f, "<{label}>:")?;
@@ -240,6 +266,11 @@ impl fmt::Display for Disasm {
                 writeln!(f, "{:04x}:  {:<40} ; {comment}", instr.addr, op_str)?;
             } else {
                 writeln!(f, "{:04x}:  {}", instr.addr, op_str)?;
+            }
+            let is_terminator = matches!(instr.op, Op::Encore { .. } | Op::Fin { .. });
+            let next_has_label = self.instructions.get(i + 1).is_some_and(|n| n.label.is_some());
+            if is_terminator && !next_has_label && i + 1 < self.instructions.len() {
+                writeln!(f)?;
             }
         }
 
@@ -288,6 +319,54 @@ fn collect_fn_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16> {
                 let _base = code[pc]; pc += 1;
                 let n = code[pc] as usize; pc += 1;
                 pc += n * 2;
+            }
+            opcode::ENCORE => { pc += 2; }
+            opcode::INT => { pc += 4; }
+            opcode::INT_0 | opcode::INT_1 | opcode::INT_2 => { pc += 1; }
+            opcode::INT_ADD | opcode::INT_SUB | opcode::INT_MUL
+            | opcode::INT_EQ | opcode::INT_LT => { pc += 3; }
+            opcode::EXTERN => { pc += 4; }
+            _ => {}
+        }
+    }
+    targets
+}
+
+fn collect_match_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16> {
+    let mut targets = BTreeSet::new();
+    let mut pc = 0;
+    while pc < code.len() {
+        let op = code[pc];
+        pc += 1;
+        match op {
+            opcode::FIN => { pc += 1; }
+            opcode::MOV => { pc += 2; }
+            opcode::CAPTURE | opcode::GLOBAL => { pc += 2; }
+            opcode::CLOSURE => {
+                pc += 1;
+                pc += 2;
+                let ncap = code[pc] as usize; pc += 1;
+                pc += ncap;
+            }
+            opcode::FUNCTION => { pc += 3; }
+            opcode::PACK => {
+                pc += 1;
+                let tag = code[pc]; pc += 1;
+                let arity = arity_table.get(tag as usize).map(|a| a.1).unwrap_or(0) as usize;
+                pc += arity;
+            }
+            opcode::FIELD => { pc += 3; }
+            opcode::UNPACK => { pc += 3; }
+            opcode::MATCH => {
+                pc += 1;
+                let _base = code[pc]; pc += 1;
+                let n = code[pc] as usize; pc += 1;
+                for _ in 0..n {
+                    let lo = code[pc] as u16;
+                    let hi = code[pc + 1] as u16;
+                    targets.insert(lo | (hi << 8));
+                    pc += 2;
+                }
             }
             opcode::ENCORE => { pc += 2; }
             opcode::INT => { pc += 4; }

@@ -49,7 +49,7 @@ fn cont_lam(captures: Vec<asm::Reg>, body: asm::Expr) -> asm::Val {
 }
 
 fn encore(f: asm::Reg, arg: asm::Reg, k: asm::Reg) -> asm::Expr {
-    asm::Expr::Encore(f, arg, k)
+    asm::Expr::Encore(f, vec![arg], k)
 }
 
 fn letrec(dest: asm::Reg, captures: Vec<asm::Reg>, body: asm::Expr, rest: asm::Expr) -> asm::Expr {
@@ -239,7 +239,7 @@ fn test_cont_identity() {
             }),
             Box::new(cps::Expr::Let(
                 "_nc".into(), cps::Val::NullCont,
-                Box::new(cps::Expr::Encore("f".into(), "main".into(), "_nc".into())),
+                Box::new(cps::Expr::Encore("f".into(), vec!["main".into()], "_nc".into())),
             )),
         )),
     ]);
@@ -265,7 +265,7 @@ fn test_cont_global_not_captured() {
             }),
             Box::new(cps::Expr::Let(
                 "_nc".into(), cps::Val::NullCont,
-                Box::new(cps::Expr::Encore("f".into(), "main".into(), "_nc".into())),
+                Box::new(cps::Expr::Encore("f".into(), vec!["main".into()], "_nc".into())),
             )),
         )),
     ]);
@@ -306,7 +306,7 @@ fn test_cont_captures_local() {
                 }),
                 Box::new(cps::Expr::Let(
                     "_nc".into(), cps::Val::NullCont,
-                    Box::new(cps::Expr::Encore("f".into(), "g1".into(), "_nc".into())),
+                    Box::new(cps::Expr::Encore("f".into(), vec!["g1".into()], "_nc".into())),
                 )),
             )),
         )),
@@ -355,7 +355,7 @@ fn test_cont_captures_two_locals() {
                     }),
                     Box::new(cps::Expr::Let(
                         "_nc".into(), cps::Val::NullCont,
-                        Box::new(cps::Expr::Encore("f".into(), "main".into(), "_nc".into())),
+                        Box::new(cps::Expr::Encore("f".into(), vec!["main".into()], "_nc".into())),
                     )),
                 )),
             )),
@@ -496,11 +496,11 @@ fn test_letrec_simple() {
         define("main", cps::Expr::Letrec(
             "f".into(),
             cps::Fun {
-                arg: "x".into(),
+                args: vec!["x".into()],
                 cont: "k".into(),
                 body: Box::new(cps::Expr::Let(
                     "_nc".into(), cps::Val::NullCont,
-                    Box::new(cps::Expr::Encore("k".into(), "x".into(), "_nc".into())),
+                    Box::new(cps::Expr::Encore("k".into(), vec!["x".into()], "_nc".into())),
                 )),
             },
             Box::new(cps::Expr::Let(
@@ -509,7 +509,7 @@ fn test_letrec_simple() {
                     param: "r".into(),
                     body: Box::new(cps::Expr::Fin("r".into())),
                 }),
-                Box::new(cps::Expr::Encore("f".into(), "main".into(), "k0".into())),
+                Box::new(cps::Expr::Encore("f".into(), vec!["main".into()], "k0".into())),
             )),
         )),
     ]);
@@ -549,19 +549,19 @@ fn test_peano_countdown() {
                     Box::new(cps::Expr::Letrec(
                         "f".into(),
                         cps::Fun {
-                            arg: "n".into(),
+                            args: vec!["n".into()],
                             cont: "k".into(),
                             body: Box::new(cps::Expr::Match("n".into(), 0, vec![
                                 cps::Case {
                                     binds: vec![],
                                     body: cps::Expr::Let(
                                         "_nc".into(), cps::Val::NullCont,
-                                        Box::new(cps::Expr::Encore("k".into(), "n".into(), "_nc".into())),
+                                        Box::new(cps::Expr::Encore("k".into(), vec!["n".into()], "_nc".into())),
                                     ),
                                 },
                                 cps::Case {
                                     binds: vec!["pred".into()],
-                                    body: cps::Expr::Encore("f".into(), "pred".into(), "k".into()),
+                                    body: cps::Expr::Encore("f".into(), vec!["pred".into()], "k".into()),
                                 },
                             ])),
                         },
@@ -571,7 +571,7 @@ fn test_peano_countdown() {
                                 param: "r".into(),
                                 body: Box::new(cps::Expr::Fin("r".into())),
                             }),
-                            Box::new(cps::Expr::Encore("f".into(), "s2".into(), "k0".into())),
+                            Box::new(cps::Expr::Encore("f".into(), vec!["s2".into()], "k0".into())),
                         )),
                     )),
                 )),

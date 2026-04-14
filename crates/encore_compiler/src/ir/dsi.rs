@@ -6,7 +6,9 @@ pub type Index = usize;
 pub enum Expr {
     Var(Index),
     Lam(Box<Expr>),
+    LamN(usize, Box<Expr>),
     App(Box<Expr>, Box<Expr>),
+    AppN(Box<Expr>, Vec<Expr>),
     Let(Box<Expr>, Box<Expr>),
     Letrec(Box<Expr>, Box<Expr>),
     Ctor(Tag, Vec<Expr>),

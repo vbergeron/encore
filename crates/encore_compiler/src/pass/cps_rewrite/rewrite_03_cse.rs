@@ -71,7 +71,7 @@ fn cse_expr(expr: Expr, avail: &Available) -> Expr {
         }
         Expr::Letrec(name, fun, body) => {
             let fun = Fun {
-                arg: fun.arg,
+                args: fun.args,
                 cont: fun.cont,
                 body: Box::new(cse_expr(*fun.body, &Vec::new())),
             };

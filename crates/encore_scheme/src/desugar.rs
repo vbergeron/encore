@@ -449,10 +449,11 @@ impl Lowering {
 
             ir::Expr::Lambdas(params, body) => {
                 let body = self.lower_expr(*body);
-                params
-                    .into_iter()
-                    .rev()
-                    .fold(body, |acc, p| ds::Expr::Lam(p, Box::new(acc)))
+                if params.len() == 1 {
+                    ds::Expr::Lam(params.into_iter().next().unwrap(), Box::new(body))
+                } else {
+                    ds::Expr::LamN(params, Box::new(body))
+                }
             }
 
             ir::Expr::App(f, arg) => ds::Expr::App(
@@ -462,8 +463,12 @@ impl Lowering {
 
             ir::Expr::AppN(f, args) => {
                 let f = self.lower_expr(*f);
-                args.into_iter()
-                    .fold(f, |acc, a| ds::Expr::App(Box::new(acc), Box::new(self.lower_expr(a))))
+                let args: Vec<ds::Expr> = args.into_iter().map(|a| self.lower_expr(a)).collect();
+                if args.len() == 1 {
+                    ds::Expr::App(Box::new(f), Box::new(args.into_iter().next().unwrap()))
+                } else {
+                    ds::Expr::AppN(Box::new(f), args)
+                }
             }
 
             ir::Expr::If(cond, then_br, else_br) => {
@@ -641,35 +646,24 @@ mod tests {
     }
 
     #[test]
-    fn lower_curries_lambdas() {
+    fn lower_preserves_lamn() {
         let m = parse_and_lower("(define f (lambdas (a b c) a))");
         match &m.defines[0].body {
-            ds::Expr::Lam(a, rest) => {
-                assert_eq!(a, "a");
-                match rest.as_ref() {
-                    ds::Expr::Lam(b, rest) => {
-                        assert_eq!(b, "b");
-                        match rest.as_ref() {
-                            ds::Expr::Lam(c, _) => assert_eq!(c, "c"),
-                            _ => panic!("expected Lam(c, _)"),
-                        }
-                    }
-                    _ => panic!("expected Lam(b, _)"),
-                }
+            ds::Expr::LamN(params, _) => {
+                assert_eq!(params, &["a", "b", "c"]);
             }
-            _ => panic!("expected Lam(a, _)"),
+            _ => panic!("expected LamN"),
         }
     }
 
     #[test]
-    fn lower_curries_appn() {
+    fn lower_preserves_appn() {
         let m = parse_and_lower("(define r (@ f a b))");
         match &m.defines[0].body {
-            ds::Expr::App(inner, _b) => match inner.as_ref() {
-                ds::Expr::App(_, _a) => {}
-                _ => panic!("expected nested App"),
-            },
-            _ => panic!("expected App"),
+            ds::Expr::AppN(_, args) => {
+                assert_eq!(args.len(), 2);
+            }
+            _ => panic!("expected AppN"),
         }
     }
 

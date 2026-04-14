@@ -31,9 +31,23 @@ fn resolve(env: &[String], expr: ds::Expr) -> dsi::Expr {
             dsi::Expr::Lam(Box::new(resolve(&e, *body)))
         }
 
+        ds::Expr::LamN(params, body) => {
+            let mut e = env.to_vec();
+            let n = params.len();
+            for p in params {
+                e.push(p);
+            }
+            dsi::Expr::LamN(n, Box::new(resolve(&e, *body)))
+        }
+
         ds::Expr::App(e1, e2) => dsi::Expr::App(
             Box::new(resolve(env, *e1)),
             Box::new(resolve(env, *e2)),
+        ),
+
+        ds::Expr::AppN(f, args) => dsi::Expr::AppN(
+            Box::new(resolve(env, *f)),
+            args.into_iter().map(|a| resolve(env, a)).collect(),
         ),
 
         ds::Expr::Let(x, bound, body) => {

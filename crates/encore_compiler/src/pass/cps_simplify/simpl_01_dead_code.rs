@@ -50,7 +50,7 @@ fn dead_code_val(val: Val) -> Val {
 }
 
 fn dead_code_fun(fun: Fun) -> Fun {
-    Fun { arg: fun.arg, cont: fun.cont, body: Box::new(dead_code(*fun.body)) }
+    Fun { args: fun.args, cont: fun.cont, body: Box::new(dead_code(*fun.body)) }
 }
 
 fn dead_code_cont(cont: Cont) -> Cont {

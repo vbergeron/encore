@@ -40,15 +40,17 @@ pub fn subst_expr(from: &str, to: &str, expr: &mut Expr) {
         }
         Expr::Letrec(binder, fun, body) => {
             if binder != from {
-                if fun.arg != from && fun.cont != from {
+                if !fun.args.contains(&from.to_string()) && fun.cont != from {
                     subst_expr(from, to, &mut fun.body);
                 }
                 subst_expr(from, to, body);
             }
         }
-        Expr::Encore(f, x, k) => {
+        Expr::Encore(f, args, k) => {
             subst_name(from, to, f);
-            subst_name(from, to, x);
+            for a in args {
+                subst_name(from, to, a);
+            }
             subst_name(from, to, k);
         }
         Expr::Match(n, _, cases) => {

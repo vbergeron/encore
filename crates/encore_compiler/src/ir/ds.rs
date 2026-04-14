@@ -7,7 +7,9 @@ pub type Tag = u8;
 pub enum Expr {
     Var(Name),
     Lam(Name, Box<Expr>),
+    LamN(Vec<Name>, Box<Expr>),
     App(Box<Expr>, Box<Expr>),
+    AppN(Box<Expr>, Vec<Expr>),
     Let(Name, Box<Expr>, Box<Expr>),
     Letrec(Name, Name, Box<Expr>, Box<Expr>),
     Ctor(Tag, Vec<Expr>),

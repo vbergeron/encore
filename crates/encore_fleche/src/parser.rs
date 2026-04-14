@@ -125,8 +125,28 @@ impl Parser {
                 let name = self.expect_lower_ident();
                 if *self.lexer.peek() == Token::Arrow {
                     self.lexer.next();
+                    let mut params = vec![name];
+                    while let Token::LowerIdent(_) = self.lexer.peek() {
+                        let next = self.expect_lower_ident();
+                        if *self.lexer.peek() == Token::Arrow {
+                            self.lexer.next();
+                            params.push(next);
+                        } else {
+                            let body_head = ds::Expr::Var(next);
+                            let body = self.parse_app_rest(body_head);
+                            if params.len() == 1 {
+                                return ds::Expr::Lam(params.pop().unwrap(), Box::new(body));
+                            } else {
+                                return ds::Expr::LamN(params, Box::new(body));
+                            }
+                        }
+                    }
                     let body = self.parse_expr();
-                    ds::Expr::Lam(name, Box::new(body))
+                    if params.len() == 1 {
+                        ds::Expr::Lam(params.pop().unwrap(), Box::new(body))
+                    } else {
+                        ds::Expr::LamN(params, Box::new(body))
+                    }
                 } else {
                     self.parse_app_rest(ds::Expr::Var(name))
                 }
@@ -245,12 +265,15 @@ impl Parser {
     }
 
     fn parse_app_rest(&mut self, head: ds::Expr) -> ds::Expr {
-        let mut expr = head;
+        let mut args = Vec::new();
         while self.is_atom_start() {
-            let arg = self.parse_atom();
-            expr = ds::Expr::App(Box::new(expr), Box::new(arg));
+            args.push(self.parse_atom());
         }
-        expr
+        match args.len() {
+            0 => head,
+            1 => ds::Expr::App(Box::new(head), Box::new(args.pop().unwrap())),
+            _ => ds::Expr::AppN(Box::new(head), args),
+        }
     }
 
     fn is_atom_start(&mut self) -> bool {

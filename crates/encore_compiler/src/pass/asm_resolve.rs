@@ -89,8 +89,12 @@ fn resolve_expr(env: &mut Env, expr: &cps::Expr, globals: &HashMap<String, u8>) 
             asm::Expr::Letrec(dest, ir_fun, Box::new(resolve_expr(env, body, globals)))
         }
 
-        cps::Expr::Encore(f, x, k) => {
-            asm::Expr::Encore(env.lookup(f), env.lookup(x), env.lookup(k))
+        cps::Expr::Encore(f, args, k) => {
+            asm::Expr::Encore(
+                env.lookup(f),
+                args.iter().map(|a| env.lookup(a)).collect(),
+                env.lookup(k),
+            )
         }
 
         cps::Expr::Match(name, base, cases) => {
@@ -153,7 +157,9 @@ fn resolve_val(env: &Env, val: &cps::Val, globals: &HashMap<String, u8>) -> asm:
 fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &HashMap<String, u8>) -> asm::Fun {
     let mut free = HashSet::new();
     free_vars_expr(&fun.body, &mut HashSet::new(), &mut free);
-    free.remove(&fun.arg);
+    for a in &fun.args {
+        free.remove(a);
+    }
     free.remove(&fun.cont);
     if let Some(name) = rec_name {
         free.remove(name);
@@ -180,7 +186,12 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &Hash
     if let Some(name) = rec_name {
         inner.bind(name.to_string(), asm::SELF);
     }
-    let arg_reg = inner.bind_local(fun.arg.clone());
+    let arg_regs: Vec<(asm::Reg, u8)> = fun.args.iter().enumerate()
+        .map(|(i, arg)| {
+            let reg = inner.bind_local(arg.clone());
+            (reg, asm::A1 + i as u8)
+        })
+        .collect();
 
     let capture_regs: Vec<(asm::Reg, u8)> = capture_names.iter().enumerate()
         .map(|(i, name)| {
@@ -204,7 +215,9 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &Hash
     for (reg, cap_idx) in capture_regs.into_iter().rev() {
         body = asm::Expr::Let(reg, asm::Val::Capture(cap_idx), Box::new(body));
     }
-    body = asm::Expr::Let(arg_reg, asm::Val::Reg(asm::A1), Box::new(body));
+    for (reg, ai) in arg_regs.into_iter().rev() {
+        body = asm::Expr::Let(reg, asm::Val::Reg(ai), Box::new(body));
+    }
 
     asm::Fun { captures, body: Box::new(body) }
 }
@@ -272,9 +285,11 @@ fn free_vars_expr(expr: &cps::Expr, bound: &mut HashSet<String>, free: &mut Hash
             free_vars_fun(fun, bound, free);
             free_vars_expr(body, bound, free);
         }
-        cps::Expr::Encore(f, x, k) => {
+        cps::Expr::Encore(f, args, k) => {
             use_name(f, bound, free);
-            use_name(x, bound, free);
+            for a in args {
+                use_name(a, bound, free);
+            }
             use_name(k, bound, free);
         }
         cps::Expr::Match(name, _, cases) => {
@@ -315,7 +330,9 @@ fn free_vars_val(val: &cps::Val, bound: &mut HashSet<String>, free: &mut HashSet
 
 fn free_vars_fun(fun: &cps::Fun, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
     let mut inner_bound = bound.clone();
-    inner_bound.insert(fun.arg.clone());
+    for a in &fun.args {
+        inner_bound.insert(a.clone());
+    }
     inner_bound.insert(fun.cont.clone());
     free_vars_expr(&fun.body, &mut inner_bound, free);
 }

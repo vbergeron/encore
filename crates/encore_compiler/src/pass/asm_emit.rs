@@ -207,11 +207,14 @@ impl<'a> Emitter<'a> {
                 self.emit_expr(body);
             }
 
-            Expr::Encore(fun, arg, cont) => {
-                if *arg != 2 {
-                    self.emit_u8(opcode::MOV);
-                    self.emit_u8(2); // A1
-                    self.emit_u8(*arg);
+            Expr::Encore(fun, args, cont) => {
+                for (i, arg) in args.iter().enumerate() {
+                    let ai = 2 + i as u8; // A1 = 2, A2 = 3, ...
+                    if *arg != ai {
+                        self.emit_u8(opcode::MOV);
+                        self.emit_u8(ai);
+                        self.emit_u8(*arg);
+                    }
                 }
                 self.emit_u8(opcode::ENCORE);
                 self.emit_u8(*fun);

@@ -118,7 +118,7 @@ fn constant_fold_val(val: Val, env: &mut Env) -> Val {
 
 fn constant_fold_fun(fun: Fun, env: &mut Env) -> Fun {
     Fun {
-        arg: fun.arg,
+        args: fun.args,
         cont: fun.cont,
         body: Box::new(constant_fold_env(*fun.body, &mut env.clone())),
     }

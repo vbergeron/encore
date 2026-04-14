@@ -25,7 +25,7 @@ fn contify_expr(expr: Expr) -> Expr {
     match expr {
         Expr::Letrec(name, fun, body) => {
             let fun = Fun {
-                arg: fun.arg,
+                args: fun.args,
                 cont: fun.cont,
                 body: Box::new(contify_expr(*fun.body)),
             };
@@ -45,7 +45,7 @@ fn contify_expr(expr: Expr) -> Expr {
                 return inline_call(&name, &fun, body);
             }
 
-            if calls > 1 {
+            if calls > 1 && fun.args.len() == 1 {
                 if let Some(k0) = single_continuation(&name, &body) {
                     if !is_bound(&k0, &body) {
                         return contify_to_cont(name, fun, body, &k0);
@@ -85,7 +85,7 @@ fn contify_val(val: Val) -> Val {
 }
 
 fn is_self_recursive(name: &str, fun: &Fun) -> bool {
-    if fun.arg == name || fun.cont == name {
+    if fun.args.iter().any(|a| a == name) || fun.cont == name {
         return false;
     }
     let mut census = Census::new();
@@ -114,9 +114,7 @@ fn classify_expr(name: &str, expr: &Expr, calls: &mut usize, escapes: &mut bool)
         }
         Expr::Letrec(binder, fun, body) => {
             if binder != name {
-                // Uses inside a nested function body count as escaping
-                // (the function captures `name` as a free variable)
-                if fun.arg != name && fun.cont != name {
+                if !fun.args.iter().any(|a| a == name) && fun.cont != name {
                     let mut inner_calls = 0;
                     let mut inner_esc = false;
                     classify_expr(name, &fun.body, &mut inner_calls, &mut inner_esc);
@@ -127,11 +125,11 @@ fn classify_expr(name: &str, expr: &Expr, calls: &mut usize, escapes: &mut bool)
                 classify_expr(name, body, calls, escapes);
             }
         }
-        Expr::Encore(f, x, k) => {
+        Expr::Encore(f, args, k) => {
             if f == name {
                 *calls += 1;
             }
-            if x == name || k == name {
+            if args.iter().any(|a| a == name) || k == name {
                 *escapes = true;
             }
         }
@@ -205,7 +203,7 @@ fn collect_conts(name: &str, expr: &Expr, cont: &mut Option<String>) -> bool {
         }
         Expr::Letrec(binder, fun, body) => {
             if binder != name {
-                if fun.arg != name && fun.cont != name {
+                if !fun.args.iter().any(|a| a == name) && fun.cont != name {
                     if !collect_conts(name, &fun.body, cont) {
                         return false;
                     }
@@ -266,12 +264,14 @@ fn is_bound_val(target: &str, val: &Val) -> bool {
     }
 }
 
-// Single-use: walk outer and replace Encore(name, x, k) with fun.body[arg:=x, cont:=k].
+// Single-use: walk outer and replace Encore(name, args, k) with fun.body[args:=args, cont:=k].
 fn inline_call(name: &str, fun: &Fun, expr: Expr) -> Expr {
     match expr {
-        Expr::Encore(ref f, ref x, ref k) if f == name => {
+        Expr::Encore(ref f, ref args, ref k) if f == name => {
             let mut body = *fun.body.clone();
-            subst_expr(&fun.arg, x, &mut body);
+            for (param, arg) in fun.args.iter().zip(args.iter()) {
+                subst_expr(param, arg, &mut body);
+            }
             subst_expr(&fun.cont, k, &mut body);
             body
         }
@@ -306,12 +306,12 @@ fn inline_call_val(name: &str, fun: &Fun, val: Val) -> Val {
     }
 }
 
-// Multi-use: substitute cont param in body, rewrite Encore(name,x,k) → Let(_nc, NullCont, Encore(name,x,_nc)).
+// Multi-use: substitute cont param in body, rewrite Encore(name,args,k) → Let(_nc, NullCont, Encore(name,args,_nc)).
 fn contify_to_cont(name: String, fun: Fun, outer: Expr, k0: &str) -> Expr {
     let mut body = *fun.body;
     subst_expr(&fun.cont, k0, &mut body);
     let cont = Val::Cont(Cont {
-        param: fun.arg,
+        param: fun.args.into_iter().next().unwrap(),
         body: Box::new(body),
     });
     let outer = rewrite_calls(&name, outer);
@@ -320,8 +320,8 @@ fn contify_to_cont(name: String, fun: Fun, outer: Expr, k0: &str) -> Expr {
 
 fn rewrite_calls(name: &str, expr: Expr) -> Expr {
     match expr {
-        Expr::Encore(f, x, _) if f == name => {
-            Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(f, x, "_nc".into())))
+        Expr::Encore(f, args, _) if f == name => {
+            Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(f, args, "_nc".into())))
         }
         Expr::Let(n, val, body) => {
             let val = rewrite_calls_val(name, val);

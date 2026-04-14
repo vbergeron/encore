@@ -5,7 +5,7 @@ pub type Tag = u8;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Fun {
-    pub arg: Name,
+    pub args: Vec<Name>,
     pub cont: Name,
     pub body: Box<Expr>,
 }
@@ -38,7 +38,7 @@ pub enum Val {
 pub enum Expr {
     Let(Name, Val, Box<Expr>),
     Letrec(Name, Fun, Box<Expr>),
-    Encore(Name, Name, Name),
+    Encore(Name, Vec<Name>, Name),
     Match(Name, Tag, Vec<Case>),
     Fin(Name),
 }
