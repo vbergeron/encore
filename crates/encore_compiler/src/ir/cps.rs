@@ -12,7 +12,7 @@ pub struct Fun {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cont {
-    pub param: Name,
+    pub params: Vec<Name>,
     pub body: Box<Expr>,
 }
 

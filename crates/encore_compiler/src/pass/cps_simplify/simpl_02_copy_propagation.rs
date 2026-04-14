@@ -47,5 +47,5 @@ fn copy_propagation_fun(fun: Fun) -> Fun {
 }
 
 fn copy_propagation_cont(cont: Cont) -> Cont {
-    Cont { param: cont.param, body: Box::new(copy_propagation(*cont.body)) }
+    Cont { params: cont.params, body: Box::new(copy_propagation(*cont.body)) }
 }

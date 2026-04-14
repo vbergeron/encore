@@ -54,5 +54,5 @@ fn dead_code_fun(fun: Fun) -> Fun {
 }
 
 fn dead_code_cont(cont: Cont) -> Cont {
-    Cont { param: cont.param, body: Box::new(dead_code(*cont.body)) }
+    Cont { params: cont.params, body: Box::new(dead_code(*cont.body)) }
 }

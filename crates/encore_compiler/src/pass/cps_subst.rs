@@ -10,7 +10,7 @@ pub fn subst_val(from: &str, to: &str, val: &mut Val) {
     match val {
         Val::Var(n) => subst_name(from, to, n),
         Val::Cont(cont) => {
-            if cont.param != from {
+            if !cont.params.iter().any(|p| p == from) {
                 subst_expr(from, to, &mut cont.body);
             }
         }

@@ -21,7 +21,7 @@ impl Env {
     }
 
     fn bind_local(&mut self, name: String) -> asm::Reg {
-        assert!(self.local_count < 17, "register overflow: more than 17 locals needed");
+        assert!(self.local_count < 22, "register overflow: more than 22 locals needed");
         let reg = asm::X01 + self.local_count;
         self.local_count += 1;
         self.bindings.insert(name, reg);
@@ -225,7 +225,9 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &Hash
 fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> asm::ContLam {
     let mut free = HashSet::new();
     free_vars_expr(&cont.body, &mut HashSet::new(), &mut free);
-    free.remove(&cont.param);
+    for p in &cont.params {
+        free.remove(p);
+    }
 
     let mut capture_names: Vec<String> = Vec::new();
     let mut used_globals: Vec<(String, u8)> = Vec::new();
@@ -244,7 +246,13 @@ fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> a
         .collect();
 
     let mut inner = Env::new();
-    let param_reg = inner.bind_local(cont.param.clone());
+    let arg_regs: Vec<(asm::Reg, u8)> = cont.params.iter().enumerate()
+        .map(|(i, p)| {
+            let ai = asm::A1 + i as u8;
+            let reg = inner.bind_local(p.clone());
+            (reg, ai)
+        })
+        .collect();
 
     let capture_regs: Vec<(asm::Reg, u8)> = capture_names.iter().enumerate()
         .map(|(i, name)| {
@@ -268,7 +276,9 @@ fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> a
     for (reg, cap_idx) in capture_regs.into_iter().rev() {
         body = asm::Expr::Let(reg, asm::Val::Capture(cap_idx), Box::new(body));
     }
-    body = asm::Expr::Let(param_reg, asm::Val::Reg(asm::A1), Box::new(body));
+    for (reg, ai) in arg_regs.into_iter().rev() {
+        body = asm::Expr::Let(reg, asm::Val::Reg(ai), Box::new(body));
+    }
 
     asm::ContLam { captures, body: Box::new(body) }
 }
@@ -339,7 +349,9 @@ fn free_vars_fun(fun: &cps::Fun, bound: &mut HashSet<String>, free: &mut HashSet
 
 fn free_vars_cont(cont: &cps::Cont, bound: &mut HashSet<String>, free: &mut HashSet<String>) {
     let mut inner_bound = bound.clone();
-    inner_bound.insert(cont.param.clone());
+    for p in &cont.params {
+        inner_bound.insert(p.clone());
+    }
     free_vars_expr(&cont.body, &mut inner_bound, free);
 }
 

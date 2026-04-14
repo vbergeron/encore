@@ -126,7 +126,7 @@ fn constant_fold_fun(fun: Fun, env: &mut Env) -> Fun {
 
 fn constant_fold_cont(cont: Cont, env: &mut Env) -> Cont {
     Cont {
-        param: cont.param,
+        params: cont.params,
         body: Box::new(constant_fold_env(*cont.body, &mut env.clone())),
     }
 }

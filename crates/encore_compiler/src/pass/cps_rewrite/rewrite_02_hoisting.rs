@@ -63,7 +63,7 @@ fn hoist_expr(expr: Expr) -> Expr {
 fn hoist_val(val: Val) -> Val {
     match val {
         Val::Cont(cont) => Val::Cont(Cont {
-            param: cont.param,
+            params: cont.params,
             body: Box::new(hoist_expr(*cont.body)),
         }),
         other => other,

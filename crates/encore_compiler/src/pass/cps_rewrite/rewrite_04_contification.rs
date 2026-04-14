@@ -45,7 +45,7 @@ fn contify_expr(expr: Expr) -> Expr {
                 return inline_call(&name, &fun, body);
             }
 
-            if calls > 1 && fun.args.len() == 1 {
+            if calls > 1 {
                 if let Some(k0) = single_continuation(&name, &body) {
                     if !is_bound(&k0, &body) {
                         return contify_to_cont(name, fun, body, &k0);
@@ -77,7 +77,7 @@ fn contify_expr(expr: Expr) -> Expr {
 fn contify_val(val: Val) -> Val {
     match val {
         Val::Cont(cont) => Val::Cont(Cont {
-            param: cont.param,
+            params: cont.params,
             body: Box::new(contify_expr(*cont.body)),
         }),
         other => other,
@@ -155,9 +155,7 @@ fn classify_val(name: &str, val: &Val, calls: &mut usize, escapes: &mut bool) {
     match val {
         Val::Var(n) if n == name => *escapes = true,
         Val::Cont(cont) => {
-            // Continuations execute in the same scope, so calls inside are
-            // legitimate call sites, not escapes.
-            if cont.param != name {
+            if !cont.params.iter().any(|p| p == name) {
                 classify_expr(name, &cont.body, calls, escapes);
             }
         }
@@ -191,7 +189,7 @@ fn collect_conts(name: &str, expr: &Expr, cont: &mut Option<String>) -> bool {
     match expr {
         Expr::Let(binder, val, body) => {
             if let Val::Cont(c) = val {
-                if c.param != name && !collect_conts(name, &c.body, cont) {
+                if !c.params.iter().any(|p| p == name) && !collect_conts(name, &c.body, cont) {
                     return false;
                 }
             }
@@ -259,7 +257,7 @@ fn is_bound(target: &str, expr: &Expr) -> bool {
 
 fn is_bound_val(target: &str, val: &Val) -> bool {
     match val {
-        Val::Cont(cont) => cont.param == target || is_bound(target, &cont.body),
+        Val::Cont(cont) => cont.params.iter().any(|p| p == target) || is_bound(target, &cont.body),
         _ => false,
     }
 }
@@ -299,7 +297,7 @@ fn inline_call(name: &str, fun: &Fun, expr: Expr) -> Expr {
 fn inline_call_val(name: &str, fun: &Fun, val: Val) -> Val {
     match val {
         Val::Cont(cont) => Val::Cont(Cont {
-            param: cont.param,
+            params: cont.params,
             body: Box::new(inline_call(name, fun, *cont.body)),
         }),
         other => other,
@@ -311,7 +309,7 @@ fn contify_to_cont(name: String, fun: Fun, outer: Expr, k0: &str) -> Expr {
     let mut body = *fun.body;
     subst_expr(&fun.cont, k0, &mut body);
     let cont = Val::Cont(Cont {
-        param: fun.args.into_iter().next().unwrap(),
+        params: fun.args,
         body: Box::new(body),
     });
     let outer = rewrite_calls(&name, outer);
@@ -347,7 +345,7 @@ fn rewrite_calls(name: &str, expr: Expr) -> Expr {
 fn rewrite_calls_val(name: &str, val: Val) -> Val {
     match val {
         Val::Cont(cont) => Val::Cont(Cont {
-            param: cont.param,
+            params: cont.params,
             body: Box::new(rewrite_calls(name, *cont.body)),
         }),
         other => other,

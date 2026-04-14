@@ -13,7 +13,10 @@ pub fn eta_reduction(expr: Expr) -> Expr {
             let body = eta_reduction(*body);
             if let Expr::Let(_, Val::NullCont, ref inner) = *cont.body {
                 if let Expr::Encore(ref f, ref args, _) = **inner {
-                    if args.len() == 1 && args[0] == cont.param && *f != cont.param {
+                    if args.len() == cont.params.len()
+                        && args.iter().zip(cont.params.iter()).all(|(a, p)| a == p)
+                        && !cont.params.iter().any(|p| p == f)
+                    {
                         return Expr::Let(name, Val::Var(f.clone()), Box::new(body));
                     }
                 }
@@ -53,5 +56,5 @@ fn eta_reduction_fun(fun: Fun) -> Fun {
 }
 
 fn eta_reduction_cont(cont: Cont) -> Cont {
-    Cont { param: cont.param, body: Box::new(eta_reduction(*cont.body)) }
+    Cont { params: cont.params, body: Box::new(eta_reduction(*cont.body)) }
 }

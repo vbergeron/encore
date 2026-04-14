@@ -10,7 +10,7 @@ use crate::value::{CodeAddress, HeapAddress, Value};
 const SELF_REF: usize = 0;
 const CONT: usize = 1;
 const A1: usize = 2;
-const N_REGS: usize = 27;
+const N_REGS: usize = 32;
 
 pub type ExternFn = fn(Value) -> Value;
 const MAX_EXTERN: usize = 32;

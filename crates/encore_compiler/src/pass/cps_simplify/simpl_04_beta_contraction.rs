@@ -56,19 +56,18 @@ fn beta_contraction_fun(fun: Fun) -> Fun {
 }
 
 fn beta_contraction_cont(cont: Cont) -> Cont {
-    Cont { param: cont.param, body: Box::new(beta_contraction(*cont.body)) }
+    Cont { params: cont.params, body: Box::new(beta_contraction(*cont.body)) }
 }
 
-/// Walk the expression looking for `Let(_, NullCont, Encore(k, args, _))` where
-/// `k == name` and args has exactly one element, and replace it with the cont
-/// body where `param := args[0]`.
 fn try_inline(name: &str, cont: &Cont, expr: Expr) -> Option<Expr> {
     match expr {
         Expr::Let(_, Val::NullCont, ref body) => {
             if let Expr::Encore(ref k, ref args, _) = **body {
-                if k == name && args.len() == 1 {
+                if k == name && args.len() == cont.params.len() {
                     let mut result = *cont.body.clone();
-                    subst_expr(&cont.param, &args[0], &mut result);
+                    for (param, arg) in cont.params.iter().zip(args.iter()) {
+                        subst_expr(param, arg, &mut result);
+                    }
                     return Some(result);
                 }
             }

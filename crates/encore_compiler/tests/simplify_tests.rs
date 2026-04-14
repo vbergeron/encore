@@ -16,7 +16,7 @@ fn int(v: i32) -> Val {
 }
 
 fn cont_(param: &str, body: Expr) -> Val {
-    Val::Cont(Cont { param: n(param), body: Box::new(body) })
+    Val::Cont(Cont { params: vec![n(param)], body: Box::new(body) })
 }
 
 fn fun_(arg: &str, cont: &str, body: Expr) -> Fun {
@@ -529,7 +529,7 @@ fn test_inline_small_cont() {
     // let f = cont(x). fin x in let _nc = nullcont in encore f arg _nc
     // ──►  let f = cont(x). fin x in let _nc = nullcont in fin arg
     let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
-    let result = cps_rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20, &Default::default());
     let expected = let_("f", cont_("x", fin("x")),
         let_("_nc", Val::NullCont, fin("arg")));
     assert_eq!(result, expected);
@@ -542,7 +542,7 @@ fn test_inline_too_large() {
         let_("b", int(2),
             let_("c", int(3), fin("c"))));
     let expr = let_("f", cont_("x", big_body.clone()), return_("f", "arg"));
-    let result = cps_rewrite::inlining(expr.clone(), 2);
+    let result = cps_rewrite::inlining(expr.clone(), 2, &Default::default());
     assert_eq!(result, expr);
 }
 
@@ -551,7 +551,7 @@ fn test_inline_letrec_not_inlined() {
     // Recursive functions should not be inlined by cont inlining
     let expr = letrec("f", fun_("x", "k", encore("f", "x", "k")),
         let_("k0", cont_("r", fin("r")), encore("f", "arg", "k0")));
-    let result = cps_rewrite::inlining(expr.clone(), 100);
+    let result = cps_rewrite::inlining(expr.clone(), 100, &Default::default());
     assert_eq!(result, expr);
 }
 
@@ -569,7 +569,7 @@ fn test_inline_multiple_call_sites() {
             case(&[], let_("_nc", Val::NullCont, fin("x"))),
             case(&[], let_("_nc", Val::NullCont, fin("y"))),
         ]));
-    let result = cps_rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20, &Default::default());
     assert_eq!(result, expected);
 }
 
@@ -583,7 +583,7 @@ fn test_inline_with_substitution() {
     let expected = let_("f",
         cont_("x", let_("r", field("x", 0), fin("r"))),
         let_("_nc", Val::NullCont, let_("r", field("arg", 0), fin("r"))));
-    let result = cps_rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20, &Default::default());
     assert_eq!(result, expected);
 }
 
@@ -595,7 +595,7 @@ fn test_inline_nested_let() {
         let_("y", int(1), return_("f", "arg")));
     let expected = let_("f", cont_("x", fin("x")),
         let_("y", int(1), let_("_nc", Val::NullCont, fin("arg"))));
-    let result = cps_rewrite::inlining(expr, 20);
+    let result = cps_rewrite::inlining(expr, 20, &Default::default());
     assert_eq!(result, expected);
 }
 
@@ -604,7 +604,7 @@ fn test_inline_then_dead_code() {
     // After inlining all call sites, dead_code removes the binding
     // let f = cont(x). fin x in return f arg  →inline→  let f = (...) in fin arg  →dead→  fin arg
     let expr = let_("f", cont_("x", fin("x")), return_("f", "arg"));
-    let after_inline = cps_rewrite::inlining(expr, 20);
+    let after_inline = cps_rewrite::inlining(expr, 20, &Default::default());
     let after_dead = dead_code(after_inline);
     assert_eq!(after_dead, fin("arg"));
 }

@@ -234,7 +234,7 @@ fn test_cont_identity() {
         define("main", cps::Expr::Let(
             "f".into(),
             cps::Val::Cont(cps::Cont {
-                param: "x".into(),
+                params: vec!["x".into()],
                 body: Box::new(cps::Expr::Fin("x".into())),
             }),
             Box::new(cps::Expr::Let(
@@ -260,7 +260,7 @@ fn test_cont_global_not_captured() {
         define("main", cps::Expr::Let(
             "f".into(),
             cps::Val::Cont(cps::Cont {
-                param: "x".into(),
+                params: vec!["x".into()],
                 body: Box::new(cps::Expr::Fin("g".into())),
             }),
             Box::new(cps::Expr::Let(
@@ -301,7 +301,7 @@ fn test_cont_captures_local() {
             Box::new(cps::Expr::Let(
                 "f".into(),
                 cps::Val::Cont(cps::Cont {
-                    param: "x".into(),
+                    params: vec!["x".into()],
                     body: Box::new(cps::Expr::Fin("v".into())),
                 }),
                 Box::new(cps::Expr::Let(
@@ -346,7 +346,7 @@ fn test_cont_captures_two_locals() {
                 Box::new(cps::Expr::Let(
                     "f".into(),
                     cps::Val::Cont(cps::Cont {
-                        param: "x".into(),
+                        params: vec!["x".into()],
                         body: Box::new(cps::Expr::Let(
                             "pair".into(),
                             cps::Val::Ctor(0, vec!["a".into(), "b".into()]),
@@ -506,7 +506,7 @@ fn test_letrec_simple() {
             Box::new(cps::Expr::Let(
                 "k0".into(),
                 cps::Val::Cont(cps::Cont {
-                    param: "r".into(),
+                    params: vec!["r".into()],
                     body: Box::new(cps::Expr::Fin("r".into())),
                 }),
                 Box::new(cps::Expr::Encore("f".into(), vec!["main".into()], "k0".into())),
@@ -568,7 +568,7 @@ fn test_peano_countdown() {
                         Box::new(cps::Expr::Let(
                             "k0".into(),
                             cps::Val::Cont(cps::Cont {
-                                param: "r".into(),
+                                params: vec!["r".into()],
                                 body: Box::new(cps::Expr::Fin("r".into())),
                             }),
                             Box::new(cps::Expr::Encore("f".into(), vec!["s2".into()], "k0".into())),

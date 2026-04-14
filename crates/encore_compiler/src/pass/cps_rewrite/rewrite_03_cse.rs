@@ -99,7 +99,7 @@ fn cse_expr(expr: Expr, avail: &Available) -> Expr {
 fn cse_val(val: Val, avail: &Available) -> Val {
     match val {
         Val::Cont(cont) => Val::Cont(Cont {
-            param: cont.param,
+            params: cont.params,
             body: Box::new(cse_expr(*cont.body, avail)),
         }),
         other => other,

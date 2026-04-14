@@ -104,7 +104,7 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
                     cps::Expr::Let(
                         kn.clone(),
                         cps::Val::Cont(cps::Cont {
-                            param: r,
+                            params: vec![r],
                             body: Box::new(k(fg, r2)),
                         }),
                         Box::new(cps::Expr::Encore(f, vec![x], kn)),
@@ -196,7 +196,7 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             cps::Expr::Let(
                 kn,
                 cps::Val::Cont(cps::Cont {
-                    param: r,
+                    params: vec![r],
                     body: Box::new(k(fg, r2)),
                 }),
                 Box::new(transform(fg, env, *e, Box::new(move |fg, v| {
@@ -268,7 +268,7 @@ fn transform_appn_args(
         return cps::Expr::Let(
             kn.clone(),
             cps::Val::Cont(cps::Cont {
-                param: r,
+                params: vec![r],
                 body: Box::new(k(fg, r2)),
             }),
             Box::new(cps::Expr::Encore(f, acc, kn)),
