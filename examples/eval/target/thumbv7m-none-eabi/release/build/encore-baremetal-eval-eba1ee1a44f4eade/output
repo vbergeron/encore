@@ -1,3 +1,0 @@
-cargo::rustc-link-search=/home/vbergeron/perso/encore/examples/eval
-cargo::rerun-if-changed=memory.x
-cargo::rerun-if-changed=/home/vbergeron/perso/encore/examples/eval/scheme/eval.scm
