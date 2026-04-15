@@ -42,11 +42,34 @@ impl<'a> Arena<'a> {
         Ok(addr)
     }
 
-    pub fn heap_read(&self, addr: HeapAddress, off: usize) -> Value {
-        unsafe { *self.mem.get_unchecked(addr.offset(off)) }
-    }
+}
 
-    pub fn heap_write(&mut self, addr: HeapAddress, off: usize, val: Value) {
-        unsafe { *self.mem.get_unchecked_mut(addr.offset(off)) = val; }
+impl core::ops::Index<HeapAddress> for Arena<'_> {
+    type Output = Value;
+    #[inline(always)]
+    fn index(&self, addr: HeapAddress) -> &Value {
+        unsafe { self.mem.get_unchecked(addr.raw() as usize) }
+    }
+}
+
+impl core::ops::IndexMut<HeapAddress> for Arena<'_> {
+    #[inline(always)]
+    fn index_mut(&mut self, addr: HeapAddress) -> &mut Value {
+        unsafe { self.mem.get_unchecked_mut(addr.raw() as usize) }
+    }
+}
+
+impl core::ops::Index<usize> for Arena<'_> {
+    type Output = Value;
+    #[inline(always)]
+    fn index(&self, idx: usize) -> &Value {
+        unsafe { self.mem.get_unchecked(idx) }
+    }
+}
+
+impl core::ops::IndexMut<usize> for Arena<'_> {
+    #[inline(always)]
+    fn index_mut(&mut self, idx: usize) -> &mut Value {
+        unsafe { self.mem.get_unchecked_mut(idx) }
     }
 }

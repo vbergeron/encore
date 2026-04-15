@@ -17,8 +17,13 @@ impl HeapAddress {
 
     pub fn new(raw: u16) -> Self { Self(raw) }
     pub fn is_null(self) -> bool { self.0 == u16::MAX }
-    pub fn offset(self, off: usize) -> usize { self.0 as usize + off }
     pub fn raw(self) -> u16 { self.0 }
+}
+
+impl core::ops::Add<usize> for HeapAddress {
+    type Output = usize;
+    #[inline(always)]
+    fn add(self, rhs: usize) -> usize { self.0 as usize + rhs }
 }
 
 #[derive(Clone, Copy)]
@@ -27,7 +32,13 @@ pub struct Reg(u8);
 impl Reg {
     pub const fn new(raw: u8) -> Self { Self(raw) }
     pub fn idx(self) -> usize { self.0 as usize }
-    pub fn offset(self, n: usize) -> usize { self.0 as usize + n }
+    pub fn raw(self) -> u8 { self.0 }
+}
+
+impl core::ops::Add<usize> for Reg {
+    type Output = Reg;
+    #[inline(always)]
+    fn add(self, rhs: usize) -> Reg { Reg(self.0 + rhs as u8) }
 }
 
 #[derive(Clone, Copy, Debug)]

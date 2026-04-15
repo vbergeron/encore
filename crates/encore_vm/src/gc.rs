@@ -18,12 +18,12 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
         enqueue(arena, &mut wl, *g);
     }
     while !wl.is_null() {
-        let addr = wl.raw() as usize;
-        let gc = arena.mem[addr];
+        let addr = wl;
+        let gc = arena[addr];
         wl = gc.gc_fwd();
-        if !arena.mem[addr + 1].is_bytes_hdr() {
+        if !arena[addr + 1].is_bytes_hdr() {
             for i in 1..gc.gc_size() as usize {
-                enqueue(arena, &mut wl, arena.mem[addr + i]);
+                enqueue(arena, &mut wl, arena[addr + i]);
             }
         }
     }
@@ -33,10 +33,10 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
 
     // Phase 3: Update references
     for root in roots.iter_mut() {
-        *root = update_value(arena.mem, *root);
+        *root = update_value(arena, *root);
     }
     for g in globals.iter_mut() {
-        *g = update_value(arena.mem, *g);
+        *g = update_value(arena, *g);
     }
     update_heap_refs(arena);
 
@@ -46,11 +46,11 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
 
 fn enqueue(arena: &mut Arena, wl: &mut HeapAddress, val: Value) {
     if !val.has_heap_addr() { return; }
-    let addr = val.heap_addr().raw() as usize;
-    let gc = arena.mem[addr];
+    let addr = val.heap_addr();
+    let gc = arena[addr];
     if gc.gc_is_marked() { return; }
-    arena.mem[addr] = gc.gc_set_mark().gc_set_fwd(*wl);
-    *wl = HeapAddress::new(addr as u16);
+    arena[addr] = gc.gc_set_mark().gc_set_fwd(*wl);
+    *wl = addr;
 }
 
 /// Linear scan: assign contiguous forwarding addresses to marked objects.
@@ -59,10 +59,10 @@ fn forward(arena: &mut Arena) -> usize {
     let mut free: usize = 0;
     let mut pos: usize = 0;
     while pos < arena.hp {
-        let gc = arena.mem[pos];
+        let gc = arena[pos];
         let size = gc.gc_size() as usize;
         if gc.gc_is_marked() {
-            arena.mem[pos] = gc.gc_set_fwd(HeapAddress::new(free as u16));
+            arena[pos] = gc.gc_set_fwd(HeapAddress::new(free as u16));
             free += size;
         }
         pos += size;
@@ -70,9 +70,9 @@ fn forward(arena: &mut Arena) -> usize {
     free
 }
 
-fn update_value(mem: &[Value], val: Value) -> Value {
+fn update_value(arena: &Arena, val: Value) -> Value {
     if !val.has_heap_addr() { return val; }
-    let gc = mem[val.heap_addr().raw() as usize];
+    let gc = arena[val.heap_addr()];
     val.with_heap_addr(gc.gc_fwd())
 }
 
@@ -80,11 +80,12 @@ fn update_value(mem: &[Value], val: Value) -> Value {
 fn update_heap_refs(arena: &mut Arena) {
     let mut pos: usize = 0;
     while pos < arena.hp {
-        let gc = arena.mem[pos];
+        let gc = arena[pos];
         let size = gc.gc_size() as usize;
-        if gc.gc_is_marked() && !arena.mem[pos + 1].is_bytes_hdr() {
+        if gc.gc_is_marked() && !arena[pos + 1].is_bytes_hdr() {
             for i in 1..size {
-                arena.mem[pos + i] = update_value(arena.mem, arena.mem[pos + i]);
+                let v = arena[pos + i];
+                arena[pos + i] = update_value(arena, v);
             }
         }
         pos += size;
@@ -95,13 +96,13 @@ fn update_heap_refs(arena: &mut Arena) {
 fn compact(arena: &mut Arena, new_hp: usize) {
     let mut pos: usize = 0;
     while pos < arena.hp {
-        let gc = arena.mem[pos];
+        let gc = arena[pos];
         let size = gc.gc_size() as usize;
         if gc.gc_is_marked() {
             let fwd = gc.gc_fwd().raw() as usize;
-            arena.mem[fwd] = Value::gc_header(size as u8);
+            arena[fwd] = Value::gc_header(size as u8);
             for i in 1..size {
-                arena.mem[fwd + i] = arena.mem[pos + i];
+                arena[fwd + i] = arena[pos + i];
             }
         }
         pos += size;

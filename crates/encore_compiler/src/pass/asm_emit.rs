@@ -33,12 +33,12 @@ impl<'a> Emitter<'a> {
     pub fn emit_extern_stub(&mut self, slot: u16) {
         let addr = self.pos() as u16;
         self.extern_stubs.push((slot, addr));
-        // EXTERN X01, slot, A1
+        // EXTERN X01, A1, slot
         self.emit_u8(opcode::EXTERN);
         self.emit_u8(10); // X01
+        self.emit_u8(2); // A1
         self.emit_u8(slot as u8);
         self.emit_u8((slot >> 8) as u8);
-        self.emit_u8(2); // A1
         // MOV A1, X01; ENCORE CONT, NULL
         self.emit_u8(opcode::MOV);
         self.emit_u8(2); // A1

@@ -564,8 +564,8 @@ fn decode_instructions(code: &[u8], arity_table: &[(u8, u8)]) -> Vec<Instr> {
             }
             opcode::EXTERN => {
                 let rd = read_u8(&mut pc);
-                let slot = read_u16(&mut pc);
                 let ra = read_u8(&mut pc);
+                let slot = read_u16(&mut pc);
                 Op::Extern { rd, slot, ra }
             }
             opcode::BYTES => {
