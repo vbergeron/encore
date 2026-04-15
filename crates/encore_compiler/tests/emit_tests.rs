@@ -121,12 +121,12 @@ fn test_extern_stub_and_function() {
     emitter.emit_toplevel(&define_body);
     let code = emitter.into_bytes();
 
-    // Stub: EXTERN X01, slot=0, A1; MOV A1, X01; ENCORE CONT, NULL
+    // Stub: EXTERN X01, A1, slot=0; MOV A1, X01; ENCORE CONT, NULL
     assert_eq!(code[0], opcode::EXTERN);
     assert_eq!(code[1], 10);      // X01 dest
-    assert_eq!(code[2], 0);       // slot lo
-    assert_eq!(code[3], 0);       // slot hi
-    assert_eq!(code[4], 2);       // A1 source
+    assert_eq!(code[2], 2);       // A1 source
+    assert_eq!(code[3], 0);       // slot lo
+    assert_eq!(code[4], 0);       // slot hi
     assert_eq!(code[5], opcode::MOV);
     assert_eq!(code[6], 2);       // A1
     assert_eq!(code[7], 10);      // X01

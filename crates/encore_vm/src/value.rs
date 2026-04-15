@@ -156,9 +156,9 @@ impl Value {
     }
 
     pub fn has_heap_addr(self) -> bool {
-        self.is_closure()
-            || (self.is_ctor() && !self.heap_addr().is_null())
-            || self.is_bytes()
+        const HEAP_BITS: u8 = (1 << TYP_CLOS) | (1 << TYP_CTOR) | (1 << TYP_BYTES);
+        let tag = self.0 as u8;
+        (1u8 << tag) & HEAP_BITS != 0 && (tag != TYP_CTOR as u8 || !self.heap_addr().is_null())
     }
 
     pub fn heap_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }

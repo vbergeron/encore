@@ -1,6 +1,7 @@
 use crate::arena::Arena;
 use crate::code::Code;
 use crate::error::VmError;
+use crate::gc;
 use crate::opcode;
 use crate::program::Program;
 use crate::registers::Registers;
@@ -97,10 +98,18 @@ impl<'a> Vm<'a> {
         (word >> (byte_off * 8)) as u8
     }
 
+    #[inline(always)]
     fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
+        self.arena.try_alloc(n).or_else(|_| self.alloc_slow(n))
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn alloc_slow(&mut self, n: usize) -> Result<HeapAddress, VmError> {
         let roots = self.registers.as_mut_slice();
         let globals = &mut self.globals[..self.n_globals as usize];
-        self.arena.alloc(n, roots, globals)
+        gc::collect(&mut self.arena, roots, globals);
+        self.arena.try_alloc(n)
     }
 
     fn resolve_code_ptr(&self, func: Value) -> CodeAddress {
@@ -203,7 +212,7 @@ impl<'a> Vm<'a> {
                     } else {
                         let size = 1 + arity;
                         let addr = self.alloc(size)?;
-                        self.arena[addr + 0] = Value::gc_header(size as u8);
+                        self.arena[addr] = Value::gc_header(size as u8);
                         for i in 0..arity {
                             let field = self.code.read_reg();
                             self.arena[addr + 1 + i] = self.registers[field];

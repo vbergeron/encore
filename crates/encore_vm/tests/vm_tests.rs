@@ -346,7 +346,7 @@ fn test_extern_dispatch() {
 
     let code = [
         INT, X01, 21, 0, 0,         // X01 = int(21)
-        EXTERN, X02, 0, 0, X01,     // X02 = extern(0)(X01)
+        EXTERN, X02, X01, 0, 0,     // X02 = extern(0)(X01)
         FIN, X02,
     ];
     let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
@@ -359,18 +359,18 @@ fn test_extern_dispatch() {
 }
 
 #[test]
+#[should_panic(expected = "unregistered extern")]
 fn test_extern_not_registered() {
     let code = [
         INT, X01, 1, 0, 0,
-        EXTERN, X02, 7, 0, X01,
+        EXTERN, X02, X01, 7, 0,
         FIN, X02,
     ];
     let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
 
-    let result = vm.load(&prog);
-    assert!(matches!(result, Err(VmError::NotRegistered(7))));
+    vm.load(&prog).unwrap();
 }
 
 // -- Bytes tests --
