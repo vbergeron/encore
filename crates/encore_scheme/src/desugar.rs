@@ -127,7 +127,7 @@ fn parse_expr(sexp: &Sexp) -> Result<ir::Expr, String> {
                     "*" => return parse_binop(PrimOp::Int(IntOp::Mul), items),
                     "=" => return parse_binop(PrimOp::Int(IntOp::Eq), items),
                     "<" => return parse_binop(PrimOp::Int(IntOp::Lt), items),
-                    "int->byte" => return parse_prim(PrimOp::Int(IntOp::Byte), 1, items),
+                    "int->byte"    => return parse_prim(PrimOp::Int(IntOp::Byte), 1, items),
                     "bytes-len"    => return parse_prim(PrimOp::Bytes(BytesOp::Len), 1, items),
                     "bytes-get"    => return parse_prim(PrimOp::Bytes(BytesOp::Get), 2, items),
                     "bytes-concat" => return parse_prim(PrimOp::Bytes(BytesOp::Concat), 2, items),

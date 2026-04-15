@@ -182,15 +182,12 @@ impl<'a> Vm<'a> {
                     let code_ptr = self.code.read_address();
                     let ncap = self.code.read_u8();
                     let size = 2 + ncap as usize;
-                    let mut caps = [0u8; 17];
-                    for i in 0..ncap as usize {
-                        caps[i] = self.code.read_u8();
-                    }
                     let addr = self.alloc(size)?;
                     self.arena.heap_write(addr, 0, Value::gc_header(size as u8));
                     self.arena.heap_write(addr, 1, Value::closure_header(ncap, code_ptr));
                     for i in 0..ncap as usize {
-                        self.arena.heap_write(addr, 2 + i, self.read_reg(caps[i]));
+                        let cap = self.code.read_u8();
+                        self.arena.heap_write(addr, 2 + i, self.read_reg(cap));
                     }
                     self.regs[rd] = Value::closure(addr);
                 }
@@ -208,15 +205,12 @@ impl<'a> Vm<'a> {
                     if arity == 0 {
                         self.regs[rd] = Value::ctor(tag, HeapAddress::NULL);
                     } else {
-                        let mut fields = [0u8; 17];
-                        for i in 0..arity {
-                            fields[i] = self.code.read_u8();
-                        }
                         let size = 1 + arity;
                         let addr = self.alloc(size)?;
                         self.arena.heap_write(addr, 0, Value::gc_header(size as u8));
                         for i in 0..arity {
-                            self.arena.heap_write(addr, 1 + i, self.read_reg(fields[i]));
+                            let field = self.code.read_u8();
+                            self.arena.heap_write(addr, 1 + i, self.read_reg(field));
                         }
                         self.regs[rd] = Value::ctor(tag, addr);
                     }
