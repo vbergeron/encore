@@ -95,10 +95,18 @@ fn parse_define_foreign(items: &[Sexp], n_foreign: &mut u16) -> Result<ir::Defin
     }
 }
 
+fn parse_int(s: &str) -> Option<i32> {
+    if let Ok(n) = s.parse::<i32>() {
+        return Some(n);
+    }
+    let hex = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X"))?;
+    i32::from_str_radix(hex, 16).ok()
+}
+
 fn parse_expr(sexp: &Sexp) -> Result<ir::Expr, String> {
     match sexp {
         Sexp::Atom(s) => {
-            if let Ok(n) = s.parse::<i32>() {
+            if let Some(n) = parse_int(s) {
                 Ok(ir::Expr::Int(n))
             } else if s.starts_with('"') && s.ends_with('"') {
                 let inner = &s[1..s.len() - 1];
@@ -328,7 +336,7 @@ fn parse_quote(sexp: &Sexp) -> Result<ir::Expr, String> {
 }
 
 fn is_ctor_tag(s: &str) -> bool {
-    s.parse::<i32>().is_err()
+    parse_int(s).is_none()
 }
 
 fn parse_quasiquote(sexp: &Sexp) -> Result<ir::Expr, String> {
