@@ -1,0 +1,288 @@
+DIGEST 98a80db95515131b423a67d4741fdd4a
+Fproofs.SimArena
+R293:309 Stdlib.Lists.List <> <> lib
+R327:346 Stdlib.ZArith.ZArith <> <> lib
+R364:383 Stdlib.micromega.Lia <> <> lib
+R393:405 Stdlib.Lists.List ListNotations <> mod
+def 534:543 <> replace_at
+binder 546:546 <> A:1
+R561:564 Corelib.Init.Datatypes <> list ind
+R566:566 proofs.SimArena <> A:1 var
+binder 557:557 <> l:2
+R574:576 Corelib.Init.Datatypes <> nat ind
+binder 570:570 <> i:3
+R584:584 proofs.SimArena <> A:1 var
+binder 580:580 <> v:4
+R589:592 Corelib.Init.Datatypes <> list ind
+R594:594 proofs.SimArena <> A:1 var
+R607:607 proofs.SimArena <> l:2 var
+R618:619 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R624:625 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R632:635 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R652:652 proofs.SimArena <> i:3 var
+R665:665 Corelib.Init.Datatypes <> O constr
+R673:676 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R672:672 proofs.SimArena <> v:4 var
+R686:686 Corelib.Init.Datatypes <> S constr
+R694:697 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R698:707 proofs.SimArena <> replace_at:5 def
+R714:714 proofs.SimArena <> v:4 var
+prf 738:756 <> nth_replace_at_same
+binder 759:759 <> A:8
+R774:777 Corelib.Init.Datatypes <> list ind
+R779:779 proofs.SimArena <> A:8 var
+binder 770:770 <> l:9
+R787:789 Corelib.Init.Datatypes <> nat ind
+binder 783:783 <> i:10
+R799:799 proofs.SimArena <> A:8 var
+binder 793:793 <> v:11
+binder 795:795 <> d:12
+R824:829 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R808:810 Corelib.Init.Peano <> ::nat_scope:x_'<'_x not
+R807:807 proofs.SimArena <> i:10 var
+R811:816 Corelib.Init.Datatypes <> length def
+R818:818 proofs.SimArena <> l:9 var
+R856:858 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R830:832 Corelib.Lists.ListDef <> nth def
+R855:855 proofs.SimArena <> d:12 var
+R837:846 proofs.SimArena <> replace_at def
+R852:852 proofs.SimArena <> v:11 var
+R850:850 proofs.SimArena <> i:10 var
+R848:848 proofs.SimArena <> l:9 var
+R834:834 proofs.SimArena <> i:10 var
+R859:859 proofs.SimArena <> v:11 var
+prf 982:1001 <> nth_replace_at_other
+binder 1004:1004 <> A:13
+R1019:1022 Corelib.Init.Datatypes <> list ind
+R1024:1024 proofs.SimArena <> A:13 var
+binder 1015:1015 <> l:14
+R1034:1036 Corelib.Init.Datatypes <> nat ind
+binder 1028:1028 <> i:15
+binder 1030:1030 <> j:16
+R1046:1046 proofs.SimArena <> A:13 var
+binder 1040:1040 <> v:17
+binder 1042:1042 <> d:18
+R1059:1064 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1054:1057 Corelib.Init.Logic <> ::type_scope:x_'<>'_x not
+R1053:1053 proofs.SimArena <> i:15 var
+R1058:1058 proofs.SimArena <> j:16 var
+R1091:1093 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R1065:1067 Corelib.Lists.ListDef <> nth def
+R1090:1090 proofs.SimArena <> d:18 var
+R1072:1081 proofs.SimArena <> replace_at def
+R1087:1087 proofs.SimArena <> v:17 var
+R1085:1085 proofs.SimArena <> i:15 var
+R1083:1083 proofs.SimArena <> l:14 var
+R1069:1069 proofs.SimArena <> j:16 var
+R1094:1096 Corelib.Lists.ListDef <> nth def
+R1102:1102 proofs.SimArena <> d:18 var
+R1100:1100 proofs.SimArena <> l:14 var
+R1098:1098 proofs.SimArena <> j:16 var
+mod 1327:1331 <> Arena
+rec 1343:1343 Arena t
+proj 1357:1358 Arena hp
+proj 1370:1372 Arena mem
+R1363:1363 Corelib.Numbers.BinNums <> Z ind
+R1376:1379 Corelib.Init.Datatypes <> list ind
+R1381:1381 Corelib.Numbers.BinNums <> Z ind
+R1393:1397 proofs.SimArena Arena <> mod
+def 1412:1420 <> arena_new
+R1429:1432 Corelib.Init.Datatypes <> list ind
+R1434:1434 Corelib.Numbers.BinNums <> Z ind
+binder 1423:1425 <> mem:22
+R1439:1445 proofs.SimArena <> t rec
+R1452:1459 proofs.SimArena <> mk constr
+R1463:1465 proofs.SimArena <> mem:22 var
+def 1480:1487 <> arena_hp
+R1494:1500 proofs.SimArena <> t rec
+binder 1490:1490 <> a:23
+R1505:1505 Corelib.Numbers.BinNums <> Z ind
+R1512:1519 proofs.SimArena <> hp proj
+R1521:1521 proofs.SimArena <> a:23 var
+def 1536:1550 <> arena_heap_read
+R1557:1563 proofs.SimArena <> t rec
+binder 1553:1553 <> a:24
+R1578:1578 Corelib.Numbers.BinNums <> Z ind
+binder 1567:1570 <> addr:25
+binder 1572:1574 <> off:26
+R1583:1583 Corelib.Numbers.BinNums <> Z ind
+R1590:1592 Corelib.Lists.ListDef <> nth def
+R1619:1627 proofs.SimArena <> mem proj
+R1629:1629 proofs.SimArena <> a:24 var
+R1595:1602 Stdlib.ZArith.BinInt Z to_nat def
+R1609:1611 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R1605:1608 proofs.SimArena <> addr:25 var
+R1612:1614 proofs.SimArena <> off:26 var
+def 1647:1662 <> arena_heap_write
+R1669:1675 proofs.SimArena <> t rec
+binder 1665:1665 <> a:27
+R1692:1692 Corelib.Numbers.BinNums <> Z ind
+binder 1679:1682 <> addr:28
+binder 1684:1686 <> off:29
+binder 1688:1688 <> v:30
+R1697:1703 proofs.SimArena <> t rec
+R1710:1717 proofs.SimArena <> mk constr
+R1720:1727 proofs.SimArena <> hp proj
+R1729:1729 proofs.SimArena <> a:27 var
+R1733:1742 proofs.SimArena <> replace_at def
+R1782:1782 proofs.SimArena <> v:30 var
+R1759:1766 Stdlib.ZArith.BinInt Z to_nat def
+R1773:1775 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R1769:1772 proofs.SimArena <> addr:28 var
+R1776:1778 proofs.SimArena <> off:29 var
+R1745:1753 proofs.SimArena <> mem proj
+R1755:1755 proofs.SimArena <> a:27 var
+def 1798:1808 <> arena_alloc
+R1815:1821 proofs.SimArena <> t rec
+binder 1811:1811 <> a:31
+R1829:1829 Corelib.Numbers.BinNums <> Z ind
+binder 1825:1825 <> n:32
+R1834:1839 Corelib.Init.Datatypes <> option ind
+R1843:1845 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R1842:1842 Corelib.Numbers.BinNums <> Z ind
+R1846:1852 proofs.SimArena <> t rec
+R1878:1882 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<=?'_x not
+R1874:1876 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R1864:1871 proofs.SimArena <> hp proj
+R1873:1873 proofs.SimArena <> a:31 var
+R1877:1877 proofs.SimArena <> n:32 var
+R1883:1890 Stdlib.ZArith.BinInt Z of_nat def
+R1893:1898 Corelib.Init.Datatypes <> length def
+R1901:1909 proofs.SimArena <> mem proj
+R1911:1911 proofs.SimArena <> a:31 var
+R1991:1994 Corelib.Init.Datatypes <> None constr
+R1925:1928 Corelib.Init.Datatypes <> Some constr
+R1930:1930 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1941:1942 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1982:1982 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1931:1938 proofs.SimArena <> hp proj
+R1940:1940 proofs.SimArena <> a:31 var
+R1943:1950 proofs.SimArena <> mk constr
+R1963:1965 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R1953:1960 proofs.SimArena <> hp proj
+R1962:1962 proofs.SimArena <> a:31 var
+R1966:1966 proofs.SimArena <> n:32 var
+R1970:1978 proofs.SimArena <> mem proj
+R1980:1980 proofs.SimArena <> a:31 var
+prf 2142:2152 <> new_hp_zero
+binder 2163:2165 <> mem:33
+R2194:2196 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2170:2177 proofs.SimArena <> arena_hp def
+R2180:2188 proofs.SimArena <> arena_new def
+R2190:2192 proofs.SimArena <> mem:33 var
+prf 2276:2291 <> hp_returns_field
+binder 2302:2302 <> a:34
+R2317:2319 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2307:2314 proofs.SimArena <> arena_hp def
+R2316:2316 proofs.SimArena <> a:34 var
+R2320:2327 proofs.SimArena <> hp proj
+R2329:2329 proofs.SimArena <> a:34 var
+prf 2440:2459 <> alloc_returns_old_hp
+binder 2470:2470 <> a:35
+binder 2472:2472 <> n:36
+binder 2474:2477 <> addr:37
+binder 2479:2480 <> a':38
+R2518:2523 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2500:2502 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2485:2495 proofs.SimArena <> arena_alloc def
+R2497:2497 proofs.SimArena <> a:35 var
+R2499:2499 proofs.SimArena <> n:36 var
+R2503:2506 Corelib.Init.Datatypes <> Some constr
+R2508:2508 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2513:2514 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2517:2517 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2509:2512 proofs.SimArena <> addr:37 var
+R2515:2516 proofs.SimArena <> a':38 var
+R2528:2530 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2524:2527 proofs.SimArena <> addr:37 var
+R2531:2538 proofs.SimArena <> arena_hp def
+R2540:2540 proofs.SimArena <> a:35 var
+R2583:2593 proofs.SimArena <> arena_alloc def
+R2627:2631 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<=?'_x not
+R2623:2625 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R2613:2620 proofs.SimArena <> hp proj
+R2632:2639 Stdlib.ZArith.BinInt Z of_nat def
+R2642:2647 Corelib.Init.Datatypes <> length def
+R2650:2658 proofs.SimArena <> mem proj
+R2627:2631 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<=?'_x not
+R2623:2625 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R2613:2620 proofs.SimArena <> hp proj
+R2632:2639 Stdlib.ZArith.BinInt Z of_nat def
+R2642:2647 Corelib.Init.Datatypes <> length def
+R2650:2658 proofs.SimArena <> mem proj
+prf 2803:2822 <> heap_write_read_same
+binder 2833:2833 <> a:39
+binder 2835:2838 <> addr:40
+binder 2840:2842 <> off:41
+binder 2844:2844 <> v:42
+R2899:2904 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2871:2873 Corelib.Init.Peano <> ::nat_scope:x_'<'_x not
+R2850:2857 Stdlib.ZArith.BinInt Z to_nat def
+R2864:2866 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R2860:2863 proofs.SimArena <> addr:40 var
+R2867:2869 proofs.SimArena <> off:41 var
+R2874:2879 Corelib.Init.Datatypes <> length def
+R2882:2890 proofs.SimArena <> mem proj
+R2892:2892 proofs.SimArena <> a:39 var
+R2961:2963 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2905:2919 proofs.SimArena <> arena_heap_read def
+R2922:2937 proofs.SimArena <> arena_heap_write def
+R2939:2939 proofs.SimArena <> a:39 var
+R2941:2944 proofs.SimArena <> addr:40 var
+R2946:2948 proofs.SimArena <> off:41 var
+R2950:2950 proofs.SimArena <> v:42 var
+R2953:2956 proofs.SimArena <> addr:40 var
+R2958:2960 proofs.SimArena <> off:41 var
+R2964:2964 proofs.SimArena <> v:42 var
+R3013:3027 proofs.SimArena <> arena_heap_read def
+R3030:3045 proofs.SimArena <> arena_heap_write def
+R3063:3081 proofs.SimArena <> nth_replace_at_same thm
+R3063:3081 proofs.SimArena <> nth_replace_at_same thm
+prf 3184:3204 <> heap_write_read_other
+binder 3215:3215 <> a:43
+binder 3217:3221 <> addr1:44
+binder 3223:3226 <> off1:45
+binder 3228:3232 <> addr2:46
+binder 3234:3237 <> off2:47
+binder 3239:3239 <> v:48
+R3294:3299 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R3267:3270 Corelib.Init.Logic <> ::type_scope:x_'<>'_x not
+R3244:3251 Stdlib.ZArith.BinInt Z to_nat def
+R3259:3261 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3254:3258 proofs.SimArena <> addr1:44 var
+R3262:3265 proofs.SimArena <> off1:45 var
+R3271:3278 Stdlib.ZArith.BinInt Z to_nat def
+R3286:3288 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3281:3285 proofs.SimArena <> addr2:46 var
+R3289:3292 proofs.SimArena <> off2:47 var
+R3360:3364 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3300:3314 proofs.SimArena <> arena_heap_read def
+R3317:3332 proofs.SimArena <> arena_heap_write def
+R3334:3334 proofs.SimArena <> a:43 var
+R3336:3340 proofs.SimArena <> addr1:44 var
+R3342:3345 proofs.SimArena <> off1:45 var
+R3347:3347 proofs.SimArena <> v:48 var
+R3350:3354 proofs.SimArena <> addr2:46 var
+R3356:3359 proofs.SimArena <> off2:47 var
+R3365:3379 proofs.SimArena <> arena_heap_read def
+R3381:3381 proofs.SimArena <> a:43 var
+R3383:3387 proofs.SimArena <> addr2:46 var
+R3389:3392 proofs.SimArena <> off2:47 var
+R3452:3466 proofs.SimArena <> arena_heap_read def
+R3469:3484 proofs.SimArena <> arena_heap_write def
+R3502:3521 proofs.SimArena <> nth_replace_at_other thm
+R3502:3521 proofs.SimArena <> nth_replace_at_other thm
+prf 3600:3622 <> heap_write_preserves_hp
+binder 3633:3633 <> a:49
+binder 3635:3638 <> addr:50
+binder 3640:3642 <> off:51
+binder 3644:3644 <> v:52
+R3689:3691 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3649:3656 proofs.SimArena <> arena_hp def
+R3659:3674 proofs.SimArena <> arena_heap_write def
+R3676:3676 proofs.SimArena <> a:49 var
+R3678:3681 proofs.SimArena <> addr:50 var
+R3683:3685 proofs.SimArena <> off:51 var
+R3687:3687 proofs.SimArena <> v:52 var
+R3692:3699 proofs.SimArena <> arena_hp def
+R3701:3701 proofs.SimArena <> a:49 var

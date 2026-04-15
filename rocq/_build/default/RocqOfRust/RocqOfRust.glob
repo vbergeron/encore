@@ -1,0 +1,21 @@
+DIGEST 0d23903440742b1bc25018c1fe9e1f95
+FRocqOfRust.RocqOfRust
+R1133:1152 Stdlib.Strings.Ascii <> <> lib
+R1170:1194 Stdlib.Strings.PrimString <> <> lib
+R1212:1231 Stdlib.ZArith.ZArith <> <> lib
+R1249:1271 RocqOfRust.RecordUpdate <> <> lib
+R1289:1306 RocqOfRust.lib.lib <> <> lib
+R1317:1334 Stdlib.Lists.List ListNotations <> mod
+R1344:1359 Corelib.Strings.PrimString PStringNotations <> mod
+R1378:1389 RocqOfRust.M <> <> lib
+R1399:1409 RocqOfRust.M Notations <> mod
+ax 1423:1438 <> pointer_coercion
+R1448:1451 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1442:1447 Corelib.Strings.PrimString <> string prim
+R1459:1462 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1452:1458 RocqOfRust.M Value t ind
+R1463:1469 RocqOfRust.M Value t ind
+ax 1540:1553 <> InlineAssembly
+R1557:1563 RocqOfRust.M Value t ind
+ax 1577:1594 <> UnsupportedLiteral
+R1598:1604 RocqOfRust.M Value t ind

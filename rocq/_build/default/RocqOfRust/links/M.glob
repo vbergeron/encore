@@ -1,0 +1,3666 @@
+DIGEST 9f506ef06070140ea89a02a06f919cfb
+FRocqOfRust.links.M
+R146:166 RocqOfRust.RocqOfRust <> <> lib
+ax 177:200 <> IsTraitAssociatedType_eq
+R231:236 Corelib.Strings.PrimString <> string prim
+binder 218:227 <> trait_name:1
+R259:262 Corelib.Init.Datatypes <> list ind
+R264:270 RocqOfRust.M Value t ind
+binder 244:255 <> trait_consts:2
+R290:293 Corelib.Init.Datatypes <> list ind
+R295:298 RocqOfRust.M Ty t defax
+binder 278:286 <> trait_tys:3
+R316:319 RocqOfRust.M Ty t defax
+binder 306:312 <> self_ty:4
+R350:355 Corelib.Strings.PrimString <> string prim
+binder 327:346 <> associated_type_name:5
+R368:371 RocqOfRust.M Ty t defax
+binder 363:364 <> ty:6
+R464:469 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R377:397 RocqOfRust.M <> IsTraitAssociatedType def
+R399:408 RocqOfRust.links.M <> trait_name:1 var
+R410:421 RocqOfRust.links.M <> trait_consts:2 var
+R423:431 RocqOfRust.links.M <> trait_tys:3 var
+R433:439 RocqOfRust.links.M <> self_ty:4 var
+R441:460 RocqOfRust.links.M <> associated_type_name:5 var
+R462:463 RocqOfRust.links.M <> ty:6 var
+R555:557 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R470:491 RocqOfRust.lib.lib Ty associated_in_trait defax
+R493:502 RocqOfRust.links.M <> trait_name:1 var
+R504:515 RocqOfRust.links.M <> trait_consts:2 var
+R517:525 RocqOfRust.links.M <> trait_tys:3 var
+R527:533 RocqOfRust.links.M <> self_ty:4 var
+R535:554 RocqOfRust.links.M <> associated_type_name:5 var
+R558:559 RocqOfRust.links.M <> ty:6 var
+rec 604:607 <> Link
+proj 632:633 <> Φ
+proj 645:646 <> φ
+binder 610:610 <> A:9
+R637:640 RocqOfRust.M Ty t defax
+R651:654 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R650:650 RocqOfRust.links.M <> A:9 var
+R655:661 RocqOfRust.M Value t ind
+R714:715 RocqOfRust.links.M <> Φ meth
+R714:715 RocqOfRust.links.M <> Φ meth
+mod 944:947 <> OfTy
+ind 962:962 OfTy t
+constr 991:994 OfTy Make
+R971:974 RocqOfRust.M Ty t defax
+binder 965:967 <> ty':13
+binder 997:997 <> A:16
+R1008:1011 RocqOfRust.links.M <> Link class
+R1013:1013 RocqOfRust.links.M <> A:16 var
+binder 1008:1013 <> H:17
+R1032:1039 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1025:1027 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R1022:1024 RocqOfRust.links.M <> ty':13 var
+R1028:1029 RocqOfRust.links.M <> Φ meth
+R1031:1031 RocqOfRust.links.M <> A:16 var
+R1040:1040 RocqOfRust.links.M <> t:14 ind
+R1042:1044 RocqOfRust.links.M <> ty':13 var
+scheme 962:962 OfTy t_rect
+scheme 962:962 OfTy t_ind
+scheme 962:962 OfTy t_rec
+scheme 962:962 OfTy t_sind
+def 1061:1067 OfTy get_Set
+R1076:1079 RocqOfRust.M Ty t defax
+binder 1070:1072 <> ty':18
+R1087:1087 RocqOfRust.links.M OfTy t ind
+R1089:1091 RocqOfRust.links.M <> ty':18 var
+binder 1083:1083 <> x:19
+R1129:1129 RocqOfRust.links.M <> x:19 var
+R1113:1116 RocqOfRust.links.M OfTy Make constr
+inst 1160:1174 OfTy InductiveIsLink
+R1183:1186 RocqOfRust.M Ty t defax
+binder 1177:1179 <> ty':21
+R1194:1194 RocqOfRust.links.M OfTy t ind
+R1196:1198 RocqOfRust.links.M <> ty':21 var
+binder 1190:1190 <> x:22
+R1203:1206 RocqOfRust.links.M <> Link class
+R1209:1215 RocqOfRust.links.M OfTy get_Set def
+R1217:1217 RocqOfRust.links.M <> x:22 var
+def 1277:1281 OfTy of_ty
+binder 1284:1284 <> A:23
+R1295:1298 RocqOfRust.links.M <> Link class
+R1300:1300 RocqOfRust.links.M <> A:23 var
+binder 1295:1300 <> H:24
+R1309:1309 RocqOfRust.links.M OfTy t ind
+R1312:1313 RocqOfRust.links.M <> Φ meth
+R1315:1315 RocqOfRust.links.M <> A:23 var
+R1335:1338 RocqOfRust.links.M OfTy Make constr
+R1335:1338 RocqOfRust.links.M OfTy Make constr
+rec 1386:1386 OfTy C
+proj 1416:1416 OfTy A
+proj 1429:1429 OfTy H
+proj 1445:1446 OfTy eq
+R1394:1397 RocqOfRust.M Ty t defax
+binder 1389:1390 <> ty:25
+R1433:1436 RocqOfRust.links.M <> Link class
+R1438:1438 RocqOfRust.links.M <> A:27 meth
+R1452:1454 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R1450:1451 RocqOfRust.links.M <> ty:25 var
+R1455:1456 RocqOfRust.links.M <> Φ meth
+R1458:1458 RocqOfRust.links.M <> A:27 meth
+inst 1485:1490 OfTy IsLink
+R1498:1501 RocqOfRust.M Ty t defax
+binder 1493:1494 <> T':30
+R1511:1511 RocqOfRust.links.M OfTy C class
+R1513:1514 RocqOfRust.links.M <> T':30 var
+binder 1505:1507 <> H_T:31
+R1519:1522 RocqOfRust.links.M <> Link class
+R1529:1529 RocqOfRust.links.M OfTy A meth
+R1524:1526 RocqOfRust.links.M <> H_T:31 var
+R1544:1544 RocqOfRust.links.M OfTy H meth
+def 1562:1573 OfTy to_inductive
+R1581:1584 RocqOfRust.M Ty t defax
+binder 1576:1577 <> ty:32
+R1589:1589 RocqOfRust.links.M OfTy C class
+R1591:1592 RocqOfRust.links.M <> ty:32 var
+binder 1589:1592 <> H0:33
+R1597:1602 RocqOfRust.links.M OfTy t ind
+R1604:1605 RocqOfRust.links.M <> ty:32 var
+R1614:1622 RocqOfRust.links.M OfTy Make constr
+R1627:1628 RocqOfRust.links.M OfTy eq meth
+R1624:1625 RocqOfRust.links.M <> ty:32 var
+R1635:1638 RocqOfRust.links.M OfTy <> mod
+prf 1648:1663 <> of_value_link_eq
+binder 1666:1666 <> A:34
+R1677:1680 RocqOfRust.links.M <> Link class
+R1682:1682 RocqOfRust.links.M <> A:34 var
+binder 1677:1682 <> H:35
+R1694:1694 RocqOfRust.links.M <> A:34 var
+binder 1686:1690 <> value:36
+R1709:1711 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R1701:1702 RocqOfRust.links.M <> φ meth
+R1704:1708 RocqOfRust.links.M <> value:36 var
+R1712:1713 RocqOfRust.links.M <> φ meth
+R1715:1719 RocqOfRust.links.M <> value:36 var
+mod 1755:1765 <> OfValueWith
+rec 1776:1776 OfValueWith C
+proj 1832:1836 OfValueWith value
+proj 1847:1848 OfValueWith eq
+binder 1779:1779 <> A:37
+R1790:1793 RocqOfRust.links.M <> Link class
+R1795:1795 RocqOfRust.links.M <> A:37 var
+binder 1790:1795 <> H:38
+R1808:1814 RocqOfRust.M Value t ind
+binder 1799:1804 <> value':39
+R1840:1840 RocqOfRust.links.M <> A:37 var
+R1858:1860 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R1852:1857 RocqOfRust.links.M <> value':39 var
+R1861:1862 RocqOfRust.links.M <> φ meth
+R1864:1868 RocqOfRust.links.M <> value:41 meth
+inst 1895:1904 OfValueWith IsIdentity
+binder 1907:1907 <> T:43
+R1918:1921 RocqOfRust.links.M <> Link class
+R1923:1923 RocqOfRust.links.M <> T:43 var
+binder 1918:1923 <> H:44
+R1935:1935 RocqOfRust.links.M <> T:43 var
+binder 1927:1931 <> value:45
+R1940:1940 RocqOfRust.links.M OfValueWith C class
+R1945:1946 RocqOfRust.links.M <> φ meth
+R1948:1952 RocqOfRust.links.M <> value:45 var
+R1942:1942 RocqOfRust.links.M <> T:43 var
+R1984:1985 RocqOfRust.links.M OfValueWith eq meth
+R1964:1968 RocqOfRust.links.M OfValueWith value meth
+R1990:1996 Corelib.Init.Logic <> eq_refl constr
+prf 2013:2025 OfValueWith of_value_with
+binder 2028:2028 <> A:46
+R2039:2042 RocqOfRust.links.M <> Link class
+R2044:2044 RocqOfRust.links.M <> A:46 var
+binder 2039:2044 <> H:47
+R2057:2063 RocqOfRust.M Value t ind
+binder 2048:2053 <> value':48
+R2068:2068 RocqOfRust.links.M OfValueWith C class
+R2070:2070 RocqOfRust.links.M <> A:46 var
+R2072:2077 RocqOfRust.links.M <> value':48 var
+binder 2068:2077 <> H1:50
+R2092:2094 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2086:2091 RocqOfRust.links.M <> value':48 var
+R2095:2096 RocqOfRust.links.M <> φ meth
+R2107:2111 RocqOfRust.links.M OfValueWith value meth
+R2104:2104 RocqOfRust.links.M <> A:46 var
+R2130:2140 RocqOfRust.links.M OfValueWith <> mod
+mod 2151:2157 <> OfValue
+ind 2172:2172 OfValue t
+constr 2207:2210 OfValue Make
+R2184:2190 RocqOfRust.M Value t ind
+binder 2175:2180 <> value':51
+binder 2213:2213 <> A:54
+R2224:2227 RocqOfRust.links.M <> Link class
+R2229:2229 RocqOfRust.links.M <> A:54 var
+binder 2224:2229 <> H:55
+R2241:2241 RocqOfRust.links.M <> A:54 var
+binder 2233:2237 <> value:56
+R2267:2274 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2256:2258 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2250:2255 RocqOfRust.links.M <> value':51 var
+R2259:2260 RocqOfRust.links.M <> φ meth
+R2262:2266 RocqOfRust.links.M <> value:56 var
+R2275:2275 RocqOfRust.links.M <> t:52 ind
+R2277:2282 RocqOfRust.links.M <> value':51 var
+scheme 2172:2172 OfValue t_rect
+scheme 2172:2172 OfValue t_ind
+scheme 2172:2172 OfValue t_rec
+scheme 2172:2172 OfValue t_sind
+def 2299:2305 OfValue get_Set
+R2317:2323 RocqOfRust.M Value t ind
+binder 2308:2313 <> value':57
+R2331:2331 RocqOfRust.links.M OfValue t ind
+R2333:2338 RocqOfRust.links.M <> value':57 var
+binder 2327:2327 <> x:58
+R2378:2378 RocqOfRust.links.M <> x:58 var
+R2360:2363 RocqOfRust.links.M OfValue Make constr
+inst 2409:2414 OfValue IsLink
+R2426:2432 RocqOfRust.M Value t ind
+binder 2417:2422 <> value':60
+R2440:2440 RocqOfRust.links.M OfValue t ind
+R2442:2447 RocqOfRust.links.M <> value':60 var
+binder 2436:2436 <> x:61
+R2452:2455 RocqOfRust.links.M <> Link class
+R2458:2464 RocqOfRust.links.M OfValue get_Set def
+R2466:2466 RocqOfRust.links.M <> x:61 var
+def 2526:2534 OfValue get_value
+R2546:2552 RocqOfRust.M Value t ind
+binder 2537:2542 <> value':62
+R2560:2560 RocqOfRust.links.M OfValue t ind
+R2562:2567 RocqOfRust.links.M <> value':62 var
+binder 2556:2556 <> x:63
+R2572:2578 RocqOfRust.links.M OfValue get_Set def
+R2580:2580 RocqOfRust.links.M <> x:63 var
+R2617:2617 RocqOfRust.links.M <> x:63 var
+R2595:2598 RocqOfRust.links.M OfValue Make constr
+def 2647:2654 OfValue of_value
+binder 2657:2657 <> A:65
+R2668:2671 RocqOfRust.links.M <> Link class
+R2673:2673 RocqOfRust.links.M <> A:65 var
+binder 2668:2673 <> H:66
+R2685:2685 RocqOfRust.links.M <> A:65 var
+binder 2677:2681 <> value:67
+R2694:2694 RocqOfRust.links.M OfValue t ind
+R2697:2698 RocqOfRust.links.M <> φ meth
+R2700:2704 RocqOfRust.links.M <> value:67 var
+R2724:2727 RocqOfRust.links.M OfValue Make constr
+R2724:2727 RocqOfRust.links.M OfValue Make constr
+prf 2783:2803 OfValue get_value_of_value_eq
+binder 2806:2806 <> A:68
+R2817:2820 RocqOfRust.links.M <> Link class
+R2822:2822 RocqOfRust.links.M <> A:68 var
+binder 2817:2822 <> H:69
+R2834:2834 RocqOfRust.links.M <> A:68 var
+binder 2826:2830 <> value:70
+R2869:2871 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2843:2851 RocqOfRust.links.M OfValue get_value def
+R2854:2861 RocqOfRust.links.M OfValue of_value def
+R2863:2867 RocqOfRust.links.M <> value:70 var
+R2872:2876 RocqOfRust.links.M <> value:70 var
+prf 2915:2931 OfValue value_of_value_eq
+R2942:2948 RocqOfRust.M Value t ind
+binder 2934:2938 <> value:71
+R2967:2975 RocqOfRust.links.M OfValue t ind
+R2977:2981 RocqOfRust.links.M <> value:71 var
+binder 2956:2963 <> of_value:72
+R2995:2997 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R2990:2994 RocqOfRust.links.M <> value:71 var
+R2998:2999 RocqOfRust.links.M <> φ meth
+R3002:3010 RocqOfRust.links.M OfValue get_value def
+R3012:3019 RocqOfRust.links.M <> of_value:72 var
+rec 3044:3044 OfValue C
+proj 3081:3081 OfValue A
+proj 3094:3094 OfValue H
+proj 3110:3114 OfValue value
+proj 3125:3126 OfValue eq
+R3056:3062 RocqOfRust.M Value t ind
+binder 3047:3052 <> value':73
+R3098:3101 RocqOfRust.links.M <> Link class
+R3103:3103 RocqOfRust.links.M <> A:75 meth
+R3118:3118 RocqOfRust.links.M <> A:75 meth
+R3136:3138 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3130:3135 RocqOfRust.links.M <> value':73 var
+R3139:3140 RocqOfRust.links.M <> φ meth
+R3142:3146 RocqOfRust.links.M <> value:77 meth
+inst 3173:3182 OfValue IsIdentity
+binder 3185:3185 <> T:79
+R3196:3199 RocqOfRust.links.M <> Link class
+R3201:3201 RocqOfRust.links.M <> T:79 var
+binder 3196:3201 <> H0:80
+R3213:3213 RocqOfRust.links.M <> T:79 var
+binder 3205:3209 <> value:81
+R3218:3218 RocqOfRust.links.M OfValue C class
+R3221:3222 RocqOfRust.links.M <> φ meth
+R3224:3228 RocqOfRust.links.M <> value:81 var
+R3272:3273 RocqOfRust.links.M OfValue eq meth
+R3252:3256 RocqOfRust.links.M OfValue value meth
+R3240:3240 RocqOfRust.links.M OfValue A meth
+R3278:3284 Corelib.Init.Logic <> eq_refl constr
+def 3306:3317 OfValue to_inductive
+R3329:3335 RocqOfRust.M Value t ind
+binder 3320:3325 <> value':82
+R3340:3340 RocqOfRust.links.M OfValue C class
+R3342:3347 RocqOfRust.links.M <> value':82 var
+binder 3340:3347 <> H0:83
+R3352:3360 RocqOfRust.links.M OfValue t ind
+R3362:3367 RocqOfRust.links.M <> value':82 var
+R3376:3387 RocqOfRust.links.M OfValue Make constr
+R3402:3403 RocqOfRust.links.M OfValue eq meth
+R3396:3400 RocqOfRust.links.M OfValue value meth
+R3389:3394 RocqOfRust.links.M <> value':82 var
+R3410:3416 RocqOfRust.links.M OfValue <> mod
+mod 3427:3437 <> PrimitiveEq
+rec 3448:3452 PrimitiveEq Trait
+proj 3479:3481 PrimitiveEq eqb
+binder 3455:3455 <> A:84
+R3486:3489 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R3485:3485 RocqOfRust.links.M <> A:84 var
+R3491:3494 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R3490:3490 RocqOfRust.links.M <> A:84 var
+R3495:3498 Corelib.Init.Datatypes <> bool ind
+R3510:3520 RocqOfRust.links.M PrimitiveEq <> mod
+mod 3531:3534 <> Bool
+inst 3555:3560 Bool IsLink
+R3564:3567 RocqOfRust.links.M <> Link class
+R3569:3572 Corelib.Init.Datatypes <> bool ind
+R3609:3610 RocqOfRust.links.M <> φ meth
+R3583:3584 RocqOfRust.links.M <> Φ meth
+R3589:3595 RocqOfRust.M Ty path defax
+binder 3612:3612 <> b:87
+R3617:3626 RocqOfRust.M Value Bool constr
+R3628:3628 RocqOfRust.links.M <> b:87 var
+inst 3655:3660 Bool IsOfTy
+R3664:3669 RocqOfRust.links.M OfTy C class
+R3672:3678 RocqOfRust.M Ty path defax
+R3712:3713 RocqOfRust.links.M OfTy eq meth
+R3697:3697 RocqOfRust.links.M OfTy A meth
+R3702:3705 Corelib.Init.Datatypes <> bool ind
+R3718:3724 Corelib.Init.Logic <> eq_refl constr
+inst 3751:3763 Bool IsOfValueWith
+R3770:3773 Corelib.Init.Datatypes <> bool ind
+binder 3766:3766 <> b:88
+R3778:3790 RocqOfRust.links.M OfValueWith C class
+R3798:3807 RocqOfRust.M Value Bool constr
+R3809:3809 RocqOfRust.links.M <> b:88 var
+R3792:3795 Corelib.Init.Datatypes <> bool ind
+R3837:3838 RocqOfRust.links.M OfValueWith eq meth
+R3821:3825 RocqOfRust.links.M OfValueWith value meth
+R3843:3849 Corelib.Init.Logic <> eq_refl constr
+inst 3876:3884 Bool IsOfValue
+R3891:3894 Corelib.Init.Datatypes <> bool ind
+binder 3887:3887 <> b:89
+R3899:3907 RocqOfRust.links.M OfValue C class
+R3910:3919 RocqOfRust.M Value Bool constr
+R3921:3921 RocqOfRust.links.M <> b:89 var
+R3949:3950 RocqOfRust.links.M OfValue eq meth
+R3933:3937 RocqOfRust.links.M OfValue value meth
+R3955:3961 Corelib.Init.Logic <> eq_refl constr
+inst 3988:4000 Bool IsPrimitiveEq
+R4004:4020 RocqOfRust.links.M PrimitiveEq Trait class
+R4022:4025 Corelib.Init.Datatypes <> bool ind
+R4036:4050 RocqOfRust.links.M PrimitiveEq eqb meth
+R4055:4062 Stdlib.Bool.Bool <> eqb def
+R4074:4077 RocqOfRust.links.M Bool <> mod
+mod 4088:4094 <> Integer
+rec 4106:4106 Integer t
+proj 4146:4150 Integer value
+R4116:4128 RocqOfRust.M IntegerKind t ind
+binder 4109:4112 <> kind:90
+R4154:4154 Corelib.Numbers.BinNums <> Z ind
+R4174:4174 RocqOfRust.links.M Integer t rec
+R4174:4174 RocqOfRust.links.M Integer t rec
+def 4209:4218 Integer to_ty_path
+R4228:4240 RocqOfRust.M IntegerKind t ind
+binder 4221:4224 <> kind:93
+R4245:4250 Corelib.Strings.PrimString <> string prim
+R4265:4268 RocqOfRust.links.M <> kind:93 var
+R4281:4294 RocqOfRust.M IntegerKind I8 constr
+R4310:4324 RocqOfRust.M IntegerKind I16 constr
+R4341:4355 RocqOfRust.M IntegerKind I32 constr
+R4372:4386 RocqOfRust.M IntegerKind I64 constr
+R4403:4418 RocqOfRust.M IntegerKind I128 constr
+R4436:4452 RocqOfRust.M IntegerKind Isize constr
+R4471:4484 RocqOfRust.M IntegerKind U8 constr
+R4500:4514 RocqOfRust.M IntegerKind U16 constr
+R4531:4545 RocqOfRust.M IntegerKind U32 constr
+R4562:4576 RocqOfRust.M IntegerKind U64 constr
+R4593:4608 RocqOfRust.M IntegerKind U128 constr
+R4626:4642 RocqOfRust.M IntegerKind Usize constr
+inst 4683:4688 Integer IsLink
+R4698:4710 RocqOfRust.M IntegerKind t ind
+binder 4691:4694 <> kind:95
+R4715:4718 RocqOfRust.links.M <> Link class
+R4721:4721 RocqOfRust.links.M Integer t rec
+R4723:4726 RocqOfRust.links.M <> kind:95 var
+R4775:4776 RocqOfRust.links.M <> φ meth
+R4738:4739 RocqOfRust.links.M <> Φ meth
+R4744:4750 RocqOfRust.M Ty path defax
+R4753:4762 RocqOfRust.links.M Integer to_ty_path def
+R4782:4786 RocqOfRust.links.M Integer value proj
+R4782:4786 RocqOfRust.links.M Integer value proj
+R4782:4786 RocqOfRust.links.M Integer value proj
+binder 4791:4795 <> value:96
+binder 4779:4798 <> pat:97
+R4803:4815 RocqOfRust.M Value Integer constr
+R4822:4826 RocqOfRust.links.M <> value:96 var
+inst 4853:4861 Integer IsOfTy_i8
+R4865:4870 RocqOfRust.links.M OfTy C class
+R4873:4879 RocqOfRust.M Ty path defax
+R4919:4920 RocqOfRust.links.M OfTy eq meth
+R4896:4896 RocqOfRust.links.M OfTy A meth
+R4901:4901 RocqOfRust.links.M Integer t rec
+R4903:4916 RocqOfRust.M IntegerKind I8 constr
+R4925:4931 Corelib.Init.Logic <> eq_refl constr
+inst 4955:4964 Integer IsOfTy_i16
+R4968:4973 RocqOfRust.links.M OfTy C class
+R4976:4982 RocqOfRust.M Ty path defax
+R5024:5025 RocqOfRust.links.M OfTy eq meth
+R5000:5000 RocqOfRust.links.M OfTy A meth
+R5005:5005 RocqOfRust.links.M Integer t rec
+R5007:5021 RocqOfRust.M IntegerKind I16 constr
+R5030:5036 Corelib.Init.Logic <> eq_refl constr
+inst 5060:5069 Integer IsOfTy_i32
+R5073:5078 RocqOfRust.links.M OfTy C class
+R5081:5087 RocqOfRust.M Ty path defax
+R5129:5130 RocqOfRust.links.M OfTy eq meth
+R5105:5105 RocqOfRust.links.M OfTy A meth
+R5110:5110 RocqOfRust.links.M Integer t rec
+R5112:5126 RocqOfRust.M IntegerKind I32 constr
+R5135:5141 Corelib.Init.Logic <> eq_refl constr
+inst 5165:5174 Integer IsOfTy_i64
+R5178:5183 RocqOfRust.links.M OfTy C class
+R5186:5192 RocqOfRust.M Ty path defax
+R5234:5235 RocqOfRust.links.M OfTy eq meth
+R5210:5210 RocqOfRust.links.M OfTy A meth
+R5215:5215 RocqOfRust.links.M Integer t rec
+R5217:5231 RocqOfRust.M IntegerKind I64 constr
+R5240:5246 Corelib.Init.Logic <> eq_refl constr
+inst 5270:5280 Integer IsOfTy_i128
+R5284:5289 RocqOfRust.links.M OfTy C class
+R5292:5298 RocqOfRust.M Ty path defax
+R5342:5343 RocqOfRust.links.M OfTy eq meth
+R5317:5317 RocqOfRust.links.M OfTy A meth
+R5322:5322 RocqOfRust.links.M Integer t rec
+R5324:5339 RocqOfRust.M IntegerKind I128 constr
+R5348:5354 Corelib.Init.Logic <> eq_refl constr
+inst 5378:5389 Integer IsOfTy_isize
+R5393:5398 RocqOfRust.links.M OfTy C class
+R5401:5407 RocqOfRust.M Ty path defax
+R5453:5454 RocqOfRust.links.M OfTy eq meth
+R5427:5427 RocqOfRust.links.M OfTy A meth
+R5432:5432 RocqOfRust.links.M Integer t rec
+R5434:5450 RocqOfRust.M IntegerKind Isize constr
+R5459:5465 Corelib.Init.Logic <> eq_refl constr
+inst 5489:5497 Integer IsOfTy_u8
+R5501:5506 RocqOfRust.links.M OfTy C class
+R5509:5515 RocqOfRust.M Ty path defax
+R5555:5556 RocqOfRust.links.M OfTy eq meth
+R5532:5532 RocqOfRust.links.M OfTy A meth
+R5537:5537 RocqOfRust.links.M Integer t rec
+R5539:5552 RocqOfRust.M IntegerKind U8 constr
+R5561:5567 Corelib.Init.Logic <> eq_refl constr
+inst 5591:5600 Integer IsOfTy_u16
+R5604:5609 RocqOfRust.links.M OfTy C class
+R5612:5618 RocqOfRust.M Ty path defax
+R5660:5661 RocqOfRust.links.M OfTy eq meth
+R5636:5636 RocqOfRust.links.M OfTy A meth
+R5641:5641 RocqOfRust.links.M Integer t rec
+R5643:5657 RocqOfRust.M IntegerKind U16 constr
+R5666:5672 Corelib.Init.Logic <> eq_refl constr
+inst 5696:5705 Integer IsOfTy_u32
+R5709:5714 RocqOfRust.links.M OfTy C class
+R5717:5723 RocqOfRust.M Ty path defax
+R5765:5766 RocqOfRust.links.M OfTy eq meth
+R5741:5741 RocqOfRust.links.M OfTy A meth
+R5746:5746 RocqOfRust.links.M Integer t rec
+R5748:5762 RocqOfRust.M IntegerKind U32 constr
+R5771:5777 Corelib.Init.Logic <> eq_refl constr
+inst 5801:5810 Integer IsOfTy_u64
+R5814:5819 RocqOfRust.links.M OfTy C class
+R5822:5828 RocqOfRust.M Ty path defax
+R5870:5871 RocqOfRust.links.M OfTy eq meth
+R5846:5846 RocqOfRust.links.M OfTy A meth
+R5851:5851 RocqOfRust.links.M Integer t rec
+R5853:5867 RocqOfRust.M IntegerKind U64 constr
+R5876:5882 Corelib.Init.Logic <> eq_refl constr
+inst 5906:5916 Integer IsOfTy_u128
+R5920:5925 RocqOfRust.links.M OfTy C class
+R5928:5934 RocqOfRust.M Ty path defax
+R5978:5979 RocqOfRust.links.M OfTy eq meth
+R5953:5953 RocqOfRust.links.M OfTy A meth
+R5958:5958 RocqOfRust.links.M Integer t rec
+R5960:5975 RocqOfRust.M IntegerKind U128 constr
+R5984:5990 Corelib.Init.Logic <> eq_refl constr
+inst 6014:6025 Integer IsOfTy_usize
+R6029:6034 RocqOfRust.links.M OfTy C class
+R6037:6043 RocqOfRust.M Ty path defax
+R6089:6090 RocqOfRust.links.M OfTy eq meth
+R6063:6063 RocqOfRust.links.M OfTy A meth
+R6068:6068 RocqOfRust.links.M Integer t rec
+R6070:6086 RocqOfRust.M IntegerKind Usize constr
+R6095:6101 Corelib.Init.Logic <> eq_refl constr
+inst 6126:6138 Integer IsOfValueWith
+R6148:6160 RocqOfRust.M IntegerKind t ind
+binder 6141:6144 <> kind:98
+R6172:6172 Corelib.Numbers.BinNums <> Z ind
+binder 6164:6168 <> value:99
+R6181:6193 RocqOfRust.links.M OfValueWith C class
+R6205:6217 RocqOfRust.M Value Integer constr
+R6219:6222 RocqOfRust.links.M <> kind:98 var
+R6224:6228 RocqOfRust.links.M <> value:99 var
+R6196:6196 RocqOfRust.links.M Integer t rec
+R6198:6201 RocqOfRust.links.M <> kind:98 var
+R6283:6284 RocqOfRust.links.M OfValueWith eq meth
+R6242:6246 RocqOfRust.links.M OfValueWith value meth
+R6251:6265 RocqOfRust.links.M Integer Build_t constr
+R6289:6295 Corelib.Init.Logic <> eq_refl constr
+inst 6322:6330 Integer IsOfValue
+R6340:6352 RocqOfRust.M IntegerKind t ind
+binder 6333:6336 <> kind:100
+R6364:6364 Corelib.Numbers.BinNums <> Z ind
+binder 6356:6360 <> value:101
+R6373:6381 RocqOfRust.links.M OfValue C class
+R6384:6396 RocqOfRust.M Value Integer constr
+R6398:6401 RocqOfRust.links.M <> kind:100 var
+R6403:6407 RocqOfRust.links.M <> value:101 var
+R6462:6463 RocqOfRust.links.M OfValue eq meth
+R6421:6425 RocqOfRust.links.M OfValue value meth
+R6430:6444 RocqOfRust.links.M Integer Build_t constr
+R6468:6474 Corelib.Init.Logic <> eq_refl constr
+inst 6501:6513 Integer IsPrimitiveEq
+R6523:6535 RocqOfRust.M IntegerKind t ind
+binder 6516:6519 <> kind:102
+R6540:6556 RocqOfRust.links.M PrimitiveEq Trait class
+R6559:6559 RocqOfRust.links.M Integer t rec
+R6561:6564 RocqOfRust.links.M <> kind:102 var
+R6576:6590 RocqOfRust.links.M PrimitiveEq eqb meth
+binder 6592:6592 <> x:103
+binder 6594:6594 <> y:104
+R6608:6611 Stdlib.ZArith.BinInt <> ::Z_scope:x_'=?'_x not
+R6602:6606 RocqOfRust.links.M Integer value proj
+R6599:6599 RocqOfRust.links.M <> x:103 var
+R6615:6619 RocqOfRust.links.M Integer value proj
+R6612:6612 RocqOfRust.links.M <> y:104 var
+R6632:6638 RocqOfRust.links.M Integer <> mod
+def 6653:6654 <> u8
+R6665:6673 RocqOfRust.links.M <> t rec
+R6675:6688 RocqOfRust.M IntegerKind U8 constr
+def 6702:6704 <> u16
+R6715:6723 RocqOfRust.links.M <> t rec
+R6725:6739 RocqOfRust.M IntegerKind U16 constr
+def 6753:6755 <> u32
+R6766:6774 RocqOfRust.links.M <> t rec
+R6776:6790 RocqOfRust.M IntegerKind U32 constr
+def 6804:6806 <> u64
+R6817:6825 RocqOfRust.links.M <> t rec
+R6827:6841 RocqOfRust.M IntegerKind U64 constr
+def 6855:6858 <> u128
+R6869:6877 RocqOfRust.links.M <> t rec
+R6879:6894 RocqOfRust.M IntegerKind U128 constr
+def 6908:6912 <> usize
+R6923:6931 RocqOfRust.links.M <> t rec
+R6933:6949 RocqOfRust.M IntegerKind Usize constr
+def 6963:6964 <> i8
+R6975:6983 RocqOfRust.links.M <> t rec
+R6985:6998 RocqOfRust.M IntegerKind I8 constr
+def 7012:7014 <> i16
+R7025:7033 RocqOfRust.links.M <> t rec
+R7035:7049 RocqOfRust.M IntegerKind I16 constr
+def 7063:7065 <> i32
+R7076:7084 RocqOfRust.links.M <> t rec
+R7086:7100 RocqOfRust.M IntegerKind I32 constr
+def 7114:7116 <> i64
+R7127:7135 RocqOfRust.links.M <> t rec
+R7137:7151 RocqOfRust.M IntegerKind I64 constr
+def 7165:7168 <> i128
+R7179:7187 RocqOfRust.links.M <> t rec
+R7189:7204 RocqOfRust.M IntegerKind I128 constr
+def 7218:7222 <> isize
+R7233:7241 RocqOfRust.links.M <> t rec
+R7243:7259 RocqOfRust.M IntegerKind Isize constr
+mod 7270:7273 <> Char
+ind 7288:7288 Char t
+constr 7303:7306 Char Make
+R7313:7313 Corelib.Numbers.BinNums <> Z ind
+binder 7309:7309 <> c:107
+scheme 7288:7288 Char t_rect
+scheme 7288:7288 Char t_ind
+scheme 7288:7288 Char t_rec
+scheme 7288:7288 Char t_sind
+inst 7336:7341 Char IsLink
+R7345:7348 RocqOfRust.links.M <> Link class
+R7350:7350 RocqOfRust.links.M Char t ind
+R7387:7388 RocqOfRust.links.M <> φ meth
+R7361:7362 RocqOfRust.links.M <> Φ meth
+R7367:7373 RocqOfRust.M Ty path defax
+R7392:7395 RocqOfRust.links.M Char Make constr
+binder 7397:7397 <> c:108
+binder 7392:7397 <> pat:109
+R7403:7419 RocqOfRust.M Value UnicodeChar constr
+R7421:7421 RocqOfRust.links.M <> c:108 var
+def 7443:7447 Char of_ty
+R7451:7456 RocqOfRust.links.M OfTy t ind
+R7459:7465 RocqOfRust.M Ty path defax
+prf 7497:7509 Char of_value_with
+R7516:7516 Corelib.Numbers.BinNums <> Z ind
+binder 7512:7512 <> c:110
+R7544:7546 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R7525:7541 RocqOfRust.M Value UnicodeChar constr
+R7543:7543 RocqOfRust.links.M <> c:110 var
+R7547:7548 RocqOfRust.links.M <> φ meth
+R7551:7559 RocqOfRust.links.M Char Make constr
+R7561:7561 RocqOfRust.links.M <> c:110 var
+def 7591:7598 Char of_value
+R7605:7605 Corelib.Numbers.BinNums <> Z ind
+binder 7601:7601 <> c:111
+R7614:7622 RocqOfRust.links.M OfValue t ind
+R7625:7641 RocqOfRust.M Value UnicodeChar constr
+R7643:7643 RocqOfRust.links.M <> c:111 var
+R7663:7666 RocqOfRust.links.M Char <> mod
+mod 7677:7681 <> Never
+inst 7702:7707 Never IsLink
+R7711:7714 RocqOfRust.links.M <> Link class
+R7716:7724 Corelib.Init.Datatypes <> Empty_set ind
+R7762:7763 RocqOfRust.links.M <> φ meth
+R7735:7736 RocqOfRust.links.M <> Φ meth
+R7741:7747 RocqOfRust.M Ty path defax
+binder 7765:7765 <> x:112
+R7776:7776 RocqOfRust.links.M <> x:112 var
+prf 7802:7806 Never of_ty
+R7810:7815 RocqOfRust.links.M OfTy t ind
+R7818:7824 RocqOfRust.M Ty path defax
+R7852:7856 RocqOfRust.links.M Never <> mod
+mod 7867:7870 <> Unit
+inst 7891:7896 Unit IsLink
+R7900:7903 RocqOfRust.links.M <> Link class
+R7905:7908 Corelib.Init.Datatypes <> unit ind
+R7942:7943 RocqOfRust.links.M <> φ meth
+R7919:7920 RocqOfRust.links.M <> Φ meth
+R7925:7932 RocqOfRust.M Ty tuple defax
+R7934:7935 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R7950:7960 RocqOfRust.M Value Tuple constr
+R7962:7963 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+def 7985:7989 Unit of_ty
+R7993:7998 RocqOfRust.links.M OfTy t ind
+R8001:8008 RocqOfRust.M Ty tuple defax
+R8010:8011 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+prf 8036:8048 Unit of_value_with
+R8070:8072 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R8056:8066 RocqOfRust.M Value Tuple constr
+R8068:8069 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R8073:8074 RocqOfRust.links.M <> φ meth
+R8076:8077 Corelib.Init.Datatypes <> tt constr
+def 8106:8113 Unit of_value
+R8121:8129 RocqOfRust.links.M OfValue t ind
+R8132:8142 RocqOfRust.M Value Tuple constr
+R8144:8145 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R8165:8168 RocqOfRust.links.M Unit <> mod
+mod 8179:8183 <> Slice
+inst 8204:8209 Slice IsLink
+binder 8212:8212 <> A:114
+R8223:8226 RocqOfRust.links.M <> Link class
+R8228:8228 RocqOfRust.links.M <> A:114 var
+binder 8223:8228 <> H:115
+R8233:8236 RocqOfRust.links.M <> Link class
+R8239:8242 Corelib.Init.Datatypes <> list ind
+R8244:8244 RocqOfRust.links.M <> A:114 var
+R8312:8313 RocqOfRust.links.M <> φ meth
+R8256:8257 RocqOfRust.links.M <> Φ meth
+R8268:8275 RocqOfRust.lib.lib Ty apply defax
+R8278:8284 RocqOfRust.M Ty path defax
+R8295:8296 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R8298:8299 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R8304:8305 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R8300:8301 RocqOfRust.links.M <> Φ meth
+binder 8315:8315 <> x:116
+R8326:8336 RocqOfRust.M Value Array constr
+R8339:8346 Stdlib.Lists.List <> map abbrev
+R8351:8351 RocqOfRust.links.M <> x:116 var
+R8348:8349 RocqOfRust.links.M <> φ meth
+def 8374:8378 Slice of_ty
+R8386:8389 RocqOfRust.M Ty t defax
+binder 8381:8382 <> A':117
+R8401:8406 RocqOfRust.links.M OfTy t ind
+R8408:8409 RocqOfRust.links.M <> A':117 var
+binder 8393:8397 <> of_ty:118
+R8418:8423 RocqOfRust.links.M OfTy t ind
+R8426:8433 RocqOfRust.lib.lib Ty apply defax
+R8436:8442 RocqOfRust.M Ty path defax
+R8453:8454 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R8456:8457 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R8460:8461 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R8458:8459 RocqOfRust.links.M <> A':117 var
+R8525:8528 Corelib.Init.Datatypes <> list ind
+R8504:8512 RocqOfRust.links.M OfTy Make constr
+R8525:8528 Corelib.Init.Datatypes <> list ind
+R8504:8512 RocqOfRust.links.M OfTy Make constr
+R8567:8571 RocqOfRust.links.M Slice <> mod
+mod 8582:8584 <> Str
+inst 8605:8610 Str IsLink
+R8614:8617 RocqOfRust.links.M <> Link class
+R8619:8624 Corelib.Strings.PrimString <> string prim
+R8660:8661 RocqOfRust.links.M <> φ meth
+R8635:8636 RocqOfRust.links.M <> Φ meth
+R8641:8647 RocqOfRust.M Ty path defax
+binder 8663:8663 <> x:119
+R8668:8679 RocqOfRust.M Value String constr
+R8681:8681 RocqOfRust.links.M <> x:119 var
+def 8703:8707 Str of_ty
+R8711:8716 RocqOfRust.links.M OfTy t ind
+R8719:8725 RocqOfRust.M Ty path defax
+prf 8756:8768 Str of_value_with
+R8775:8780 Corelib.Strings.PrimString <> string prim
+binder 8771:8771 <> x:120
+R8803:8805 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R8789:8800 RocqOfRust.M Value String constr
+R8802:8802 RocqOfRust.links.M <> x:120 var
+R8806:8807 RocqOfRust.links.M <> φ meth
+R8809:8809 RocqOfRust.links.M <> x:120 var
+def 8838:8845 Str of_value
+R8852:8857 Corelib.Strings.PrimString <> string prim
+binder 8848:8848 <> x:121
+R8866:8874 RocqOfRust.links.M OfValue t ind
+R8877:8888 RocqOfRust.M Value String constr
+R8890:8890 RocqOfRust.links.M <> x:121 var
+R8910:8912 RocqOfRust.links.M Str <> mod
+mod 8923:8925 <> F64
+ax 8940:8940 F64 t
+ax 8961:8968 F64 to_value
+R8973:8976 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R8972:8972 RocqOfRust.links.M F64 t defax
+R8977:8983 RocqOfRust.M Value t ind
+inst 9005:9010 F64 IsLink
+R9014:9017 RocqOfRust.links.M <> Link class
+R9019:9019 RocqOfRust.links.M F64 t defax
+R9055:9056 RocqOfRust.links.M <> φ meth
+R9030:9031 RocqOfRust.links.M <> Φ meth
+R9036:9042 RocqOfRust.M Ty path defax
+binder 9058:9058 <> x:126
+R9063:9070 RocqOfRust.links.M F64 to_value defax
+R9072:9072 RocqOfRust.links.M <> x:126 var
+R9083:9085 RocqOfRust.links.M F64 <> mod
+mod 9096:9098 <> Ref
+mod 9110:9113 <> Ref.Core
+ind 9130:9130 Ref.Core t
+constr 9167:9175 Ref.Core Immediate
+constr 9202:9208 Ref.Core Mutable
+binder 9133:9133 <> A:127
+R9144:9147 RocqOfRust.links.M <> Link class
+R9149:9149 RocqOfRust.links.M <> A:127 var
+binder 9144:9149 <> H:128
+R9186:9191 Corelib.Init.Datatypes <> option ind
+R9193:9193 RocqOfRust.links.M <> A:127 var
+binder 9178:9182 <> value:131
+binder 9211:9217 <> Address:132
+binder 9219:9223 <> Big_A:133
+R9249:9255 RocqOfRust.links.M <> Address:132 var
+binder 9239:9245 <> address:134
+R9272:9285 RocqOfRust.M Pointer.Path t def
+binder 9265:9268 <> path:135
+R9315:9318 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R9310:9314 RocqOfRust.links.M <> Big_A:133 var
+R9319:9325 RocqOfRust.M Value t ind
+binder 9295:9306 <> big_to_value:136
+R9353:9356 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R9348:9352 RocqOfRust.links.M <> Big_A:133 var
+R9357:9362 Corelib.Init.Datatypes <> option ind
+R9364:9364 RocqOfRust.links.M <> A:127 var
+binder 9335:9344 <> projection:137
+R9391:9394 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R9386:9390 RocqOfRust.links.M <> Big_A:133 var
+R9396:9399 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R9395:9395 RocqOfRust.links.M <> A:127 var
+R9400:9405 Corelib.Init.Datatypes <> option ind
+R9407:9411 RocqOfRust.links.M <> Big_A:133 var
+binder 9374:9382 <> injection:138
+scheme 9130:9130 Ref.Core t_rect
+scheme 9130:9130 Ref.Core t_ind
+scheme 9130:9130 Ref.Core t_rec
+scheme 9130:9130 Ref.Core t_sind
+R9429:9437 RocqOfRust.links.M Ref.Core Immediate constr
+R9429:9437 RocqOfRust.links.M Ref.Core Immediate constr
+R9460:9466 RocqOfRust.links.M Ref.Core Mutable constr
+R9460:9466 RocqOfRust.links.M Ref.Core Mutable constr
+def 9495:9501 Ref.Core to_core
+binder 9504:9504 <> A:139
+R9515:9518 RocqOfRust.links.M <> Link class
+R9520:9520 RocqOfRust.links.M <> A:139 var
+binder 9515:9520 <> H:140
+R9530:9530 RocqOfRust.links.M Ref.Core t ind
+R9532:9532 RocqOfRust.links.M <> A:139 var
+binder 9524:9526 <> ref:141
+R9537:9550 RocqOfRust.M Pointer.Core t ind
+R9552:9558 RocqOfRust.M Value t ind
+R9575:9577 RocqOfRust.links.M <> ref:141 var
+R9592:9600 RocqOfRust.links.M Ref.Core Immediate constr
+R9619:9640 RocqOfRust.M Pointer.Core Immediate constr
+R9643:9652 RocqOfRust.M Option map def
+R9660:9661 RocqOfRust.links.M <> φ meth
+R9672:9678 RocqOfRust.links.M Ref.Core Mutable constr
+R9738:9757 RocqOfRust.M Pointer.Core Mutable constr
+R9789:9792 RocqOfRust.links.M Ref.Core <> mod
+rec 9805:9805 Ref t
+proj 9866:9869 Ref core
+R9815:9828 RocqOfRust.M Pointer.Kind t ind
+binder 9808:9811 <> kind:143
+binder 9832:9832 <> A:144
+R9843:9846 RocqOfRust.links.M <> Link class
+R9848:9848 RocqOfRust.links.M <> A:144 var
+binder 9843:9848 <> H:145
+R9873:9878 RocqOfRust.links.M Ref t ind
+R9880:9880 RocqOfRust.links.M <> A:144 var
+R9900:9900 RocqOfRust.links.M Ref t rec
+R9900:9900 RocqOfRust.links.M Ref t rec
+def 9925:9931 Ref to_core
+R9941:9954 RocqOfRust.M Pointer.Kind t ind
+binder 9934:9937 <> kind:148
+binder 9958:9958 <> A:149
+R9969:9972 RocqOfRust.links.M <> Link class
+R9974:9974 RocqOfRust.links.M <> A:149 var
+binder 9969:9974 <> H:150
+R9984:9984 RocqOfRust.links.M Ref t rec
+R9991:9991 RocqOfRust.links.M <> A:149 var
+R9986:9989 RocqOfRust.links.M <> kind:148 var
+binder 9978:9980 <> ref:151
+R10002:10015 RocqOfRust.M Pointer.Core t ind
+R10017:10023 RocqOfRust.M Value t ind
+R10032:10043 RocqOfRust.links.M Ref to_core def
+R10050:10053 RocqOfRust.links.M Ref core proj
+R10045:10047 RocqOfRust.links.M <> ref:151 var
+def 10071:10080 Ref to_pointer
+R10090:10103 RocqOfRust.M Pointer.Kind t ind
+binder 10083:10086 <> kind:152
+binder 10107:10107 <> A:153
+R10118:10121 RocqOfRust.links.M <> Link class
+R10123:10123 RocqOfRust.links.M <> A:153 var
+binder 10118:10123 <> H:154
+R10133:10133 RocqOfRust.links.M Ref t rec
+R10140:10140 RocqOfRust.links.M <> A:153 var
+R10135:10138 RocqOfRust.links.M <> kind:152 var
+binder 10127:10129 <> ref:155
+R10151:10159 RocqOfRust.M Pointer t rec
+R10161:10167 RocqOfRust.M Value t ind
+R10185:10196 RocqOfRust.M Pointer kind proj
+R10185:10196 RocqOfRust.M Pointer kind proj
+R10185:10196 RocqOfRust.M Pointer kind proj
+R10213:10224 RocqOfRust.M Pointer core proj
+R10213:10224 RocqOfRust.M Pointer core proj
+R10201:10204 RocqOfRust.links.M <> kind:152 var
+R10229:10235 RocqOfRust.links.M Ref to_core def
+R10237:10239 RocqOfRust.links.M <> ref:155 var
+inst 10269:10274 Ref IsLink
+R10284:10297 RocqOfRust.M Pointer.Kind t ind
+binder 10277:10280 <> kind:156
+binder 10301:10301 <> A:157
+R10312:10315 RocqOfRust.links.M <> Link class
+R10317:10317 RocqOfRust.links.M <> A:157 var
+binder 10312:10317 <> H:158
+R10322:10325 RocqOfRust.links.M <> Link class
+R10328:10328 RocqOfRust.links.M Ref t rec
+R10335:10335 RocqOfRust.links.M <> A:157 var
+R10330:10333 RocqOfRust.links.M <> kind:156 var
+R10418:10419 RocqOfRust.links.M <> φ meth
+R10347:10348 RocqOfRust.links.M <> Φ meth
+R10353:10360 RocqOfRust.lib.lib Ty apply defax
+R10363:10369 RocqOfRust.M Ty path defax
+R10372:10394 RocqOfRust.M Pointer.Kind to_ty_path def
+R10403:10404 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R10406:10406 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10411:10411 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10407:10408 RocqOfRust.links.M <> Φ meth
+binder 10421:10423 <> ref:159
+R10428:10440 RocqOfRust.M Value Pointer constr
+R10443:10452 RocqOfRust.links.M Ref to_pointer def
+R10454:10456 RocqOfRust.links.M <> ref:159 var
+def 10479:10487 Ref immediate
+R10497:10510 RocqOfRust.M Pointer.Kind t ind
+binder 10490:10493 <> kind:160
+binder 10514:10514 <> A:161
+R10525:10528 RocqOfRust.links.M <> Link class
+R10530:10530 RocqOfRust.links.M <> A:161 var
+binder 10525:10530 <> H:162
+R10542:10542 RocqOfRust.links.M <> A:161 var
+binder 10534:10538 <> value:163
+R10547:10547 RocqOfRust.links.M Ref t rec
+R10554:10554 RocqOfRust.links.M <> A:161 var
+R10549:10552 RocqOfRust.links.M <> kind:160 var
+R10566:10569 RocqOfRust.links.M Ref core proj
+R10566:10569 RocqOfRust.links.M Ref core proj
+R10566:10569 RocqOfRust.links.M Ref core proj
+R10574:10587 RocqOfRust.links.M Ref Immediate constr
+R10590:10593 Corelib.Init.Datatypes <> Some constr
+R10595:10599 RocqOfRust.links.M <> value:163 var
+def 10620:10626 Ref cast_to
+binder 10629:10629 <> A:164
+R10640:10643 RocqOfRust.links.M <> Link class
+R10645:10645 RocqOfRust.links.M <> A:164 var
+binder 10640:10645 <> H:165
+R10663:10676 RocqOfRust.M Pointer.Kind t ind
+binder 10649:10659 <> kind_source:166
+R10700:10713 RocqOfRust.M Pointer.Kind t ind
+binder 10686:10696 <> kind_target:167
+R10723:10723 RocqOfRust.links.M Ref t rec
+R10737:10737 RocqOfRust.links.M <> A:164 var
+R10725:10735 RocqOfRust.links.M <> kind_source:166 var
+binder 10717:10719 <> ref:168
+R10748:10748 RocqOfRust.links.M Ref t rec
+R10762:10762 RocqOfRust.links.M <> A:164 var
+R10750:10760 RocqOfRust.links.M <> kind_target:167 var
+R10774:10777 RocqOfRust.links.M Ref core proj
+R10774:10777 RocqOfRust.links.M Ref core proj
+R10774:10777 RocqOfRust.links.M Ref core proj
+R10787:10790 RocqOfRust.links.M Ref core proj
+R10782:10784 RocqOfRust.links.M <> ref:168 var
+prf 10806:10813 Ref deref_eq
+R10823:10836 RocqOfRust.M Pointer.Kind t ind
+binder 10816:10819 <> kind:169
+binder 10840:10840 <> A:170
+R10851:10854 RocqOfRust.links.M <> Link class
+R10856:10856 RocqOfRust.links.M <> A:170 var
+binder 10851:10856 <> H:171
+R10866:10866 RocqOfRust.links.M Ref t rec
+R10873:10873 RocqOfRust.links.M <> A:170 var
+R10868:10871 RocqOfRust.links.M <> kind:169 var
+binder 10860:10862 <> ref:172
+R10898:10900 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R10882:10888 RocqOfRust.M <> deref def
+R10891:10892 RocqOfRust.links.M <> φ meth
+R10894:10896 RocqOfRust.links.M <> ref:172 var
+R10901:10906 RocqOfRust.M <> pure def
+R10909:10910 RocqOfRust.links.M <> φ meth
+R10913:10919 RocqOfRust.links.M Ref cast_to def
+R10938:10940 RocqOfRust.links.M <> ref:172 var
+R10921:10936 RocqOfRust.M Pointer.Kind Raw constr
+prf 10966:10974 Ref borrow_eq
+binder 10977:10977 <> A:173
+R10988:10991 RocqOfRust.links.M <> Link class
+R10993:10993 RocqOfRust.links.M <> A:173 var
+binder 10988:10993 <> H:174
+R11004:11017 RocqOfRust.M Pointer.Kind t ind
+binder 10997:11000 <> kind:175
+R11027:11027 RocqOfRust.links.M Ref t rec
+R11046:11046 RocqOfRust.links.M <> A:173 var
+R11029:11044 RocqOfRust.M Pointer.Kind Raw constr
+binder 11021:11023 <> ref:176
+R11077:11079 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R11055:11062 RocqOfRust.M <> borrow def
+R11064:11067 RocqOfRust.links.M <> kind:175 var
+R11070:11071 RocqOfRust.links.M <> φ meth
+R11073:11075 RocqOfRust.links.M <> ref:176 var
+R11080:11085 RocqOfRust.M <> pure def
+R11088:11089 RocqOfRust.links.M <> φ meth
+R11092:11098 RocqOfRust.links.M Ref cast_to def
+R11105:11107 RocqOfRust.links.M <> ref:176 var
+R11100:11103 RocqOfRust.links.M <> kind:175 var
+prf 11133:11144 Ref cast_cast_eq
+binder 11147:11147 <> A:177
+R11158:11161 RocqOfRust.links.M <> Link class
+R11163:11163 RocqOfRust.links.M <> A:177 var
+binder 11158:11163 <> H:178
+R11187:11200 RocqOfRust.M Pointer.Kind t ind
+binder 11167:11171 <> kind1:179
+binder 11173:11177 <> kind2:180
+binder 11179:11183 <> kind3:181
+R11210:11210 RocqOfRust.links.M Ref t rec
+R11218:11218 RocqOfRust.links.M <> A:177 var
+R11212:11216 RocqOfRust.links.M <> kind1:179 var
+binder 11204:11206 <> ref:182
+R11260:11262 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R11227:11233 RocqOfRust.links.M Ref cast_to def
+R11242:11248 RocqOfRust.links.M Ref cast_to def
+R11256:11258 RocqOfRust.links.M <> ref:182 var
+R11250:11254 RocqOfRust.links.M <> kind2:180 var
+R11235:11239 RocqOfRust.links.M <> kind3:181 var
+R11263:11269 RocqOfRust.links.M Ref cast_to def
+R11277:11279 RocqOfRust.links.M <> ref:182 var
+R11271:11275 RocqOfRust.links.M <> kind3:181 var
+def 11308:11324 Ref of_ty_raw_pointer
+binder 11326:11328 <> ty':183
+R11346:11353 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11336:11341 RocqOfRust.links.M OfTy t ind
+R11343:11345 RocqOfRust.links.M <> ty':183 var
+R11354:11359 RocqOfRust.links.M OfTy t ind
+R11362:11369 RocqOfRust.lib.lib Ty apply defax
+R11372:11378 RocqOfRust.M Ty path defax
+R11385:11386 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11388:11388 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11392:11392 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11389:11391 RocqOfRust.links.M <> ty':183 var
+R11445:11445 RocqOfRust.links.M Ref t rec
+R11447:11462 RocqOfRust.M Pointer.Kind Raw constr
+R11424:11432 RocqOfRust.links.M OfTy Make constr
+R11445:11445 RocqOfRust.links.M Ref t rec
+R11447:11462 RocqOfRust.M Pointer.Kind Raw constr
+R11424:11432 RocqOfRust.links.M OfTy Make constr
+def 11511:11519 Ref of_ty_ref
+binder 11521:11523 <> ty':184
+R11541:11548 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11531:11536 RocqOfRust.links.M OfTy t ind
+R11538:11540 RocqOfRust.links.M <> ty':184 var
+R11549:11554 RocqOfRust.links.M OfTy t ind
+R11557:11564 RocqOfRust.lib.lib Ty apply defax
+R11567:11573 RocqOfRust.M Ty path defax
+R11580:11581 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11583:11583 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11587:11587 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11584:11586 RocqOfRust.links.M <> ty':184 var
+R11640:11640 RocqOfRust.links.M Ref t rec
+R11642:11657 RocqOfRust.M Pointer.Kind Ref constr
+R11619:11627 RocqOfRust.links.M OfTy Make constr
+R11640:11640 RocqOfRust.links.M Ref t rec
+R11642:11657 RocqOfRust.M Pointer.Kind Ref constr
+R11619:11627 RocqOfRust.links.M OfTy Make constr
+def 11706:11718 Ref of_ty_mut_ref
+binder 11720:11722 <> ty':185
+R11740:11747 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11730:11735 RocqOfRust.links.M OfTy t ind
+R11737:11739 RocqOfRust.links.M <> ty':185 var
+R11748:11753 RocqOfRust.links.M OfTy t ind
+R11756:11763 RocqOfRust.lib.lib Ty apply defax
+R11766:11772 RocqOfRust.M Ty path defax
+R11782:11783 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11785:11785 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11789:11789 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11786:11788 RocqOfRust.links.M <> ty':185 var
+R11842:11842 RocqOfRust.links.M Ref t rec
+R11844:11862 RocqOfRust.M Pointer.Kind MutRef constr
+R11821:11829 RocqOfRust.links.M OfTy Make constr
+R11842:11842 RocqOfRust.links.M Ref t rec
+R11844:11862 RocqOfRust.M Pointer.Kind MutRef constr
+R11821:11829 RocqOfRust.links.M OfTy Make constr
+def 11911:11929 Ref of_ty_const_pointer
+binder 11931:11933 <> ty':186
+R11951:11958 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11941:11946 RocqOfRust.links.M OfTy t ind
+R11948:11950 RocqOfRust.links.M <> ty':186 var
+R11959:11964 RocqOfRust.links.M OfTy t ind
+R11967:11974 RocqOfRust.lib.lib Ty apply defax
+R11977:11983 RocqOfRust.M Ty path defax
+R11995:11996 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11998:11998 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R12002:12002 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11999:12001 RocqOfRust.links.M <> ty':186 var
+R12055:12055 RocqOfRust.links.M Ref t rec
+R12057:12081 RocqOfRust.M Pointer.Kind ConstPointer constr
+R12034:12042 RocqOfRust.links.M OfTy Make constr
+R12055:12055 RocqOfRust.links.M Ref t rec
+R12057:12081 RocqOfRust.M Pointer.Kind ConstPointer constr
+R12034:12042 RocqOfRust.links.M OfTy Make constr
+def 12130:12146 Ref of_ty_mut_pointer
+binder 12148:12150 <> ty':187
+R12168:12175 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R12158:12163 RocqOfRust.links.M OfTy t ind
+R12165:12167 RocqOfRust.links.M <> ty':187 var
+R12176:12181 RocqOfRust.links.M OfTy t ind
+R12184:12191 RocqOfRust.lib.lib Ty apply defax
+R12194:12200 RocqOfRust.M Ty path defax
+R12210:12211 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R12213:12213 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R12217:12217 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R12214:12216 RocqOfRust.links.M <> ty':187 var
+R12270:12270 RocqOfRust.links.M Ref t rec
+R12272:12294 RocqOfRust.M Pointer.Kind MutPointer constr
+R12249:12257 RocqOfRust.links.M OfTy Make constr
+R12270:12270 RocqOfRust.links.M Ref t rec
+R12272:12294 RocqOfRust.M Pointer.Kind MutPointer constr
+R12249:12257 RocqOfRust.links.M OfTy Make constr
+prf 12338:12360 Ref of_value_with_immediate
+binder 12363:12363 <> A:188
+R12374:12377 RocqOfRust.links.M <> Link class
+R12379:12379 RocqOfRust.links.M <> A:188 var
+binder 12374:12379 <> H:189
+R12391:12391 RocqOfRust.links.M <> A:188 var
+binder 12383:12387 <> value:190
+binder 12394:12399 <> value':191
+R12424:12431 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R12413:12415 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R12407:12412 RocqOfRust.links.M <> value':191 var
+R12416:12417 RocqOfRust.links.M <> φ meth
+R12419:12423 RocqOfRust.links.M <> value:190 var
+R12555:12557 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R12432:12444 RocqOfRust.M Value Pointer constr
+R12455:12466 RocqOfRust.M Pointer kind proj
+R12455:12466 RocqOfRust.M Pointer kind proj
+R12455:12466 RocqOfRust.M Pointer kind proj
+R12495:12506 RocqOfRust.M Pointer core proj
+R12495:12506 RocqOfRust.M Pointer core proj
+R12471:12486 RocqOfRust.M Pointer.Kind Raw constr
+R12511:12532 RocqOfRust.M Pointer.Core Immediate constr
+R12535:12538 Corelib.Init.Datatypes <> Some constr
+R12540:12545 RocqOfRust.links.M <> value':191 var
+R12558:12559 RocqOfRust.links.M <> φ meth
+R12562:12570 RocqOfRust.links.M Ref immediate def
+R12589:12593 RocqOfRust.links.M <> value:190 var
+R12572:12587 RocqOfRust.M Pointer.Kind Raw constr
+def 12623:12640 Ref of_value_immediate
+R12652:12658 RocqOfRust.M Value t ind
+binder 12643:12648 <> value':192
+R12683:12690 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R12667:12675 RocqOfRust.links.M OfValue t ind
+R12677:12682 RocqOfRust.links.M <> value':192 var
+R12691:12699 RocqOfRust.links.M OfValue t ind
+R12702:12714 RocqOfRust.M Value Pointer constr
+R12725:12736 RocqOfRust.M Pointer kind proj
+R12725:12736 RocqOfRust.M Pointer kind proj
+R12725:12736 RocqOfRust.M Pointer kind proj
+R12765:12776 RocqOfRust.M Pointer core proj
+R12765:12776 RocqOfRust.M Pointer core proj
+R12741:12756 RocqOfRust.M Pointer.Kind Raw constr
+R12781:12802 RocqOfRust.M Pointer.Core Immediate constr
+R12805:12808 Corelib.Init.Datatypes <> Some constr
+R12810:12815 RocqOfRust.links.M <> value':192 var
+prf 12849:12869 Ref of_value_with_of_core
+binder 12872:12872 <> A:193
+R12883:12886 RocqOfRust.links.M <> Link class
+R12888:12888 RocqOfRust.links.M <> A:193 var
+binder 12883:12888 <> H:194
+R12899:12912 RocqOfRust.M Pointer.Kind t ind
+binder 12892:12895 <> kind:195
+R12922:12926 RocqOfRust.links.M Ref t rec
+R12933:12933 RocqOfRust.links.M <> A:193 var
+R12928:12931 RocqOfRust.links.M <> kind:195 var
+binder 12916:12918 <> ref:196
+R13015:13021 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R12942:12954 RocqOfRust.M Value Pointer constr
+R12959:12970 RocqOfRust.M Pointer kind proj
+R12959:12970 RocqOfRust.M Pointer kind proj
+R12959:12970 RocqOfRust.M Pointer kind proj
+R12981:12992 RocqOfRust.M Pointer core proj
+R12981:12992 RocqOfRust.M Pointer core proj
+R12975:12978 RocqOfRust.links.M <> kind:195 var
+R12997:13007 RocqOfRust.links.M Ref to_core def
+R13009:13011 RocqOfRust.links.M <> ref:196 var
+R13022:13023 RocqOfRust.links.M <> φ meth
+R13025:13027 RocqOfRust.links.M <> ref:196 var
+def 13056:13071 Ref of_value_of_core
+R13088:13101 RocqOfRust.M Pointer.Kind t ind
+binder 13074:13078 <> kind1:197
+binder 13080:13084 <> kind2:198
+binder 13105:13105 <> A:199
+R13116:13119 RocqOfRust.links.M <> Link class
+R13121:13121 RocqOfRust.links.M <> A:199 var
+binder 13116:13121 <> H:200
+R13137:13141 RocqOfRust.links.M Ref t rec
+R13149:13149 RocqOfRust.links.M <> A:199 var
+R13143:13147 RocqOfRust.links.M <> kind1:197 var
+binder 13131:13133 <> ref:201
+R13158:13166 RocqOfRust.links.M OfValue t ind
+R13169:13181 RocqOfRust.M Value Pointer constr
+R13186:13197 RocqOfRust.M Pointer kind proj
+R13186:13197 RocqOfRust.M Pointer kind proj
+R13186:13197 RocqOfRust.M Pointer kind proj
+R13209:13220 RocqOfRust.M Pointer core proj
+R13209:13220 RocqOfRust.M Pointer core proj
+R13202:13206 RocqOfRust.links.M <> kind2:198 var
+R13225:13235 RocqOfRust.links.M Ref to_core def
+R13237:13239 RocqOfRust.links.M <> ref:201 var
+R13262:13264 RocqOfRust.links.M Ref <> mod
+R13286:13290 RocqOfRust.links.M <> t rec
+R13292:13307 RocqOfRust.M Pointer.Kind Raw constr
+not 13277:13277 <> :::'''*'
+R13329:13333 RocqOfRust.links.M <> t rec
+R13335:13350 RocqOfRust.M Pointer.Kind Ref constr
+not 13320:13320 <> :::'''&'
+R13375:13379 RocqOfRust.links.M <> t rec
+R13381:13399 RocqOfRust.M Pointer.Kind MutRef constr
+not 13363:13363 <> :::'''&mut'
+R13426:13430 RocqOfRust.links.M <> t rec
+R13432:13456 RocqOfRust.M Pointer.Kind ConstPointer constr
+not 13412:13412 <> :::'''*const'
+R13481:13485 RocqOfRust.links.M <> t rec
+R13487:13509 RocqOfRust.M Pointer.Kind MutPointer constr
+not 13469:13469 <> :::'''*mut'
+mod 13521:13530 <> SubPointer
+mod 13542:13547 <> SubPointer.Runner
+rec 13561:13561 SubPointer.Runner t
+proj 13632:13636 SubPointer.Runner Sub_A
+proj 13651:13657 SubPointer.Runner H_Sub_A
+proj 13679:13688 SubPointer.Runner projection
+proj 13717:13725 SubPointer.Runner injection
+binder 13564:13564 <> A:202
+R13580:13583 RocqOfRust.links.M <> Link class
+R13585:13585 RocqOfRust.links.M <> A:202 var
+binder 13574:13576 <> H_A:203
+R13597:13611 RocqOfRust.M Pointer.Index t ind
+binder 13589:13593 <> index:204
+R13661:13664 RocqOfRust.links.M <> Link class
+R13666:13670 RocqOfRust.links.M <> Sub_A:206 meth
+R13693:13696 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R13692:13692 RocqOfRust.links.M <> A:202 var
+R13697:13702 Corelib.Init.Datatypes <> option ind
+R13704:13708 RocqOfRust.links.M <> Sub_A:206 meth
+R13730:13733 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R13729:13729 RocqOfRust.links.M <> A:202 var
+R13739:13742 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R13734:13738 RocqOfRust.links.M <> Sub_A:206 meth
+R13743:13748 Corelib.Init.Datatypes <> option ind
+R13750:13750 RocqOfRust.links.M <> A:202 var
+R13774:13778 RocqOfRust.links.M SubPointer.Runner Sub_A proj
+R13774:13778 RocqOfRust.links.M SubPointer.Runner Sub_A proj
+R13803:13809 RocqOfRust.links.M SubPointer.Runner H_Sub_A proj
+R13803:13809 RocqOfRust.links.M SubPointer.Runner H_Sub_A proj
+R13834:13843 RocqOfRust.links.M SubPointer.Runner projection proj
+R13834:13843 RocqOfRust.links.M SubPointer.Runner projection proj
+R13868:13876 RocqOfRust.links.M SubPointer.Runner injection proj
+R13868:13876 RocqOfRust.links.M SubPointer.Runner injection proj
+mod 13899:13903 <> SubPointer.Runner.Valid
+rec 13919:13919 SubPointer.Runner.Valid t
+proj 14015:14019 SubPointer.Runner.Valid Sub_A
+proj 14048:14054 SubPointer.Runner.Valid H_Sub_A
+proj 14085:14102 SubPointer.Runner.Valid read_commutativity
+proj 14213:14231 SubPointer.Runner.Valid write_commutativity
+binder 13922:13922 <> A:210
+R13933:13936 RocqOfRust.links.M <> Link class
+R13938:13938 RocqOfRust.links.M <> A:210 var
+binder 13933:13938 <> H:211
+R13950:13964 RocqOfRust.M Pointer.Index t ind
+binder 13942:13946 <> index:212
+R13977:13984 RocqOfRust.links.M SubPointer.Runner t rec
+R13988:13992 RocqOfRust.links.M <> index:212 var
+R13986:13986 RocqOfRust.links.M <> A:210 var
+binder 13968:13973 <> runner:213
+R14032:14036 RocqOfRust.links.M SubPointer.Runner Sub_A proj
+R14024:14029 RocqOfRust.links.M <> runner:213 var
+R14067:14073 RocqOfRust.links.M SubPointer.Runner H_Sub_A proj
+R14059:14064 RocqOfRust.links.M <> runner:213 var
+R14109:14109 RocqOfRust.links.M <> A:210 var
+binder 14105:14105 <> a:217
+R14161:14173 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R14124:14133 RocqOfRust.M Option map def
+R14159:14160 RocqOfRust.links.M <> φ meth
+R14144:14153 RocqOfRust.links.M SubPointer.Runner projection proj
+R14136:14141 RocqOfRust.links.M <> runner:213 var
+R14156:14156 RocqOfRust.links.M <> a:217 var
+R14174:14189 RocqOfRust.M Value read_index def
+R14192:14193 RocqOfRust.links.M <> φ meth
+R14195:14195 RocqOfRust.links.M <> a:217 var
+R14198:14202 RocqOfRust.links.M <> index:212 var
+R14238:14238 RocqOfRust.links.M <> A:210 var
+binder 14234:14234 <> a:219
+R14250:14254 RocqOfRust.links.M <> Sub_A:215 meth
+binder 14242:14246 <> sub_a:220
+R14311:14323 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R14269:14278 RocqOfRust.M Option map def
+R14309:14310 RocqOfRust.links.M <> φ meth
+R14289:14297 RocqOfRust.links.M SubPointer.Runner injection proj
+R14281:14286 RocqOfRust.links.M <> runner:213 var
+R14302:14306 RocqOfRust.links.M <> sub_a:220 var
+R14300:14300 RocqOfRust.links.M <> a:219 var
+R14324:14340 RocqOfRust.M Value write_index def
+R14343:14344 RocqOfRust.links.M <> φ meth
+R14346:14346 RocqOfRust.links.M <> a:219 var
+R14349:14353 RocqOfRust.links.M <> index:212 var
+R14356:14357 RocqOfRust.links.M <> φ meth
+R14359:14363 RocqOfRust.links.M <> sub_a:220 var
+R14384:14388 RocqOfRust.links.M SubPointer.Runner.Valid <> mod
+def 14407:14411 SubPointer.Runner apply
+binder 14414:14414 <> A:222
+R14425:14428 RocqOfRust.links.M <> Link class
+R14430:14430 RocqOfRust.links.M <> A:222 var
+binder 14425:14430 <> H:223
+R14442:14456 RocqOfRust.M Pointer.Index t ind
+binder 14434:14438 <> index:224
+R14479:14488 RocqOfRust.links.M Ref.Core t ind
+R14490:14490 RocqOfRust.links.M <> A:222 var
+binder 14468:14475 <> ref_core:225
+R14511:14529 RocqOfRust.links.M SubPointer.Runner t rec
+R14533:14537 RocqOfRust.links.M <> index:224 var
+R14531:14531 RocqOfRust.links.M <> A:222 var
+binder 14502:14507 <> runner:226
+R14565:14571 RocqOfRust.links.M SubPointer.Runner H_Sub_A proj
+R14557:14562 RocqOfRust.links.M <> runner:226 var
+R14583:14592 RocqOfRust.links.M Ref.Core t ind
+R14602:14606 RocqOfRust.links.M SubPointer.Runner Sub_A proj
+R14594:14599 RocqOfRust.links.M <> runner:226 var
+R14630:14635 RocqOfRust.links.M SubPointer.Runner <> mod
+R14642:14651 RocqOfRust.links.M SubPointer <> mod
+def 14666:14676 <> output_pure
+binder 14679:14684 <> Output:227
+R14695:14698 RocqOfRust.links.M <> Link class
+R14700:14705 RocqOfRust.links.M <> Output:227 var
+binder 14695:14705 <> H:228
+R14718:14723 RocqOfRust.links.M <> Output:227 var
+binder 14709:14714 <> output:229
+R14735:14737 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R14728:14734 RocqOfRust.M Value t ind
+R14738:14748 RocqOfRust.M Exception t ind
+R14755:14757 Corelib.Init.Datatypes <> inl constr
+R14760:14761 RocqOfRust.links.M <> φ meth
+R14763:14768 RocqOfRust.links.M <> output:229 var
+mod 14780:14785 <> Output
+mod 14797:14805 <> Output.Exception
+ind 14822:14822 Output.Exception t
+constr 14849:14854 Output.Exception Return
+constr 14876:14880 Output.Exception Break
+constr 14888:14895 Output.Exception Continue
+constr 14903:14912 Output.Exception BreakMatch
+binder 14825:14825 <> R:230
+R14867:14867 RocqOfRust.links.M <> R:230 var
+binder 14857:14863 <> return_:233
+scheme 14822:14822 Output.Exception t_rect
+scheme 14822:14822 Output.Exception t_ind
+scheme 14822:14822 Output.Exception t_rec
+scheme 14822:14822 Output.Exception t_sind
+R14929:14934 RocqOfRust.links.M Output.Exception Return constr
+R14929:14934 RocqOfRust.links.M Output.Exception Return constr
+R14955:14959 RocqOfRust.links.M Output.Exception Break constr
+R14955:14959 RocqOfRust.links.M Output.Exception Break constr
+R14980:14987 RocqOfRust.links.M Output.Exception Continue constr
+R14980:14987 RocqOfRust.links.M Output.Exception Continue constr
+R15008:15017 RocqOfRust.links.M Output.Exception BreakMatch constr
+R15008:15017 RocqOfRust.links.M Output.Exception BreakMatch constr
+def 15040:15051 Output.Exception to_exception
+binder 15054:15054 <> R:234
+R15065:15068 RocqOfRust.links.M <> Link class
+R15070:15070 RocqOfRust.links.M <> R:234 var
+binder 15065:15070 <> H:235
+R15086:15086 RocqOfRust.links.M Output.Exception t ind
+R15088:15088 RocqOfRust.links.M <> R:234 var
+binder 15074:15082 <> exception:236
+R15093:15105 RocqOfRust.M Exception t ind
+R15122:15130 RocqOfRust.links.M <> exception:236 var
+R15145:15150 RocqOfRust.links.M Output.Exception Return constr
+R15163:15180 RocqOfRust.M Exception Return constr
+R15183:15184 RocqOfRust.links.M <> φ meth
+R15203:15207 RocqOfRust.links.M Output.Exception Break constr
+R15212:15228 RocqOfRust.M Exception Break constr
+R15238:15245 RocqOfRust.links.M Output.Exception Continue constr
+R15250:15269 RocqOfRust.M Exception Continue constr
+R15279:15288 RocqOfRust.links.M Output.Exception BreakMatch constr
+R15293:15314 RocqOfRust.M Exception BreakMatch constr
+prf 15338:15349 Output.Exception of_return_eq
+binder 15352:15352 <> R:238
+R15363:15366 RocqOfRust.links.M <> Link class
+R15368:15368 RocqOfRust.links.M <> R:238 var
+binder 15363:15368 <> H:239
+R15382:15382 RocqOfRust.links.M <> R:238 var
+binder 15372:15378 <> return_:240
+binder 15385:15392 <> return_':241
+R15423:15432 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R15410:15412 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R15402:15409 RocqOfRust.links.M <> return_':241 var
+R15413:15414 RocqOfRust.links.M <> φ meth
+R15416:15422 RocqOfRust.links.M <> return_:240 var
+R15460:15462 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R15433:15450 RocqOfRust.M Exception Return constr
+R15452:15459 RocqOfRust.links.M <> return_':241 var
+R15463:15474 RocqOfRust.links.M Output.Exception to_exception def
+R15477:15482 RocqOfRust.links.M Output.Exception Return constr
+R15484:15490 RocqOfRust.links.M <> return_:240 var
+prf 15519:15529 Output.Exception of_break_eq
+binder 15532:15532 <> R:242
+R15543:15546 RocqOfRust.links.M <> Link class
+R15548:15548 RocqOfRust.links.M <> R:242 var
+binder 15543:15548 <> H:243
+R15576:15578 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R15559:15575 RocqOfRust.M Exception Break constr
+R15579:15590 RocqOfRust.links.M Output.Exception to_exception def
+R15601:15605 RocqOfRust.links.M Output.Exception Break constr
+R15598:15598 RocqOfRust.links.M <> R:242 var
+prf 15633:15646 Output.Exception of_continue_eq
+binder 15649:15649 <> R:244
+R15660:15663 RocqOfRust.links.M <> Link class
+R15665:15665 RocqOfRust.links.M <> R:244 var
+binder 15660:15665 <> H:245
+R15696:15698 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R15676:15695 RocqOfRust.M Exception Continue constr
+R15699:15710 RocqOfRust.links.M Output.Exception to_exception def
+R15721:15728 RocqOfRust.links.M Output.Exception Continue constr
+R15718:15718 RocqOfRust.links.M <> R:244 var
+prf 15756:15772 Output.Exception of_break_match_eq
+binder 15775:15775 <> R:246
+R15786:15789 RocqOfRust.links.M <> Link class
+R15791:15791 RocqOfRust.links.M <> R:246 var
+binder 15786:15791 <> H:247
+R15824:15826 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R15802:15823 RocqOfRust.M Exception BreakMatch constr
+R15827:15838 RocqOfRust.links.M Output.Exception to_exception def
+R15849:15858 RocqOfRust.links.M Output.Exception BreakMatch constr
+R15846:15846 RocqOfRust.links.M <> R:246 var
+R15881:15889 RocqOfRust.links.M Output.Exception <> mod
+ind 15905:15905 Output t
+constr 15937:15943 Output Success
+constr 15980:15988 Output Exception
+binder 15908:15908 <> R:248
+binder 15910:15915 <> Output:249
+R15955:15960 RocqOfRust.links.M <> Output:249 var
+binder 15946:15951 <> output:252
+R15965:15965 RocqOfRust.links.M <> t:250 ind
+R15969:15974 RocqOfRust.links.M <> Output:249 var
+R15967:15967 RocqOfRust.links.M <> R:248 var
+R16003:16013 RocqOfRust.links.M Output t ind
+R16015:16015 RocqOfRust.links.M <> R:248 var
+binder 15991:15999 <> exception:253
+R16020:16020 RocqOfRust.links.M <> t:250 ind
+R16024:16029 RocqOfRust.links.M <> Output:249 var
+R16022:16022 RocqOfRust.links.M <> R:248 var
+scheme 15905:15905 Output t_rect
+scheme 15905:15905 Output t_ind
+scheme 15905:15905 Output t_rec
+scheme 15905:15905 Output t_sind
+R16044:16050 RocqOfRust.links.M Output Success constr
+R16044:16050 RocqOfRust.links.M Output Success constr
+R16071:16079 RocqOfRust.links.M Output Exception constr
+R16071:16079 RocqOfRust.links.M Output Exception constr
+def 16102:16109 Output to_value
+binder 16112:16112 <> R:254
+binder 16114:16119 <> Output:255
+R16130:16133 RocqOfRust.links.M <> Link class
+R16135:16135 RocqOfRust.links.M <> R:254 var
+binder 16130:16135 <> H:256
+R16140:16143 RocqOfRust.links.M <> Link class
+R16145:16150 RocqOfRust.links.M <> Output:255 var
+binder 16140:16150 <> H0:257
+R16163:16163 RocqOfRust.links.M Output t ind
+R16165:16165 RocqOfRust.links.M <> R:254 var
+R16167:16172 RocqOfRust.links.M <> Output:255 var
+binder 16154:16159 <> output:258
+R16190:16192 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R16183:16189 RocqOfRust.M Value t ind
+R16193:16205 RocqOfRust.M Exception t ind
+R16220:16225 RocqOfRust.links.M <> output:258 var
+R16238:16244 RocqOfRust.links.M Output Success constr
+R16256:16266 RocqOfRust.links.M <> output_pure def
+R16275:16280 RocqOfRust.links.M <> output:258 var
+R16268:16273 RocqOfRust.links.M <> Output:255 var
+R16288:16296 RocqOfRust.links.M Output Exception constr
+R16311:16313 Corelib.Init.Datatypes <> inr constr
+R16316:16337 RocqOfRust.links.M Output to_exception def
+prf 16368:16380 Output of_success_eq
+binder 16383:16383 <> R:260
+binder 16385:16390 <> Output:261
+R16401:16404 RocqOfRust.links.M <> Link class
+R16406:16406 RocqOfRust.links.M <> R:260 var
+binder 16401:16406 <> H:262
+R16411:16414 RocqOfRust.links.M <> Link class
+R16416:16421 RocqOfRust.links.M <> Output:261 var
+binder 16411:16421 <> H0:263
+R16440:16445 RocqOfRust.links.M <> Output:261 var
+binder 16431:16436 <> output:264
+binder 16448:16454 <> output':265
+R16481:16488 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16469:16471 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R16462:16468 RocqOfRust.links.M <> output':265 var
+R16472:16473 RocqOfRust.links.M <> φ meth
+R16475:16480 RocqOfRust.links.M <> output:264 var
+R16500:16502 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R16489:16491 Corelib.Init.Datatypes <> inl constr
+R16493:16499 RocqOfRust.links.M <> output':265 var
+R16503:16510 RocqOfRust.links.M Output to_value def
+R16513:16526 RocqOfRust.links.M Output Success constr
+R16537:16542 RocqOfRust.links.M <> output:264 var
+R16534:16534 RocqOfRust.links.M <> R:260 var
+prf 16567:16581 Output of_exception_eq
+binder 16584:16584 <> R:266
+binder 16586:16591 <> Output:267
+R16602:16605 RocqOfRust.links.M <> Link class
+R16607:16607 RocqOfRust.links.M <> R:266 var
+binder 16602:16607 <> H:268
+R16612:16615 RocqOfRust.links.M <> Link class
+R16617:16622 RocqOfRust.links.M <> Output:267 var
+binder 16612:16622 <> H0:269
+R16644:16654 RocqOfRust.links.M Output t ind
+R16656:16656 RocqOfRust.links.M <> R:266 var
+binder 16632:16640 <> exception:270
+R16673:16685 RocqOfRust.M Exception t ind
+binder 16660:16669 <> exception':271
+R16739:16746 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16704:16706 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R16694:16703 RocqOfRust.links.M <> exception':271 var
+R16707:16728 RocqOfRust.links.M Output to_exception def
+R16730:16738 RocqOfRust.links.M <> exception:270 var
+R16761:16763 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R16747:16749 Corelib.Init.Datatypes <> inr constr
+R16751:16760 RocqOfRust.links.M <> exception':271 var
+R16764:16771 RocqOfRust.links.M Output to_value def
+R16793:16808 RocqOfRust.links.M Output Exception constr
+R16819:16827 RocqOfRust.links.M <> exception:270 var
+R16816:16816 RocqOfRust.links.M <> R:266 var
+R16784:16789 RocqOfRust.links.M <> Output:267 var
+R16847:16852 RocqOfRust.links.M Output <> mod
+mod 16863:16865 <> Run
+ind 16947:16947 Run t
+constr 17009:17019 Run PureSuccess
+constr 17148:17160 Run PureException
+constr 17354:17376 Run CallPrimitiveStateAlloc
+constr 17712:17743 Run CallPrimitiveStateAllocImmediate
+constr 18079:18100 Run CallPrimitiveStateRead
+constr 18388:18418 Run CallPrimitiveStateReadImmediate
+constr 18662:18684 Run CallPrimitiveStateWrite
+constr 19006:19031 Run CallPrimitiveGetSubPointer
+constr 19551:19574 Run CallPrimitiveGetFunction
+constr 20010:20043 Run CallPrimitiveGetAssociatedFunction
+constr 20554:20580 Run CallPrimitiveGetTraitMethod
+constr 21475:21485 Run CallClosure
+constr 21917:21929 Run CallLogicalOp
+constr 22231:22233 Run Let
+constr 22561:22568 Run LetAlloc
+constr 22906:22909 Run Loop
+constr 23252:23261 Run MatchTuple
+constr 23430:23439 Run IfThenElse
+constr 23912:23921 Run Impossible
+constr 24002:24008 Run Rewrite
+binder 16950:16950 <> R:272
+binder 16952:16957 <> Output:273
+R16968:16971 RocqOfRust.links.M <> Link class
+R16973:16973 RocqOfRust.links.M <> R:272 var
+binder 16968:16973 <> H:274
+R16978:16981 RocqOfRust.links.M <> Link class
+R16983:16988 RocqOfRust.links.M <> Output:273 var
+binder 16978:16988 <> H0:275
+R16994:16997 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16993:16993 RocqOfRust.M <> M def
+R24144:24144 RocqOfRust.links.M <> t:277 ind
+R17037:17043 RocqOfRust.M Value t ind
+binder 17028:17033 <> value':278
+R17061:17066 RocqOfRust.links.M <> Output:273 var
+binder 17053:17057 <> value:279
+R17092:17099 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17081:17083 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R17075:17080 RocqOfRust.links.M <> value':278 var
+R17084:17085 RocqOfRust.links.M <> φ meth
+R17087:17091 RocqOfRust.links.M <> value:279 var
+R17100:17102 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17125:17130 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17132:17133 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17140:17142 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17131:17131 RocqOfRust.links.M <> R:272 var
+R17134:17139 RocqOfRust.links.M <> Output:273 var
+R17103:17111 RocqOfRust.M LowM Pure constr
+R17114:17116 Corelib.Init.Datatypes <> inl constr
+R17118:17123 RocqOfRust.links.M <> value':278 var
+R17182:17192 RocqOfRust.M Exception t ind
+binder 17169:17178 <> exception':280
+R17214:17231 RocqOfRust.links.M Output.Exception t ind
+R17233:17233 RocqOfRust.links.M <> R:272 var
+binder 17202:17210 <> exception:281
+R17294:17301 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17252:17254 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R17242:17251 RocqOfRust.links.M <> exception':280 var
+R17255:17283 RocqOfRust.links.M Output.Exception to_exception def
+R17285:17293 RocqOfRust.links.M <> exception:281 var
+R17302:17304 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17331:17336 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17338:17339 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17346:17348 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17337:17337 RocqOfRust.links.M <> R:272 var
+R17340:17345 RocqOfRust.links.M <> Output:273 var
+R17305:17313 RocqOfRust.M LowM Pure constr
+R17316:17318 Corelib.Init.Datatypes <> inr constr
+R17320:17329 RocqOfRust.links.M <> exception':280 var
+R17391:17394 RocqOfRust.M Ty t defax
+binder 17385:17387 <> ty':282
+R17413:17419 RocqOfRust.M Value t ind
+binder 17404:17409 <> value':283
+R17440:17443 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17433:17439 RocqOfRust.M Value t ind
+R17444:17444 RocqOfRust.M <> M def
+binder 17429:17429 <> k:284
+R17462:17467 RocqOfRust.links.M OfTy t ind
+R17469:17471 RocqOfRust.links.M <> ty':282 var
+binder 17454:17458 <> of_ty:285
+R17489:17500 RocqOfRust.links.M OfTy get_Set def
+R17502:17506 RocqOfRust.links.M <> of_ty:285 var
+binder 17481:17485 <> value:286
+R17532:17539 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17521:17523 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R17515:17520 RocqOfRust.links.M <> value':283 var
+R17524:17525 RocqOfRust.links.M <> φ meth
+R17527:17531 RocqOfRust.links.M <> value:286 var
+R17540:17540 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17618:17631 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17555:17577 RocqOfRust.links.M <> :::'''*' not
+R17559:17570 RocqOfRust.links.M OfTy get_Set def
+R17572:17576 RocqOfRust.links.M <> of_ty:285 var
+binder 17549:17551 <> ref:287
+R17587:17589 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17600:17605 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17607:17608 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17615:17617 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17606:17606 RocqOfRust.links.M <> R:272 var
+R17609:17614 RocqOfRust.links.M <> Output:273 var
+R17590:17590 RocqOfRust.links.M <> k:284 var
+R17593:17594 RocqOfRust.links.M <> φ meth
+R17596:17598 RocqOfRust.links.M <> ref:287 var
+R17632:17634 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17689:17694 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17696:17697 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17704:17706 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17695:17695 RocqOfRust.links.M <> R:272 var
+R17698:17703 RocqOfRust.links.M <> Output:273 var
+R17635:17652 RocqOfRust.M LowM CallPrimitive constr
+R17688:17688 RocqOfRust.links.M <> k:284 var
+R17655:17674 RocqOfRust.M Primitive StateAlloc constr
+R17676:17678 RocqOfRust.links.M <> ty':282 var
+R17680:17685 RocqOfRust.links.M <> value':283 var
+R17758:17761 RocqOfRust.M Ty t defax
+binder 17752:17754 <> ty':288
+R17780:17786 RocqOfRust.M Value t ind
+binder 17771:17776 <> value':289
+R17807:17810 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17800:17806 RocqOfRust.M Value t ind
+R17811:17811 RocqOfRust.M <> M def
+binder 17796:17796 <> k:290
+R17829:17834 RocqOfRust.links.M OfTy t ind
+R17836:17838 RocqOfRust.links.M <> ty':288 var
+binder 17821:17825 <> of_ty:291
+R17856:17867 RocqOfRust.links.M OfTy get_Set def
+R17869:17873 RocqOfRust.links.M <> of_ty:291 var
+binder 17848:17852 <> value:292
+R17899:17906 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17888:17890 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R17882:17887 RocqOfRust.links.M <> value':289 var
+R17891:17892 RocqOfRust.links.M <> φ meth
+R17894:17898 RocqOfRust.links.M <> value:292 var
+R17907:17907 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17985:17998 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17922:17944 RocqOfRust.links.M <> :::'''*' not
+R17926:17937 RocqOfRust.links.M OfTy get_Set def
+R17939:17943 RocqOfRust.links.M <> of_ty:291 var
+binder 17916:17918 <> ref:293
+R17954:17956 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17967:17972 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17974:17975 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17982:17984 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R17973:17973 RocqOfRust.links.M <> R:272 var
+R17976:17981 RocqOfRust.links.M <> Output:273 var
+R17957:17957 RocqOfRust.links.M <> k:290 var
+R17960:17961 RocqOfRust.links.M <> φ meth
+R17963:17965 RocqOfRust.links.M <> ref:293 var
+R17999:18001 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18056:18061 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18063:18064 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18071:18073 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18062:18062 RocqOfRust.links.M <> R:272 var
+R18065:18070 RocqOfRust.links.M <> Output:273 var
+R18002:18019 RocqOfRust.M LowM CallPrimitive constr
+R18055:18055 RocqOfRust.links.M <> k:290 var
+R18022:18041 RocqOfRust.M Primitive StateAlloc constr
+R18043:18045 RocqOfRust.links.M <> ty':288 var
+R18047:18052 RocqOfRust.links.M <> value':289 var
+binder 18103:18103 <> A:294
+R18114:18117 RocqOfRust.links.M <> Link class
+R18119:18119 RocqOfRust.links.M <> A:294 var
+binder 18114:18119 <> H1:295
+R18140:18149 RocqOfRust.links.M Ref.Core t ind
+R18151:18151 RocqOfRust.links.M <> A:294 var
+binder 18129:18136 <> ref_core:296
+R18172:18175 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18165:18171 RocqOfRust.M Value t ind
+R18176:18176 RocqOfRust.M <> M def
+binder 18161:18161 <> k:297
+R18206:18213 RocqOfRust.links.M Ref core proj
+R18206:18213 RocqOfRust.links.M Ref core proj
+R18206:18213 RocqOfRust.links.M Ref core proj
+R18218:18225 RocqOfRust.links.M <> ref_core:296 var
+R18195:18198 RocqOfRust.links.M <> :::'''*' not
+R18198:18198 RocqOfRust.links.M <> A:294 var
+binder 18189:18191 <> ref:298
+R18237:18237 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18297:18310 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18254:18254 RocqOfRust.links.M <> A:294 var
+binder 18246:18250 <> value:299
+R18264:18266 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18279:18284 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18286:18287 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18294:18296 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18285:18285 RocqOfRust.links.M <> R:272 var
+R18288:18293 RocqOfRust.links.M <> Output:273 var
+R18267:18267 RocqOfRust.links.M <> k:297 var
+R18270:18271 RocqOfRust.links.M <> φ meth
+R18273:18277 RocqOfRust.links.M <> value:299 var
+R18311:18313 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18365:18370 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18372:18373 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18380:18382 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18371:18371 RocqOfRust.links.M <> R:272 var
+R18374:18379 RocqOfRust.links.M <> Output:273 var
+R18314:18331 RocqOfRust.M LowM CallPrimitive constr
+R18364:18364 RocqOfRust.links.M <> k:297 var
+R18334:18352 RocqOfRust.M Primitive StateRead constr
+R18355:18356 RocqOfRust.links.M <> φ meth
+R18358:18360 RocqOfRust.links.M <> ref:298 var
+binder 18421:18421 <> A:300
+R18432:18435 RocqOfRust.links.M <> Link class
+R18437:18437 RocqOfRust.links.M <> A:300 var
+binder 18432:18437 <> H1:301
+R18455:18455 RocqOfRust.links.M <> A:300 var
+binder 18447:18451 <> value:302
+R18476:18479 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18469:18475 RocqOfRust.M Value t ind
+R18480:18480 RocqOfRust.M <> M def
+binder 18465:18465 <> k:303
+R18500:18512 RocqOfRust.links.M Ref immediate def
+R18531:18535 RocqOfRust.links.M <> value:302 var
+R18514:18529 RocqOfRust.M Pointer.Kind Raw constr
+binder 18493:18495 <> ref:304
+R18577:18584 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18544:18546 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18559:18564 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18566:18567 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18574:18576 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18565:18565 RocqOfRust.links.M <> R:272 var
+R18568:18573 RocqOfRust.links.M <> Output:273 var
+R18547:18547 RocqOfRust.links.M <> k:303 var
+R18550:18551 RocqOfRust.links.M <> φ meth
+R18553:18557 RocqOfRust.links.M <> value:302 var
+R18585:18587 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18639:18644 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18646:18647 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18654:18656 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18645:18645 RocqOfRust.links.M <> R:272 var
+R18648:18653 RocqOfRust.links.M <> Output:273 var
+R18588:18605 RocqOfRust.M LowM CallPrimitive constr
+R18638:18638 RocqOfRust.links.M <> k:303 var
+R18608:18626 RocqOfRust.M Primitive StateRead constr
+R18629:18630 RocqOfRust.links.M <> φ meth
+R18632:18634 RocqOfRust.links.M <> ref:304 var
+binder 18687:18687 <> A:305
+R18698:18701 RocqOfRust.links.M <> Link class
+R18703:18703 RocqOfRust.links.M <> A:305 var
+binder 18698:18703 <> H1:306
+R18724:18733 RocqOfRust.links.M Ref.Core t ind
+R18735:18735 RocqOfRust.links.M <> A:305 var
+binder 18713:18720 <> ref_core:307
+R18754:18760 RocqOfRust.M Value t ind
+binder 18745:18750 <> value':308
+R18772:18772 RocqOfRust.links.M <> A:305 var
+binder 18764:18768 <> value:309
+R18793:18796 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18786:18792 RocqOfRust.M Value t ind
+R18797:18797 RocqOfRust.M <> M def
+binder 18782:18782 <> k:310
+R18827:18834 RocqOfRust.links.M Ref core proj
+R18827:18834 RocqOfRust.links.M Ref core proj
+R18827:18834 RocqOfRust.links.M Ref core proj
+R18839:18846 RocqOfRust.links.M <> ref_core:307 var
+R18816:18819 RocqOfRust.links.M <> :::'''*' not
+R18819:18819 RocqOfRust.links.M <> A:305 var
+binder 18810:18812 <> ref:311
+R18875:18882 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18864:18866 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R18858:18863 RocqOfRust.links.M <> value':308 var
+R18867:18868 RocqOfRust.links.M <> φ meth
+R18870:18874 RocqOfRust.links.M <> value:309 var
+R18913:18920 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18883:18885 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18895:18900 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18902:18903 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18910:18912 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18901:18901 RocqOfRust.links.M <> R:272 var
+R18904:18909 RocqOfRust.links.M <> Output:273 var
+R18886:18886 RocqOfRust.links.M <> k:310 var
+R18889:18890 RocqOfRust.links.M <> φ meth
+R18892:18893 Corelib.Init.Datatypes <> tt constr
+R18921:18923 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18983:18988 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18990:18991 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18998:19000 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R18989:18989 RocqOfRust.links.M <> R:272 var
+R18992:18997 RocqOfRust.links.M <> Output:273 var
+R18924:18941 RocqOfRust.M LowM CallPrimitive constr
+R18982:18982 RocqOfRust.links.M <> k:310 var
+R18944:18963 RocqOfRust.M Primitive StateWrite constr
+R18966:18967 RocqOfRust.links.M <> φ meth
+R18969:18971 RocqOfRust.links.M <> ref:311 var
+R18974:18979 RocqOfRust.links.M <> value':308 var
+binder 19034:19034 <> A:312
+R19045:19048 RocqOfRust.links.M <> Link class
+R19050:19050 RocqOfRust.links.M <> A:312 var
+binder 19045:19050 <> H1:313
+R19071:19080 RocqOfRust.links.M Ref.Core t ind
+R19082:19082 RocqOfRust.links.M <> A:312 var
+binder 19060:19067 <> ref_core:314
+R19100:19114 RocqOfRust.M Pointer.Index t ind
+binder 19092:19096 <> index:315
+R19133:19151 RocqOfRust.links.M SubPointer.Runner t rec
+R19155:19159 RocqOfRust.links.M <> index:315 var
+R19153:19153 RocqOfRust.links.M <> A:312 var
+binder 19124:19129 <> runner:316
+R19180:19183 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19173:19179 RocqOfRust.M Value t ind
+R19184:19184 RocqOfRust.M <> M def
+binder 19169:19169 <> k:317
+R19210:19234 RocqOfRust.links.M SubPointer.Runner H_Sub_A proj
+R19202:19207 RocqOfRust.links.M <> runner:316 var
+R19265:19272 RocqOfRust.links.M Ref core proj
+R19265:19272 RocqOfRust.links.M Ref core proj
+R19265:19272 RocqOfRust.links.M Ref core proj
+R19277:19284 RocqOfRust.links.M <> ref_core:314 var
+R19254:19257 RocqOfRust.links.M <> :::'''*' not
+R19257:19257 RocqOfRust.links.M <> A:312 var
+binder 19248:19250 <> ref:318
+R19328:19335 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19296:19320 RocqOfRust.links.M SubPointer.Runner.Valid t rec
+R19322:19327 RocqOfRust.links.M <> runner:316 var
+R19336:19336 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19434:19447 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19355:19389 RocqOfRust.links.M <> :::'''*' not
+R19366:19388 RocqOfRust.links.M SubPointer.Runner Sub_A proj
+R19358:19363 RocqOfRust.links.M <> runner:316 var
+binder 19345:19351 <> sub_ref:319
+R19399:19401 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19416:19421 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19423:19424 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19431:19433 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19422:19422 RocqOfRust.links.M <> R:272 var
+R19425:19430 RocqOfRust.links.M <> Output:273 var
+R19402:19402 RocqOfRust.links.M <> k:317 var
+R19405:19406 RocqOfRust.links.M <> φ meth
+R19408:19414 RocqOfRust.links.M <> sub_ref:319 var
+R19448:19456 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19518:19529 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19531:19532 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19539:19545 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19530:19530 RocqOfRust.links.M <> R:272 var
+R19533:19538 RocqOfRust.links.M <> Output:273 var
+R19457:19474 RocqOfRust.M LowM CallPrimitive constr
+R19517:19517 RocqOfRust.links.M <> k:317 var
+R19477:19499 RocqOfRust.M Primitive GetSubPointer constr
+R19502:19503 RocqOfRust.links.M <> φ meth
+R19505:19507 RocqOfRust.links.M <> ref:318 var
+R19510:19514 RocqOfRust.links.M <> index:315 var
+R19590:19595 Corelib.Strings.PrimString <> string prim
+binder 19583:19586 <> name:320
+R19616:19619 Corelib.Init.Datatypes <> list ind
+R19621:19627 RocqOfRust.M Value t ind
+binder 19599:19612 <> generic_consts:321
+R19645:19648 Corelib.Init.Datatypes <> list ind
+R19650:19653 RocqOfRust.M Ty t defax
+binder 19631:19641 <> generic_tys:322
+R19674:19694 RocqOfRust.M PolymorphicFunction t def
+binder 19663:19670 <> function:323
+R19715:19718 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19708:19714 RocqOfRust.M Value t ind
+R19719:19719 RocqOfRust.M <> M def
+binder 19704:19704 <> k:324
+R19743:19755 RocqOfRust.M Value Closure constr
+R19758:19763 RocqOfRust.M <> existS constr
+R19773:19780 RocqOfRust.links.M <> function:323 var
+R19782:19795 RocqOfRust.links.M <> generic_consts:321 var
+R19797:19807 RocqOfRust.links.M <> generic_tys:322 var
+R19765:19765 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R19767:19768 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R19770:19770 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 19732:19738 <> closure:325
+R19846:19853 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19818:19831 RocqOfRust.M IsFunction C class
+R19833:19836 RocqOfRust.links.M <> name:320 var
+R19838:19845 RocqOfRust.links.M <> function:323 var
+R19884:19891 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R19854:19856 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19866:19871 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19873:19874 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19881:19883 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19872:19872 RocqOfRust.links.M <> R:272 var
+R19875:19880 RocqOfRust.links.M <> Output:273 var
+R19857:19857 RocqOfRust.links.M <> k:324 var
+R19859:19865 RocqOfRust.links.M <> closure:325 var
+R19892:19900 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19977:19988 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19990:19991 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19998:20004 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R19989:19989 RocqOfRust.links.M <> R:272 var
+R19992:19997 RocqOfRust.links.M <> Output:273 var
+R19901:19918 RocqOfRust.M LowM CallPrimitive constr
+R19976:19976 RocqOfRust.links.M <> k:324 var
+R19921:19941 RocqOfRust.M Primitive GetFunction constr
+R19943:19946 RocqOfRust.links.M <> name:320 var
+R19948:19961 RocqOfRust.links.M <> generic_consts:321 var
+R19963:19973 RocqOfRust.links.M <> generic_tys:322 var
+R20057:20060 RocqOfRust.M Ty t defax
+binder 20052:20053 <> ty:326
+R20071:20076 Corelib.Strings.PrimString <> string prim
+binder 20064:20067 <> name:327
+R20097:20100 Corelib.Init.Datatypes <> list ind
+R20102:20108 RocqOfRust.M Value t ind
+binder 20080:20093 <> generic_consts:328
+R20126:20129 Corelib.Init.Datatypes <> list ind
+R20131:20134 RocqOfRust.M Ty t defax
+binder 20112:20122 <> generic_tys:329
+R20166:20186 RocqOfRust.M PolymorphicFunction t def
+binder 20144:20162 <> associated_function:330
+R20207:20210 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R20200:20206 RocqOfRust.M Value t ind
+R20211:20211 RocqOfRust.M <> M def
+binder 20196:20196 <> k:331
+R20235:20247 RocqOfRust.M Value Closure constr
+R20250:20255 RocqOfRust.M <> existS constr
+R20265:20283 RocqOfRust.links.M <> associated_function:330 var
+R20285:20298 RocqOfRust.links.M <> generic_consts:328 var
+R20300:20310 RocqOfRust.links.M <> generic_tys:329 var
+R20257:20257 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R20259:20260 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R20262:20262 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 20224:20230 <> closure:332
+R20373:20380 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R20321:20344 RocqOfRust.M IsAssociatedFunction C class
+R20346:20347 RocqOfRust.links.M <> ty:326 var
+R20349:20352 RocqOfRust.links.M <> name:327 var
+R20354:20372 RocqOfRust.links.M <> associated_function:330 var
+R20411:20418 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R20381:20383 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20393:20398 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20400:20401 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20408:20410 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20399:20399 RocqOfRust.links.M <> R:272 var
+R20402:20407 RocqOfRust.links.M <> Output:273 var
+R20384:20384 RocqOfRust.links.M <> k:331 var
+R20386:20392 RocqOfRust.links.M <> closure:332 var
+R20419:20421 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20519:20532 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20534:20535 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20542:20548 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R20533:20533 RocqOfRust.links.M <> R:272 var
+R20536:20541 RocqOfRust.links.M <> Output:273 var
+R20422:20439 RocqOfRust.M LowM CallPrimitive constr
+R20518:20518 RocqOfRust.links.M <> k:331 var
+R20450:20480 RocqOfRust.M Primitive GetAssociatedFunction constr
+R20482:20483 RocqOfRust.links.M <> ty:326 var
+R20485:20488 RocqOfRust.links.M <> name:327 var
+R20490:20503 RocqOfRust.links.M <> generic_consts:328 var
+R20505:20515 RocqOfRust.links.M <> generic_tys:329 var
+R20602:20607 Corelib.Strings.PrimString <> string prim
+binder 20589:20598 <> trait_name:333
+R20626:20629 Corelib.Init.Datatypes <> list ind
+R20631:20637 RocqOfRust.M Value t ind
+binder 20611:20622 <> trait_consts:334
+R20653:20656 Corelib.Init.Datatypes <> list ind
+R20658:20661 RocqOfRust.M Ty t defax
+binder 20641:20649 <> trait_tys:335
+R20675:20678 RocqOfRust.M Ty t defax
+binder 20665:20671 <> self_ty:336
+R20702:20707 Corelib.Strings.PrimString <> string prim
+binder 20688:20698 <> method_name:337
+R20728:20731 Corelib.Init.Datatypes <> list ind
+R20733:20739 RocqOfRust.M Value t ind
+binder 20711:20724 <> generic_consts:338
+R20757:20760 Corelib.Init.Datatypes <> list ind
+R20762:20765 RocqOfRust.M Ty t defax
+binder 20743:20753 <> generic_tys:339
+R20784:20804 RocqOfRust.M PolymorphicFunction t def
+binder 20775:20780 <> method:340
+R20825:20828 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R20818:20824 RocqOfRust.M Value t ind
+R20829:20829 RocqOfRust.M <> M def
+binder 20814:20814 <> k:341
+R20853:20865 RocqOfRust.M Value Closure constr
+R20868:20873 RocqOfRust.M <> existS constr
+R20883:20888 RocqOfRust.links.M <> method:340 var
+R20890:20903 RocqOfRust.links.M <> generic_consts:338 var
+R20905:20915 RocqOfRust.links.M <> generic_tys:339 var
+R20875:20875 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R20877:20878 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R20880:20880 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 20842:20848 <> closure:342
+R20948:20969 RocqOfRust.M TraitHeader trait_name proj
+R20948:20969 RocqOfRust.M TraitHeader trait_name proj
+R20948:20969 RocqOfRust.M TraitHeader trait_name proj
+R20992:21015 RocqOfRust.M TraitHeader trait_consts proj
+R20992:21015 RocqOfRust.M TraitHeader trait_consts proj
+R21040:21060 RocqOfRust.M TraitHeader trait_tys proj
+R21040:21060 RocqOfRust.M TraitHeader trait_tys proj
+R21082:21100 RocqOfRust.M TraitHeader self_ty proj
+R21082:21100 RocqOfRust.M TraitHeader self_ty proj
+R20974:20983 RocqOfRust.links.M <> trait_name:333 var
+R21020:21031 RocqOfRust.links.M <> trait_consts:334 var
+R21065:21073 RocqOfRust.links.M <> trait_tys:335 var
+R21105:21111 RocqOfRust.links.M <> self_ty:336 var
+binder 20930:20934 <> trait:343
+R21168:21175 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21128:21142 RocqOfRust.M IsTraitMethod t ind
+R21144:21148 RocqOfRust.links.M <> trait:343 var
+R21150:21160 RocqOfRust.links.M <> method_name:337 var
+R21162:21167 RocqOfRust.links.M <> method:340 var
+R21206:21213 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21176:21178 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21188:21193 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21195:21196 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21203:21205 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21194:21194 RocqOfRust.links.M <> R:272 var
+R21197:21202 RocqOfRust.links.M <> Output:273 var
+R21179:21179 RocqOfRust.links.M <> k:341 var
+R21181:21187 RocqOfRust.links.M <> closure:342 var
+R21214:21216 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21440:21453 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21455:21456 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21463:21469 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21454:21454 RocqOfRust.links.M <> R:272 var
+R21457:21462 RocqOfRust.links.M <> Output:273 var
+R21217:21234 RocqOfRust.M LowM CallPrimitive constr
+R21439:21439 RocqOfRust.links.M <> k:341 var
+R21245:21268 RocqOfRust.M Primitive GetTraitMethod constr
+R21280:21289 RocqOfRust.links.M <> trait_name:333 var
+R21301:21307 RocqOfRust.links.M <> self_ty:336 var
+R21319:21330 RocqOfRust.links.M <> trait_consts:334 var
+R21342:21350 RocqOfRust.links.M <> trait_tys:335 var
+R21362:21372 RocqOfRust.links.M <> method_name:337 var
+R21384:21397 RocqOfRust.links.M <> generic_consts:338 var
+R21409:21419 RocqOfRust.links.M <> generic_tys:339 var
+R21499:21502 RocqOfRust.M Ty t defax
+binder 21494:21495 <> ty:344
+R21522:21525 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21510:21513 Corelib.Init.Datatypes <> list ind
+R21515:21521 RocqOfRust.M Value t ind
+R21526:21526 RocqOfRust.M <> M def
+binder 21506:21506 <> f:345
+R21537:21540 Corelib.Init.Datatypes <> list ind
+R21542:21548 RocqOfRust.M Value t ind
+binder 21530:21533 <> args:346
+R21577:21580 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21563:21565 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R21556:21562 RocqOfRust.M Value t ind
+R21566:21576 RocqOfRust.M Exception t ind
+R21581:21581 RocqOfRust.M <> M def
+binder 21552:21552 <> k:347
+R21599:21604 RocqOfRust.links.M OfTy t ind
+R21606:21607 RocqOfRust.links.M <> ty:344 var
+binder 21591:21595 <> of_ty:348
+R21637:21648 RocqOfRust.links.M OfTy get_Set def
+R21650:21654 RocqOfRust.links.M <> of_ty:348 var
+binder 21620:21626 <> Output':349
+R21678:21690 RocqOfRust.M Value Closure constr
+R21693:21698 RocqOfRust.M <> existS constr
+R21707:21707 RocqOfRust.links.M <> f:345 var
+R21700:21700 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R21702:21703 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R21705:21705 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 21667:21673 <> closure:350
+R21751:21758 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21717:21719 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21726:21731 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21739:21740 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21748:21750 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21732:21738 RocqOfRust.links.M <> Output':349 var
+R21741:21747 RocqOfRust.links.M <> Output':349 var
+R21720:21720 RocqOfRust.links.M <> f:345 var
+R21722:21725 RocqOfRust.links.M <> args:346 var
+R21759:21759 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21843:21856 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21782:21788 RocqOfRust.links.M <> Output':349 var
+binder 21768:21778 <> value_inter:351
+R21798:21800 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21825:21830 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21832:21833 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21840:21842 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21831:21831 RocqOfRust.links.M <> R:272 var
+R21834:21839 RocqOfRust.links.M <> Output:273 var
+R21801:21801 RocqOfRust.links.M <> k:347 var
+R21804:21806 Corelib.Init.Datatypes <> inl constr
+R21809:21810 RocqOfRust.links.M <> φ meth
+R21812:21822 RocqOfRust.links.M <> value_inter:351 var
+R21857:21859 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21894:21899 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21901:21902 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21909:21911 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R21900:21900 RocqOfRust.links.M <> R:272 var
+R21903:21908 RocqOfRust.links.M <> Output:273 var
+R21860:21875 RocqOfRust.M LowM CallClosure constr
+R21893:21893 RocqOfRust.links.M <> k:347 var
+R21888:21891 RocqOfRust.links.M <> args:346 var
+R21880:21886 RocqOfRust.links.M <> closure:350 var
+R21877:21878 RocqOfRust.links.M <> ty:344 var
+R21943:21953 RocqOfRust.M LogicalOp t ind
+binder 21938:21939 <> op:352
+R21963:21966 Corelib.Init.Datatypes <> bool ind
+binder 21957:21959 <> lhs:353
+R21976:21976 RocqOfRust.M <> M def
+binder 21970:21972 <> rhs:354
+R22005:22008 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R21991:21993 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R21984:21990 RocqOfRust.M Value t ind
+R21994:22004 RocqOfRust.M Exception t ind
+R22009:22009 RocqOfRust.M <> M def
+binder 21980:21980 <> k:355
+R22040:22047 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22018:22020 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22024:22029 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22031:22032 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22037:22039 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22030:22030 RocqOfRust.links.M <> R:272 var
+R22033:22036 Corelib.Init.Datatypes <> bool ind
+R22021:22023 RocqOfRust.links.M <> rhs:354 var
+R22048:22048 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22147:22160 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22071:22078 RocqOfRust.links.M Output t ind
+R22080:22080 RocqOfRust.links.M <> R:272 var
+R22082:22085 Corelib.Init.Datatypes <> bool ind
+binder 22057:22067 <> value_inter:356
+R22095:22097 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22129:22134 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22136:22137 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22144:22146 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22135:22135 RocqOfRust.links.M <> R:272 var
+R22138:22143 RocqOfRust.links.M <> Output:273 var
+R22098:22098 RocqOfRust.links.M <> k:355 var
+R22101:22115 RocqOfRust.links.M Output to_value def
+R22117:22127 RocqOfRust.links.M <> value_inter:356 var
+R22161:22163 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22208:22213 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22215:22216 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22223:22225 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22214:22214 RocqOfRust.links.M <> R:272 var
+R22217:22222 RocqOfRust.links.M <> Output:273 var
+R22164:22181 RocqOfRust.M LowM CallLogicalOp constr
+R22207:22207 RocqOfRust.links.M <> k:355 var
+R22203:22205 RocqOfRust.links.M <> rhs:354 var
+R22187:22196 RocqOfRust.M Value Bool constr
+R22198:22200 RocqOfRust.links.M <> lhs:353 var
+R22183:22184 RocqOfRust.links.M <> op:352 var
+R22247:22250 RocqOfRust.M Ty t defax
+binder 22242:22243 <> ty:357
+R22258:22258 RocqOfRust.M <> M def
+binder 22254:22254 <> e:358
+R22287:22290 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22273:22275 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R22266:22272 RocqOfRust.M Value t ind
+R22276:22286 RocqOfRust.M Exception t ind
+R22291:22291 RocqOfRust.M <> M def
+binder 22262:22262 <> k:359
+R22309:22314 RocqOfRust.links.M OfTy t ind
+R22316:22317 RocqOfRust.links.M <> ty:357 var
+binder 22301:22305 <> of_ty:360
+R22347:22358 RocqOfRust.links.M OfTy get_Set def
+R22360:22364 RocqOfRust.links.M <> of_ty:360 var
+binder 22330:22336 <> Output':361
+R22396:22403 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22373:22375 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22377:22382 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22384:22385 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22393:22395 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22383:22383 RocqOfRust.links.M <> R:272 var
+R22386:22392 RocqOfRust.links.M <> Output':361 var
+R22376:22376 RocqOfRust.links.M <> e:358 var
+R22404:22404 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22506:22519 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22427:22434 RocqOfRust.links.M Output t ind
+R22436:22436 RocqOfRust.links.M <> R:272 var
+R22438:22444 RocqOfRust.links.M <> Output':361 var
+binder 22413:22423 <> value_inter:362
+R22454:22456 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22488:22493 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22495:22496 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22503:22505 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22494:22494 RocqOfRust.links.M <> R:272 var
+R22497:22502 RocqOfRust.links.M <> Output:273 var
+R22457:22457 RocqOfRust.links.M <> k:359 var
+R22460:22474 RocqOfRust.links.M Output to_value def
+R22476:22486 RocqOfRust.links.M <> value_inter:362 var
+R22520:22522 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22538:22543 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22545:22546 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22553:22555 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22544:22544 RocqOfRust.links.M <> R:272 var
+R22547:22552 RocqOfRust.links.M <> Output:273 var
+R22523:22530 RocqOfRust.M LowM Let constr
+R22537:22537 RocqOfRust.links.M <> k:359 var
+R22535:22535 RocqOfRust.links.M <> e:358 var
+R22532:22533 RocqOfRust.links.M <> ty:357 var
+R22582:22585 RocqOfRust.M Ty t defax
+binder 22577:22578 <> ty:363
+R22593:22593 RocqOfRust.M <> M def
+binder 22589:22589 <> e:364
+R22622:22625 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22608:22610 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R22601:22607 RocqOfRust.M Value t ind
+R22611:22621 RocqOfRust.M Exception t ind
+R22626:22626 RocqOfRust.M <> M def
+binder 22597:22597 <> k:365
+R22644:22649 RocqOfRust.links.M OfTy t ind
+R22651:22652 RocqOfRust.links.M <> ty:363 var
+binder 22636:22640 <> of_ty:366
+R22682:22693 RocqOfRust.links.M OfTy get_Set def
+R22695:22699 RocqOfRust.links.M <> of_ty:366 var
+binder 22665:22671 <> Output':367
+R22731:22738 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22708:22710 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22712:22717 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22719:22720 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22728:22730 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22718:22718 RocqOfRust.links.M <> R:272 var
+R22721:22727 RocqOfRust.links.M <> Output':367 var
+R22711:22711 RocqOfRust.links.M <> e:364 var
+R22739:22739 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22846:22859 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22762:22769 RocqOfRust.links.M Output t ind
+R22771:22771 RocqOfRust.links.M <> R:272 var
+R22774:22783 RocqOfRust.links.M <> :::'''*' not
+R22777:22783 RocqOfRust.links.M <> Output':367 var
+binder 22748:22758 <> value_inter:368
+R22794:22796 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22828:22833 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22835:22836 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22843:22845 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22834:22834 RocqOfRust.links.M <> R:272 var
+R22837:22842 RocqOfRust.links.M <> Output:273 var
+R22797:22797 RocqOfRust.links.M <> k:365 var
+R22800:22814 RocqOfRust.links.M Output to_value def
+R22816:22826 RocqOfRust.links.M <> value_inter:368 var
+R22860:22862 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22883:22888 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22890:22891 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22898:22900 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R22889:22889 RocqOfRust.links.M <> R:272 var
+R22892:22897 RocqOfRust.links.M <> Output:273 var
+R22863:22875 RocqOfRust.M LowM LetAlloc constr
+R22882:22882 RocqOfRust.links.M <> k:365 var
+R22880:22880 RocqOfRust.links.M <> e:364 var
+R22877:22878 RocqOfRust.links.M <> ty:363 var
+R22923:22926 RocqOfRust.M Ty t defax
+binder 22918:22919 <> ty:369
+R22937:22937 RocqOfRust.M <> M def
+binder 22930:22933 <> body:370
+R22966:22969 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R22952:22954 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R22945:22951 RocqOfRust.M Value t ind
+R22955:22965 RocqOfRust.M Exception t ind
+R22970:22970 RocqOfRust.M <> M def
+binder 22941:22941 <> k:371
+R22988:22993 RocqOfRust.links.M OfTy t ind
+R22995:22996 RocqOfRust.links.M <> ty:369 var
+binder 22980:22984 <> of_ty:372
+R23026:23037 RocqOfRust.links.M OfTy get_Set def
+R23039:23043 RocqOfRust.links.M <> of_ty:372 var
+binder 23009:23015 <> Output':373
+R23078:23085 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23052:23054 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23059:23064 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23066:23067 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23075:23077 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23065:23065 RocqOfRust.links.M <> R:272 var
+R23068:23074 RocqOfRust.links.M <> Output':373 var
+R23055:23058 RocqOfRust.links.M <> body:370 var
+R23086:23086 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23193:23206 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23109:23116 RocqOfRust.links.M Output t ind
+R23118:23118 RocqOfRust.links.M <> R:272 var
+R23121:23130 RocqOfRust.links.M <> :::'''*' not
+R23124:23130 RocqOfRust.links.M <> Output':373 var
+binder 23095:23105 <> value_inter:374
+R23141:23143 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23175:23180 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23182:23183 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23190:23192 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23181:23181 RocqOfRust.links.M <> R:272 var
+R23184:23189 RocqOfRust.links.M <> Output:273 var
+R23144:23144 RocqOfRust.links.M <> k:371 var
+R23147:23161 RocqOfRust.links.M Output to_value def
+R23163:23173 RocqOfRust.links.M <> value_inter:374 var
+R23207:23209 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23229:23234 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23236:23237 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23244:23246 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23235:23235 RocqOfRust.links.M <> R:272 var
+R23238:23243 RocqOfRust.links.M <> Output:273 var
+R23210:23218 RocqOfRust.M LowM Loop constr
+R23228:23228 RocqOfRust.links.M <> k:371 var
+R23223:23226 RocqOfRust.links.M <> body:370 var
+R23220:23221 RocqOfRust.links.M <> ty:369 var
+R23279:23282 Corelib.Init.Datatypes <> list ind
+R23284:23290 RocqOfRust.M Value t ind
+binder 23270:23275 <> fields:375
+R23316:23319 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23304:23307 Corelib.Init.Datatypes <> list ind
+R23309:23315 RocqOfRust.M Value t ind
+R23320:23320 RocqOfRust.M <> M def
+binder 23300:23300 <> k:376
+R23358:23365 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23329:23331 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23340:23345 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23347:23348 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23355:23357 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23346:23346 RocqOfRust.links.M <> R:272 var
+R23349:23354 RocqOfRust.links.M <> Output:273 var
+R23332:23332 RocqOfRust.links.M <> k:376 var
+R23334:23339 RocqOfRust.links.M <> fields:375 var
+R23366:23368 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23407:23412 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23414:23415 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23422:23424 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23413:23413 RocqOfRust.links.M <> R:272 var
+R23416:23421 RocqOfRust.links.M <> Output:273 var
+R23369:23383 RocqOfRust.M LowM MatchTuple constr
+R23406:23406 RocqOfRust.links.M <> k:376 var
+R23386:23396 RocqOfRust.M Value Tuple constr
+R23398:23403 RocqOfRust.links.M <> fields:375 var
+R23453:23456 RocqOfRust.M Ty t defax
+binder 23448:23449 <> ty:377
+R23474:23480 RocqOfRust.M Value t ind
+binder 23466:23470 <> cond':378
+R23491:23494 Corelib.Init.Datatypes <> bool ind
+binder 23484:23487 <> cond:379
+R23512:23512 RocqOfRust.M <> M def
+binder 23504:23508 <> then_:380
+R23524:23524 RocqOfRust.M <> M def
+binder 23516:23520 <> else_:381
+R23553:23556 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23539:23541 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R23532:23538 RocqOfRust.M Value t ind
+R23542:23552 RocqOfRust.M Exception t ind
+R23557:23557 RocqOfRust.M <> M def
+binder 23528:23528 <> k:382
+R23575:23580 RocqOfRust.links.M OfTy t ind
+R23582:23583 RocqOfRust.links.M <> ty:377 var
+binder 23567:23571 <> of_ty:383
+R23613:23624 RocqOfRust.links.M OfTy get_Set def
+R23626:23630 RocqOfRust.links.M <> of_ty:383 var
+binder 23596:23602 <> Output':384
+R23654:23661 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23644:23646 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R23639:23643 RocqOfRust.links.M <> cond':378 var
+R23647:23648 RocqOfRust.links.M <> φ meth
+R23650:23653 RocqOfRust.links.M <> cond:379 var
+R23689:23696 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23662:23664 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23670:23675 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23677:23678 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23686:23688 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23676:23676 RocqOfRust.links.M <> R:272 var
+R23679:23685 RocqOfRust.links.M <> Output':384 var
+R23665:23669 RocqOfRust.links.M <> then_:380 var
+R23724:23731 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23697:23699 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23705:23710 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23712:23713 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23721:23723 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23711:23711 RocqOfRust.links.M <> R:272 var
+R23714:23720 RocqOfRust.links.M <> Output':384 var
+R23700:23704 RocqOfRust.links.M <> else_:381 var
+R23732:23732 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23834:23847 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23755:23762 RocqOfRust.links.M Output t ind
+R23764:23764 RocqOfRust.links.M <> R:272 var
+R23766:23772 RocqOfRust.links.M <> Output':384 var
+binder 23741:23751 <> value_inter:385
+R23782:23784 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23816:23821 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23823:23824 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23831:23833 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23822:23822 RocqOfRust.links.M <> R:272 var
+R23825:23830 RocqOfRust.links.M <> Output:273 var
+R23785:23785 RocqOfRust.links.M <> k:382 var
+R23788:23802 RocqOfRust.links.M Output to_value def
+R23804:23814 RocqOfRust.links.M <> value_inter:385 var
+R23848:23850 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23889:23894 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23896:23897 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23904:23906 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23895:23895 RocqOfRust.links.M <> R:272 var
+R23898:23903 RocqOfRust.links.M <> Output:273 var
+R23851:23865 RocqOfRust.M LowM IfThenElse constr
+R23888:23888 RocqOfRust.links.M <> k:382 var
+R23882:23886 RocqOfRust.links.M <> else_:381 var
+R23876:23880 RocqOfRust.links.M <> then_:380 var
+R23870:23874 RocqOfRust.links.M <> cond':378 var
+R23867:23868 RocqOfRust.links.M <> ty:377 var
+binder 23924:23924 <> T:386
+R23944:23944 RocqOfRust.links.M <> T:386 var
+binder 23934:23940 <> payload:387
+R23953:23955 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23979:23984 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23986:23987 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23994:23996 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R23985:23985 RocqOfRust.links.M <> R:272 var
+R23988:23993 RocqOfRust.links.M <> Output:273 var
+R23956:23970 RocqOfRust.M LowM Impossible constr
+R23972:23978 RocqOfRust.links.M <> payload:387 var
+R24024:24024 RocqOfRust.M <> M def
+binder 24017:24017 <> e:388
+binder 24019:24020 <> e':389
+R24039:24046 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R24034:24036 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R24033:24033 RocqOfRust.links.M <> e:388 var
+R24037:24038 RocqOfRust.links.M <> e':389 var
+R24070:24077 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R24047:24049 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24052:24057 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24059:24060 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24067:24069 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24058:24058 RocqOfRust.links.M <> R:272 var
+R24061:24066 RocqOfRust.links.M <> Output:273 var
+R24050:24051 RocqOfRust.links.M <> e':389 var
+R24078:24080 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24082:24087 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24089:24090 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24097:24099 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24088:24088 RocqOfRust.links.M <> R:272 var
+R24091:24096 RocqOfRust.links.M <> Output:273 var
+R24081:24081 RocqOfRust.links.M <> e:388 var
+scheme 16947:16947 Run t_rect
+scheme 16947:16947 Run t_ind
+scheme 16947:16947 Run t_rec
+scheme 16947:16947 Run t_sind
+R24144:24144 RocqOfRust.links.M Run t ind
+not 24110:24110 Run :::'{{'_x_'🔽'_x_','_x_'}}'
+R24196:24198 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24200:24205 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24212:24213 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24220:24222 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+not 24171:24171 Run :::'{{'_x_'🔽'_x_'}}'
+rec 24234:24238 Run Trait
+proj 24408:24412 Run run_f
+R24251:24271 RocqOfRust.M PolymorphicFunction t def
+binder 24247:24247 <> f:390
+R24286:24289 Corelib.Init.Datatypes <> list ind
+R24291:24297 RocqOfRust.M Value t ind
+binder 24281:24282 <> ε:391
+R24312:24315 Corelib.Init.Datatypes <> list ind
+R24317:24320 RocqOfRust.M Ty t defax
+binder 24307:24308 <> τ:392
+R24335:24338 Corelib.Init.Datatypes <> list ind
+R24340:24346 RocqOfRust.M Value t ind
+binder 24330:24331 <> α:393
+binder 24356:24361 <> Output:394
+R24372:24375 RocqOfRust.links.M <> Link class
+R24377:24382 RocqOfRust.links.M <> Output:394 var
+binder 24372:24382 <> H:395
+R24416:24418 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24429:24434 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24441:24442 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24449:24451 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R24435:24440 RocqOfRust.links.M <> Output:394 var
+R24443:24448 RocqOfRust.links.M <> Output:394 var
+R24419:24419 RocqOfRust.links.M <> f:390 var
+R24421:24422 RocqOfRust.links.M <> ε:391 var
+R24424:24425 RocqOfRust.links.M <> τ:392 var
+R24427:24428 RocqOfRust.links.M <> α:393 var
+R24463:24465 RocqOfRust.links.M Run <> mod
+R24487:24489 RocqOfRust.links.M Run <> mod
+mod 24500:24508 <> Primitive
+ind 24523:24523 Primitive t
+constr 24545:24554 Primitive StateAlloc
+constr 24611:24619 Primitive StateRead
+constr 24677:24686 Primitive StateWrite
+constr 24759:24771 Primitive GetSubPointer
+R24530:24533 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+binder 24557:24557 <> A:400
+R24568:24571 RocqOfRust.links.M <> Link class
+R24573:24573 RocqOfRust.links.M <> A:400 var
+binder 24568:24573 <> H:401
+R24585:24585 RocqOfRust.links.M <> A:400 var
+binder 24577:24581 <> value:402
+R24590:24590 RocqOfRust.links.M <> t:398 ind
+R24593:24602 RocqOfRust.links.M Ref.Core t ind
+R24604:24604 RocqOfRust.links.M <> A:400 var
+binder 24622:24622 <> A:403
+R24633:24636 RocqOfRust.links.M <> Link class
+R24638:24638 RocqOfRust.links.M <> A:403 var
+binder 24633:24638 <> H:404
+R24653:24662 RocqOfRust.links.M Ref.Core t ind
+R24664:24664 RocqOfRust.links.M <> A:403 var
+binder 24642:24649 <> ref_core:405
+R24669:24669 RocqOfRust.links.M <> t:398 ind
+R24671:24671 RocqOfRust.links.M <> A:403 var
+binder 24689:24689 <> A:406
+R24700:24703 RocqOfRust.links.M <> Link class
+R24705:24705 RocqOfRust.links.M <> A:406 var
+binder 24700:24705 <> H:407
+R24720:24729 RocqOfRust.links.M Ref.Core t ind
+R24731:24731 RocqOfRust.links.M <> A:406 var
+binder 24709:24716 <> ref_core:408
+R24743:24743 RocqOfRust.links.M <> A:406 var
+binder 24735:24739 <> value:409
+R24748:24748 RocqOfRust.links.M <> t:398 ind
+R24750:24753 Corelib.Init.Datatypes <> unit ind
+binder 24774:24774 <> A:410
+R24785:24788 RocqOfRust.links.M <> Link class
+R24790:24790 RocqOfRust.links.M <> A:410 var
+binder 24785:24790 <> H:411
+R24802:24816 RocqOfRust.M Pointer.Index t ind
+binder 24794:24798 <> index:412
+R24835:24844 RocqOfRust.links.M Ref.Core t ind
+R24846:24846 RocqOfRust.links.M <> A:410 var
+binder 24824:24831 <> ref_core:413
+R24859:24877 RocqOfRust.links.M SubPointer.Runner t rec
+R24881:24885 RocqOfRust.links.M <> index:412 var
+R24879:24879 RocqOfRust.links.M <> A:410 var
+binder 24850:24855 <> runner:414
+R24911:24935 RocqOfRust.links.M SubPointer.Runner H_Sub_A proj
+R24903:24908 RocqOfRust.links.M <> runner:414 var
+R24945:24945 RocqOfRust.links.M <> t:398 ind
+R24948:24957 RocqOfRust.links.M Ref.Core t ind
+R24967:24989 RocqOfRust.links.M SubPointer.Runner Sub_A proj
+R24959:24964 RocqOfRust.links.M <> runner:414 var
+scheme 24523:24523 Primitive t_rect
+scheme 24523:24523 Primitive t_ind
+scheme 24523:24523 Primitive t_rec
+scheme 24523:24523 Primitive t_sind
+R24998:25006 RocqOfRust.links.M Primitive <> mod
+mod 25017:25021 <> LinkM
+ind 25036:25036 LinkM t
+constr 25068:25071 LinkM Pure
+constr 25105:25117 LinkM CallPrimitive
+constr 25183:25185 LinkM Let
+constr 25246:25253 LinkM LetAlloc
+constr 25341:25344 LinkM Call
+constr 25486:25489 LinkM Loop
+constr 25580:25589 LinkM IfThenElse
+constr 25657:25667 LinkM MatchOutput
+constr 25904:25913 LinkM Impossible
+binder 25039:25039 <> R:415
+binder 25041:25046 <> Output:416
+R25082:25089 RocqOfRust.links.M Output t ind
+R25091:25091 RocqOfRust.links.M <> R:415 var
+R25093:25098 RocqOfRust.links.M <> Output:416 var
+binder 25074:25078 <> value:419
+binder 25120:25120 <> A:420
+R25142:25152 RocqOfRust.links.M Primitive t ind
+R25154:25154 RocqOfRust.links.M <> A:420 var
+binder 25130:25138 <> primitive:421
+R25163:25166 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25162:25162 RocqOfRust.links.M <> A:420 var
+R25167:25167 RocqOfRust.links.M <> t:417 ind
+R25171:25176 RocqOfRust.links.M <> Output:416 var
+R25169:25169 RocqOfRust.links.M <> R:415 var
+binder 25158:25158 <> k:422
+binder 25188:25188 <> A:423
+R25202:25202 RocqOfRust.links.M <> t:417 ind
+R25206:25206 RocqOfRust.links.M <> A:423 var
+R25204:25204 RocqOfRust.links.M <> R:415 var
+binder 25198:25198 <> e:424
+R25226:25229 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25214:25221 RocqOfRust.links.M Output t ind
+R25223:25223 RocqOfRust.links.M <> R:415 var
+R25225:25225 RocqOfRust.links.M <> A:423 var
+R25230:25230 RocqOfRust.links.M <> t:417 ind
+R25234:25239 RocqOfRust.links.M <> Output:416 var
+R25232:25232 RocqOfRust.links.M <> R:415 var
+binder 25210:25210 <> k:425
+binder 25256:25256 <> A:426
+R25267:25270 RocqOfRust.links.M <> Link class
+R25272:25272 RocqOfRust.links.M <> A:426 var
+binder 25267:25272 <> H:427
+R25286:25286 RocqOfRust.links.M <> t:417 ind
+R25290:25290 RocqOfRust.links.M <> A:426 var
+R25288:25288 RocqOfRust.links.M <> R:415 var
+binder 25282:25282 <> e:428
+R25321:25324 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25304:25311 RocqOfRust.links.M Output t ind
+R25313:25313 RocqOfRust.links.M <> R:415 var
+R25316:25319 RocqOfRust.links.M <> :::'''*' not
+R25319:25319 RocqOfRust.links.M <> A:426 var
+R25325:25325 RocqOfRust.links.M <> t:417 ind
+R25329:25334 RocqOfRust.links.M <> Output:416 var
+R25327:25327 RocqOfRust.links.M <> R:415 var
+binder 25300:25300 <> k:429
+binder 25347:25347 <> A:430
+R25358:25361 RocqOfRust.links.M <> Link class
+R25363:25363 RocqOfRust.links.M <> A:430 var
+binder 25358:25363 <> H:431
+R25389:25392 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25377:25380 Corelib.Init.Datatypes <> list ind
+R25382:25388 RocqOfRust.M Value t ind
+R25393:25393 RocqOfRust.M <> M def
+binder 25373:25373 <> f:432
+R25404:25407 Corelib.Init.Datatypes <> list ind
+R25409:25415 RocqOfRust.M Value t ind
+binder 25397:25400 <> args:433
+R25433:25435 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_'}}' not
+R25442:25447 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_'}}' not
+R25449:25451 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_'}}' not
+R25448:25448 RocqOfRust.links.M <> A:430 var
+R25448:25448 RocqOfRust.links.M <> A:430 var
+R25436:25436 RocqOfRust.links.M <> f:432 var
+R25438:25441 RocqOfRust.links.M <> args:433 var
+binder 25425:25429 <> run_f:434
+R25466:25469 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25465:25465 RocqOfRust.links.M <> A:430 var
+R25470:25470 RocqOfRust.links.M <> t:417 ind
+R25474:25479 RocqOfRust.links.M <> Output:416 var
+R25472:25472 RocqOfRust.links.M <> R:415 var
+binder 25461:25461 <> k:435
+binder 25492:25492 <> A:436
+R25503:25506 RocqOfRust.links.M <> Link class
+R25508:25508 RocqOfRust.links.M <> A:436 var
+binder 25503:25508 <> H:437
+R25525:25525 RocqOfRust.links.M <> t:417 ind
+R25529:25529 RocqOfRust.links.M <> A:436 var
+R25527:25527 RocqOfRust.links.M <> R:415 var
+binder 25518:25521 <> body:438
+R25560:25563 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25543:25550 RocqOfRust.links.M Output t ind
+R25552:25552 RocqOfRust.links.M <> R:415 var
+R25555:25558 RocqOfRust.links.M <> :::'''*' not
+R25558:25558 RocqOfRust.links.M <> A:436 var
+R25564:25564 RocqOfRust.links.M <> t:417 ind
+R25568:25573 RocqOfRust.links.M <> Output:416 var
+R25566:25566 RocqOfRust.links.M <> R:415 var
+binder 25539:25539 <> k:439
+R25605:25608 Corelib.Init.Datatypes <> bool ind
+binder 25598:25601 <> cond:440
+R25620:25620 RocqOfRust.links.M <> t:417 ind
+R25624:25629 RocqOfRust.links.M <> Output:416 var
+R25622:25622 RocqOfRust.links.M <> R:415 var
+binder 25612:25616 <> then_:441
+R25641:25641 RocqOfRust.links.M <> t:417 ind
+R25645:25650 RocqOfRust.links.M <> Output:416 var
+R25643:25643 RocqOfRust.links.M <> R:415 var
+binder 25633:25637 <> else_:442
+binder 25670:25670 <> A:443
+R25695:25702 RocqOfRust.links.M Output t ind
+R25704:25704 RocqOfRust.links.M <> R:415 var
+R25706:25706 RocqOfRust.links.M <> A:443 var
+binder 25686:25691 <> output:444
+R25729:25732 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25728:25728 RocqOfRust.links.M <> A:443 var
+R25733:25733 RocqOfRust.links.M <> t:417 ind
+R25737:25742 RocqOfRust.links.M <> Output:416 var
+R25735:25735 RocqOfRust.links.M <> R:415 var
+binder 25716:25724 <> k_success:445
+R25764:25767 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25763:25763 RocqOfRust.links.M <> R:415 var
+R25768:25768 RocqOfRust.links.M <> t:417 ind
+R25772:25777 RocqOfRust.links.M <> Output:416 var
+R25770:25770 RocqOfRust.links.M <> R:415 var
+binder 25752:25759 <> k_return:446
+R25801:25804 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25797:25800 Corelib.Init.Datatypes <> unit ind
+R25805:25805 RocqOfRust.links.M <> t:417 ind
+R25809:25814 RocqOfRust.links.M <> Output:416 var
+R25807:25807 RocqOfRust.links.M <> R:415 var
+binder 25787:25793 <> k_break:447
+R25841:25844 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25837:25840 Corelib.Init.Datatypes <> unit ind
+R25845:25845 RocqOfRust.links.M <> t:417 ind
+R25849:25854 RocqOfRust.links.M <> Output:416 var
+R25847:25847 RocqOfRust.links.M <> R:415 var
+binder 25824:25833 <> k_continue:448
+R25884:25887 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25880:25883 Corelib.Init.Datatypes <> unit ind
+R25888:25888 RocqOfRust.links.M <> t:417 ind
+R25892:25897 RocqOfRust.links.M <> Output:416 var
+R25890:25890 RocqOfRust.links.M <> R:415 var
+binder 25864:25876 <> k_break_match:449
+binder 25916:25916 <> T:450
+R25936:25936 RocqOfRust.links.M <> T:450 var
+binder 25926:25932 <> payload:451
+scheme 25036:25036 LinkM t_rect
+scheme 25036:25036 LinkM t_ind
+scheme 25036:25036 LinkM t_rec
+scheme 25036:25036 LinkM t_sind
+R25952:25955 RocqOfRust.links.M LinkM Pure constr
+R25952:25955 RocqOfRust.links.M LinkM Pure constr
+R25976:25988 RocqOfRust.links.M LinkM CallPrimitive constr
+R25976:25988 RocqOfRust.links.M LinkM CallPrimitive constr
+R26011:26013 RocqOfRust.links.M LinkM Let constr
+R26011:26013 RocqOfRust.links.M LinkM Let constr
+R26036:26043 RocqOfRust.links.M LinkM LetAlloc constr
+R26036:26043 RocqOfRust.links.M LinkM LetAlloc constr
+R26068:26071 RocqOfRust.links.M LinkM Call constr
+R26068:26071 RocqOfRust.links.M LinkM Call constr
+R26100:26103 RocqOfRust.links.M LinkM Loop constr
+R26100:26103 RocqOfRust.links.M LinkM Loop constr
+R26128:26137 RocqOfRust.links.M LinkM IfThenElse constr
+R26128:26137 RocqOfRust.links.M LinkM IfThenElse constr
+R26158:26168 RocqOfRust.links.M LinkM MatchOutput constr
+R26158:26168 RocqOfRust.links.M LinkM MatchOutput constr
+R26191:26200 RocqOfRust.links.M LinkM Impossible constr
+R26191:26200 RocqOfRust.links.M LinkM Impossible constr
+def 26225:26236 LinkM match_output
+binder 26239:26239 <> R:452
+binder 26241:26246 <> Output:453
+binder 26248:26248 <> A:454
+R26273:26280 RocqOfRust.links.M Output t ind
+R26282:26282 RocqOfRust.links.M <> R:452 var
+R26284:26284 RocqOfRust.links.M <> A:454 var
+binder 26264:26269 <> output:455
+R26310:26313 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R26298:26305 RocqOfRust.links.M Output t ind
+R26307:26307 RocqOfRust.links.M <> R:452 var
+R26309:26309 RocqOfRust.links.M <> A:454 var
+R26314:26314 RocqOfRust.links.M LinkM t ind
+R26316:26316 RocqOfRust.links.M <> R:452 var
+R26318:26323 RocqOfRust.links.M <> Output:453 var
+binder 26294:26294 <> k:456
+R26334:26334 RocqOfRust.links.M LinkM t ind
+R26336:26336 RocqOfRust.links.M <> R:452 var
+R26338:26343 RocqOfRust.links.M <> Output:453 var
+R26352:26362 RocqOfRust.links.M LinkM MatchOutput constr
+R26640:26640 RocqOfRust.links.M <> k:456 var
+R26643:26658 RocqOfRust.links.M Output Exception constr
+R26660:26686 RocqOfRust.links.M Output.Exception BreakMatch constr
+R26576:26576 RocqOfRust.links.M <> k:456 var
+R26579:26594 RocqOfRust.links.M Output Exception constr
+R26596:26620 RocqOfRust.links.M Output.Exception Continue constr
+R26515:26515 RocqOfRust.links.M <> k:456 var
+R26518:26533 RocqOfRust.links.M Output Exception constr
+R26535:26556 RocqOfRust.links.M Output.Exception Break constr
+binder 26432:26438 <> return_:457
+R26443:26443 RocqOfRust.links.M <> k:456 var
+R26446:26461 RocqOfRust.links.M Output Exception constr
+R26464:26486 RocqOfRust.links.M Output.Exception Return constr
+R26488:26494 RocqOfRust.links.M <> return_:457 var
+binder 26382:26388 <> success:458
+R26393:26393 RocqOfRust.links.M <> k:456 var
+R26396:26409 RocqOfRust.links.M Output Success constr
+R26411:26417 RocqOfRust.links.M <> success:458 var
+R26364:26369 RocqOfRust.links.M <> output:455 var
+def 26703:26706 LinkM let_
+binder 26709:26709 <> R:459
+binder 26711:26716 <> Output:460
+binder 26718:26718 <> A:461
+R26733:26733 RocqOfRust.links.M LinkM t ind
+R26735:26735 RocqOfRust.links.M <> R:459 var
+R26737:26737 RocqOfRust.links.M <> A:461 var
+binder 26728:26729 <> e1:462
+R26758:26761 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R26746:26753 RocqOfRust.links.M Output t ind
+R26755:26755 RocqOfRust.links.M <> R:459 var
+R26757:26757 RocqOfRust.links.M <> A:461 var
+R26762:26762 RocqOfRust.links.M LinkM t ind
+R26764:26764 RocqOfRust.links.M <> R:459 var
+R26766:26771 RocqOfRust.links.M <> Output:460 var
+binder 26741:26742 <> e2:463
+R26782:26782 RocqOfRust.links.M LinkM t ind
+R26784:26784 RocqOfRust.links.M <> R:459 var
+R26786:26791 RocqOfRust.links.M <> Output:460 var
+R26806:26807 RocqOfRust.links.M <> e1:462 var
+R26820:26823 RocqOfRust.links.M LinkM Pure constr
+R26835:26836 RocqOfRust.links.M <> e2:463 var
+R26851:26863 RocqOfRust.links.M LinkM CallPrimitive constr
+R26886:26898 RocqOfRust.links.M LinkM CallPrimitive constr
+binder 26915:26920 <> output:466
+R26925:26928 RocqOfRust.links.M <> let_:464 def
+R26941:26942 RocqOfRust.links.M <> e2:463 var
+R26933:26938 RocqOfRust.links.M <> output:466 var
+R26951:26953 RocqOfRust.links.M LinkM Let constr
+R26962:26964 RocqOfRust.links.M LinkM Let constr
+binder 26973:26978 <> output:467
+R26983:26986 RocqOfRust.links.M <> let_:464 def
+R26999:27000 RocqOfRust.links.M <> e2:463 var
+R26991:26996 RocqOfRust.links.M <> output:467 var
+R27009:27016 RocqOfRust.links.M LinkM LetAlloc constr
+R27025:27032 RocqOfRust.links.M LinkM LetAlloc constr
+binder 27041:27046 <> output:468
+R27051:27054 RocqOfRust.links.M <> let_:464 def
+R27067:27068 RocqOfRust.links.M <> e2:463 var
+R27059:27064 RocqOfRust.links.M <> output:468 var
+R27077:27080 RocqOfRust.links.M LinkM Call constr
+R27093:27096 RocqOfRust.links.M LinkM Call constr
+binder 27109:27114 <> output:469
+R27119:27122 RocqOfRust.links.M <> let_:464 def
+R27135:27136 RocqOfRust.links.M <> e2:463 var
+R27127:27132 RocqOfRust.links.M <> output:469 var
+R27145:27148 RocqOfRust.links.M LinkM Loop constr
+R27160:27163 RocqOfRust.links.M LinkM Loop constr
+binder 27175:27180 <> output:470
+R27185:27188 RocqOfRust.links.M <> let_:464 def
+R27201:27202 RocqOfRust.links.M <> e2:463 var
+R27193:27198 RocqOfRust.links.M <> output:470 var
+R27211:27220 RocqOfRust.links.M LinkM IfThenElse constr
+R27248:27257 RocqOfRust.links.M LinkM IfThenElse constr
+R27297:27300 RocqOfRust.links.M <> let_:464 def
+R27308:27309 RocqOfRust.links.M <> e2:463 var
+R27273:27276 RocqOfRust.links.M <> let_:464 def
+R27284:27285 RocqOfRust.links.M <> e2:463 var
+R27318:27328 RocqOfRust.links.M LinkM MatchOutput constr
+R27398:27408 RocqOfRust.links.M LinkM MatchOutput constr
+R27616:27619 RocqOfRust.links.M <> let_:464 def
+R27640:27641 RocqOfRust.links.M <> e2:463 var
+R27636:27637 Corelib.Init.Datatypes <> tt constr
+R27574:27577 RocqOfRust.links.M <> let_:464 def
+R27595:27596 RocqOfRust.links.M <> e2:463 var
+R27591:27592 Corelib.Init.Datatypes <> tt constr
+R27535:27538 RocqOfRust.links.M <> let_:464 def
+R27553:27554 RocqOfRust.links.M <> e2:463 var
+R27549:27550 Corelib.Init.Datatypes <> tt constr
+binder 27479:27485 <> return_:471
+R27490:27493 RocqOfRust.links.M <> let_:464 def
+R27514:27515 RocqOfRust.links.M <> e2:463 var
+R27505:27511 RocqOfRust.links.M <> return_:471 var
+binder 27429:27434 <> output:472
+R27439:27442 RocqOfRust.links.M <> let_:464 def
+R27463:27464 RocqOfRust.links.M <> e2:463 var
+R27455:27460 RocqOfRust.links.M <> output:472 var
+R27650:27659 RocqOfRust.links.M LinkM Impossible constr
+R27672:27681 RocqOfRust.links.M LinkM Impossible constr
+R27704:27708 RocqOfRust.links.M LinkM <> mod
+def 27723:27730 <> evaluate
+binder 27733:27733 <> R:473
+binder 27735:27740 <> Output:474
+R27751:27754 RocqOfRust.links.M <> Link class
+R27756:27756 RocqOfRust.links.M <> R:473 var
+binder 27751:27756 <> H:475
+R27761:27764 RocqOfRust.links.M <> Link class
+R27766:27771 RocqOfRust.links.M <> Output:474 var
+binder 27761:27771 <> H0:476
+R27779:27779 RocqOfRust.M <> M def
+binder 27775:27775 <> e:477
+R27793:27795 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R27797:27802 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R27804:27805 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R27812:27814 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R27803:27803 RocqOfRust.links.M <> R:473 var
+R27806:27811 RocqOfRust.links.M <> Output:474 var
+R27796:27796 RocqOfRust.links.M <> e:477 var
+binder 27787:27789 <> run:478
+R27821:27827 RocqOfRust.links.M <> t ind
+R27829:27829 RocqOfRust.links.M <> R:473 var
+R27831:27836 RocqOfRust.links.M <> Output:474 var
+def 27861:27869 <> cast_bool
+R27886:27898 RocqOfRust.M IntegerKind t ind
+binder 27872:27882 <> kind_target:479
+R27910:27913 Corelib.Init.Datatypes <> bool ind
+binder 27902:27906 <> value:480
+R27918:27926 RocqOfRust.links.M <> t rec
+R27928:27938 RocqOfRust.links.M <> kind_target:479 var
+R27948:27960 RocqOfRust.links.M <> value proj
+R27948:27960 RocqOfRust.links.M <> value proj
+R27948:27960 RocqOfRust.links.M <> value proj
+R27965:27969 Stdlib.ZArith.BinInt Z b2z def
+R27971:27975 RocqOfRust.links.M <> value:480 var
+prf 27988:27999 <> cast_bool_eq
+R28016:28028 RocqOfRust.M IntegerKind t ind
+binder 28002:28012 <> kind_target:481
+R28041:28044 Corelib.Init.Datatypes <> bool ind
+binder 28032:28037 <> source:482
+R28098:28102 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R28051:28056 RocqOfRust.M <> cast defax
+R28059:28060 RocqOfRust.links.M <> Φ meth
+R28063:28071 RocqOfRust.links.M <> t rec
+R28073:28083 RocqOfRust.links.M <> kind_target:481 var
+R28088:28089 RocqOfRust.links.M <> φ meth
+R28091:28096 RocqOfRust.links.M <> source:482 var
+R28103:28104 RocqOfRust.links.M <> φ meth
+R28107:28115 RocqOfRust.links.M <> cast_bool def
+R28117:28127 RocqOfRust.links.M <> kind_target:481 var
+R28129:28134 RocqOfRust.links.M <> source:482 var
+def 28160:28171 <> cast_integer
+R28188:28200 RocqOfRust.M IntegerKind t ind
+binder 28174:28184 <> kind_source:483
+R28218:28230 RocqOfRust.M IntegerKind t ind
+binder 28204:28214 <> kind_target:484
+R28247:28255 RocqOfRust.links.M <> t rec
+R28257:28267 RocqOfRust.links.M <> kind_source:483 var
+binder 28238:28243 <> source:485
+R28272:28280 RocqOfRust.links.M <> t rec
+R28282:28292 RocqOfRust.links.M <> kind_target:484 var
+R28302:28314 RocqOfRust.links.M <> value proj
+R28302:28314 RocqOfRust.links.M <> value proj
+R28302:28314 RocqOfRust.links.M <> value proj
+R28319:28340 RocqOfRust.lib.lib Integer normalize_wrap def
+R28342:28352 RocqOfRust.links.M <> kind_target:484 var
+R28362:28374 RocqOfRust.links.M <> value proj
+R28354:28359 RocqOfRust.links.M <> source:485 var
+prf 28388:28402 <> cast_integer_eq
+R28431:28443 RocqOfRust.M IntegerKind t ind
+binder 28405:28415 <> kind_source:486
+binder 28417:28427 <> kind_target:487
+R28456:28464 RocqOfRust.links.M <> t rec
+R28466:28476 RocqOfRust.links.M <> kind_source:486 var
+binder 28447:28452 <> source:488
+R28530:28534 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R28483:28488 RocqOfRust.M <> cast defax
+R28491:28492 RocqOfRust.links.M <> Φ meth
+R28495:28503 RocqOfRust.links.M <> t rec
+R28505:28515 RocqOfRust.links.M <> kind_target:487 var
+R28520:28521 RocqOfRust.links.M <> φ meth
+R28523:28528 RocqOfRust.links.M <> source:488 var
+R28535:28536 RocqOfRust.links.M <> φ meth
+R28539:28550 RocqOfRust.links.M <> cast_integer def
+R28564:28569 RocqOfRust.links.M <> source:488 var
+R28552:28562 RocqOfRust.links.M <> kind_target:487 var
+ax 28590:28613 <> is_discriminant_tuple_eq
+R28638:28650 RocqOfRust.M IntegerKind t ind
+binder 28631:28634 <> kind:489
+R28673:28678 Corelib.Strings.PrimString <> string prim
+binder 28658:28669 <> variant_name:490
+R28691:28694 Corelib.Init.Datatypes <> list ind
+R28696:28702 RocqOfRust.M Value t ind
+binder 28682:28687 <> consts:491
+R28712:28715 Corelib.Init.Datatypes <> list ind
+R28717:28720 RocqOfRust.M Ty t defax
+binder 28706:28708 <> tys:492
+R28733:28736 Corelib.Init.Datatypes <> list ind
+R28738:28744 RocqOfRust.M Value t ind
+binder 28724:28729 <> fields:493
+R28767:28767 Corelib.Numbers.BinNums <> Z ind
+binder 28752:28763 <> discriminant:494
+R28815:28820 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R28773:28788 RocqOfRust.M <> IsDiscriminant defax
+R28790:28801 RocqOfRust.links.M <> variant_name:490 var
+R28803:28814 RocqOfRust.links.M <> discriminant:494 var
+R28900:28904 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R28821:28826 RocqOfRust.M <> cast defax
+R28829:28830 RocqOfRust.links.M <> Φ meth
+R28833:28841 RocqOfRust.links.M <> t rec
+R28843:28846 RocqOfRust.links.M <> kind:489 var
+R28851:28867 RocqOfRust.M Value StructTuple constr
+R28869:28880 RocqOfRust.links.M <> variant_name:490 var
+R28882:28887 RocqOfRust.links.M <> consts:491 var
+R28889:28891 RocqOfRust.links.M <> tys:492 var
+R28893:28898 RocqOfRust.links.M <> fields:493 var
+R28905:28917 RocqOfRust.M Value Integer constr
+R28919:28922 RocqOfRust.links.M <> kind:489 var
+R28925:28946 RocqOfRust.lib.lib Integer normalize_wrap def
+R28948:28951 RocqOfRust.links.M <> kind:489 var
+R28953:28964 RocqOfRust.links.M <> discriminant:494 var
+ax 28975:28999 <> is_discriminant_record_eq
+R29024:29036 RocqOfRust.M IntegerKind t ind
+binder 29017:29020 <> kind:497
+R29059:29064 Corelib.Strings.PrimString <> string prim
+binder 29044:29055 <> variant_name:498
+R29077:29080 Corelib.Init.Datatypes <> list ind
+R29082:29088 RocqOfRust.M Value t ind
+binder 29068:29073 <> consts:499
+R29098:29101 Corelib.Init.Datatypes <> list ind
+R29103:29106 RocqOfRust.M Ty t defax
+binder 29092:29094 <> tys:500
+R29119:29122 Corelib.Init.Datatypes <> list ind
+R29131:29133 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R29125:29130 Corelib.Strings.PrimString <> string prim
+R29134:29140 RocqOfRust.M Value t ind
+binder 29110:29115 <> fields:501
+R29164:29164 Corelib.Numbers.BinNums <> Z ind
+binder 29149:29160 <> discriminant:502
+R29212:29217 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R29170:29185 RocqOfRust.M <> IsDiscriminant defax
+R29187:29198 RocqOfRust.links.M <> variant_name:498 var
+R29200:29211 RocqOfRust.links.M <> discriminant:502 var
+R29298:29302 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R29218:29223 RocqOfRust.M <> cast defax
+R29226:29227 RocqOfRust.links.M <> Φ meth
+R29230:29238 RocqOfRust.links.M <> t rec
+R29240:29243 RocqOfRust.links.M <> kind:497 var
+R29248:29265 RocqOfRust.M Value StructRecord constr
+R29267:29278 RocqOfRust.links.M <> variant_name:498 var
+R29280:29285 RocqOfRust.links.M <> consts:499 var
+R29287:29289 RocqOfRust.links.M <> tys:500 var
+R29291:29296 RocqOfRust.links.M <> fields:501 var
+R29303:29315 RocqOfRust.M Value Integer constr
+R29317:29320 RocqOfRust.links.M <> kind:497 var
+R29323:29344 RocqOfRust.lib.lib Integer normalize_wrap def
+R29346:29349 RocqOfRust.links.M <> kind:497 var
+R29351:29362 RocqOfRust.links.M <> discriminant:502 var
+inst 29376:29422 <> run_pointer_coercion_intrinsic_reify_fn_pointer
+binder 29425:29425 <> F:505
+R29436:29439 RocqOfRust.links.M <> Link class
+R29441:29441 RocqOfRust.links.M <> F:505 var
+binder 29436:29441 <> H:506
+R29449:29449 RocqOfRust.links.M <> F:505 var
+binder 29445:29445 <> f:507
+R29456:29464 RocqOfRust.links.M <> Trait class
+R29557:29557 RocqOfRust.links.M <> F:505 var
+R29548:29549 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R29554:29555 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R29550:29551 RocqOfRust.links.M <> φ meth
+R29553:29553 RocqOfRust.links.M <> f:507 var
+R29533:29534 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R29539:29540 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R29545:29546 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R29535:29536 RocqOfRust.links.M <> Φ meth
+R29538:29538 RocqOfRust.links.M <> F:505 var
+R29541:29542 RocqOfRust.links.M <> Φ meth
+R29544:29544 RocqOfRust.links.M <> F:505 var
+R29530:29531 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R29467:29492 RocqOfRust.M <> pointer_coercion_intrinsic defax
+R29494:29523 RocqOfRust.M PointerCoercion ReifyFnPointer constr
+mod 29578:29586 <> Function1
+rec 29598:29598 Function1 t
+proj 29657:29657 Function1 f
+proj 29684:29686 Function1 run
+binder 29601:29601 <> A:508
+binder 29603:29608 <> Output:509
+R29619:29622 RocqOfRust.links.M <> Link class
+R29624:29624 RocqOfRust.links.M <> A:508 var
+binder 29619:29624 <> H:510
+R29629:29632 RocqOfRust.links.M <> Link class
+R29634:29639 RocqOfRust.links.M <> Output:509 var
+binder 29629:29639 <> H0:511
+R29673:29676 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R29661:29664 Corelib.Init.Datatypes <> list ind
+R29666:29672 RocqOfRust.M Value t ind
+R29677:29677 RocqOfRust.M <> M def
+R29702:29702 RocqOfRust.links.M <> A:508 var
+binder 29698:29698 <> a:514
+R29712:29714 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R29725:29730 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R29737:29738 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R29745:29747 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R29731:29736 RocqOfRust.links.M <> Output:509 var
+R29739:29744 RocqOfRust.links.M <> Output:509 var
+R29715:29715 RocqOfRust.links.M <> f:513 meth
+R29717:29718 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R29723:29724 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R29719:29720 RocqOfRust.links.M <> φ meth
+R29722:29722 RocqOfRust.links.M <> a:514 var
+R29767:29767 RocqOfRust.links.M Function1 t rec
+R29767:29767 RocqOfRust.links.M Function1 t rec
+inst 29799:29804 Function1 IsLink
+binder 29807:29807 <> A:516
+binder 29809:29814 <> Output:517
+R29825:29828 RocqOfRust.links.M <> Link class
+R29830:29830 RocqOfRust.links.M <> A:516 var
+binder 29825:29830 <> H:518
+R29835:29838 RocqOfRust.links.M <> Link class
+R29840:29845 RocqOfRust.links.M <> Output:517 var
+binder 29835:29845 <> H0:519
+R29856:29859 RocqOfRust.links.M <> Link class
+R29862:29862 RocqOfRust.links.M Function1 t rec
+R29866:29871 RocqOfRust.links.M <> Output:517 var
+R29864:29864 RocqOfRust.links.M <> A:516 var
+R29925:29926 RocqOfRust.links.M <> φ meth
+R29883:29884 RocqOfRust.links.M <> Φ meth
+R29889:29899 RocqOfRust.M Ty function defax
+R29901:29901 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R29906:29906 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R29902:29903 RocqOfRust.links.M <> Φ meth
+R29909:29910 RocqOfRust.links.M <> Φ meth
+binder 29928:29928 <> x:520
+R29933:29945 RocqOfRust.M Value Closure constr
+R29948:29953 RocqOfRust.M <> existS constr
+R29965:29965 RocqOfRust.links.M Function1 f proj
+R29962:29962 RocqOfRust.links.M <> x:520 var
+R29955:29955 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R29957:29958 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R29960:29960 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+def 29989:29993 Function1 of_ty
+R30006:30009 RocqOfRust.M Ty t defax
+binder 29996:29998 <> ty1:521
+binder 30000:30002 <> ty2:522
+R30028:30035 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30018:30023 RocqOfRust.links.M OfTy t ind
+R30025:30027 RocqOfRust.links.M <> ty1:521 var
+R30046:30053 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30036:30041 RocqOfRust.links.M OfTy t ind
+R30043:30045 RocqOfRust.links.M <> ty2:522 var
+R30054:30059 RocqOfRust.links.M OfTy t ind
+R30062:30072 RocqOfRust.M Ty function defax
+R30074:30074 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R30078:30078 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R30075:30077 RocqOfRust.links.M <> ty1:521 var
+R30080:30082 RocqOfRust.links.M <> ty2:522 var
+def 30112:30117 Function1 of_run
+binder 30120:30120 <> A:523
+binder 30122:30127 <> Output:524
+R30138:30141 RocqOfRust.links.M <> Link class
+R30143:30143 RocqOfRust.links.M <> A:523 var
+binder 30138:30143 <> H:525
+R30148:30151 RocqOfRust.links.M <> Link class
+R30153:30158 RocqOfRust.links.M <> Output:524 var
+binder 30148:30158 <> H0:526
+R30172:30192 RocqOfRust.M PolymorphicFunction t def
+binder 30168:30168 <> f:527
+R30207:30210 Corelib.Init.Datatypes <> list ind
+R30212:30218 RocqOfRust.M Value t ind
+binder 30202:30203 <> ε:528
+R30233:30236 Corelib.Init.Datatypes <> list ind
+R30238:30241 RocqOfRust.M Ty t defax
+binder 30228:30229 <> τ:529
+R30271:30271 RocqOfRust.links.M <> A:523 var
+binder 30267:30267 <> a:530
+R30275:30283 RocqOfRust.links.M Run Trait class
+R30302:30307 RocqOfRust.links.M <> Output:524 var
+R30293:30294 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R30299:30300 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R30295:30296 RocqOfRust.links.M <> φ meth
+R30298:30298 RocqOfRust.links.M <> a:530 var
+R30290:30291 RocqOfRust.links.M <> τ:529 var
+R30287:30288 RocqOfRust.links.M <> ε:528 var
+R30285:30285 RocqOfRust.links.M <> f:527 var
+binder 30251:30255 <> H_run:531
+R30316:30326 RocqOfRust.links.M Function1 t rec
+R30330:30335 RocqOfRust.links.M <> Output:524 var
+R30328:30328 RocqOfRust.links.M <> A:523 var
+R30354:30362 RocqOfRust.links.M Function1 <> mod
+mod 30373:30381 <> Function2
+rec 30393:30393 Function2 t
+proj 30468:30468 Function2 f
+proj 30495:30497 Function2 run
+binder 30396:30397 <> A1:532
+binder 30399:30400 <> A2:533
+binder 30402:30407 <> Output:534
+R30418:30421 RocqOfRust.links.M <> Link class
+R30423:30424 RocqOfRust.links.M <> A1:532 var
+binder 30418:30424 <> H:535
+R30429:30432 RocqOfRust.links.M <> Link class
+R30434:30435 RocqOfRust.links.M <> A2:533 var
+binder 30429:30435 <> H0:536
+R30440:30443 RocqOfRust.links.M <> Link class
+R30445:30450 RocqOfRust.links.M <> Output:534 var
+binder 30440:30450 <> H1:537
+R30484:30487 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30472:30475 Corelib.Init.Datatypes <> list ind
+R30477:30483 RocqOfRust.M Value t ind
+R30488:30488 RocqOfRust.M <> M def
+R30514:30515 RocqOfRust.links.M <> A1:532 var
+binder 30509:30510 <> a1:540
+R30524:30525 RocqOfRust.links.M <> A2:533 var
+binder 30519:30520 <> a2:541
+R30535:30537 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R30556:30561 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R30568:30569 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R30576:30578 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R30562:30567 RocqOfRust.links.M <> Output:534 var
+R30570:30575 RocqOfRust.links.M <> Output:534 var
+R30538:30538 RocqOfRust.links.M <> f:539 meth
+R30540:30541 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30547:30548 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30554:30555 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30542:30543 RocqOfRust.links.M <> φ meth
+R30545:30546 RocqOfRust.links.M <> a1:540 var
+R30549:30550 RocqOfRust.links.M <> φ meth
+R30552:30553 RocqOfRust.links.M <> a2:541 var
+R30598:30598 RocqOfRust.links.M Function2 t rec
+R30598:30598 RocqOfRust.links.M Function2 t rec
+inst 30634:30639 Function2 IsLink
+binder 30642:30643 <> A1:543
+binder 30645:30646 <> A2:544
+binder 30648:30653 <> Output:545
+R30664:30667 RocqOfRust.links.M <> Link class
+R30669:30670 RocqOfRust.links.M <> A1:543 var
+binder 30664:30670 <> H:546
+R30675:30678 RocqOfRust.links.M <> Link class
+R30680:30681 RocqOfRust.links.M <> A2:544 var
+binder 30675:30681 <> H0:547
+R30686:30689 RocqOfRust.links.M <> Link class
+R30691:30696 RocqOfRust.links.M <> Output:545 var
+binder 30686:30696 <> H1:548
+R30707:30710 RocqOfRust.links.M <> Link class
+R30713:30713 RocqOfRust.links.M Function2 t rec
+R30721:30726 RocqOfRust.links.M <> Output:545 var
+R30718:30719 RocqOfRust.links.M <> A2:544 var
+R30715:30716 RocqOfRust.links.M <> A1:543 var
+R30788:30789 RocqOfRust.links.M <> φ meth
+R30738:30739 RocqOfRust.links.M <> Φ meth
+R30744:30754 RocqOfRust.M Ty function defax
+R30756:30756 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30762:30763 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30769:30769 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30757:30758 RocqOfRust.links.M <> Φ meth
+R30764:30765 RocqOfRust.links.M <> Φ meth
+R30772:30773 RocqOfRust.links.M <> Φ meth
+binder 30791:30791 <> x:549
+R30796:30808 RocqOfRust.M Value Closure constr
+R30811:30816 RocqOfRust.M <> existS constr
+R30828:30828 RocqOfRust.links.M Function2 f proj
+R30825:30825 RocqOfRust.links.M <> x:549 var
+R30818:30818 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R30820:30821 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R30823:30823 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+def 30852:30856 Function2 of_ty
+R30873:30876 RocqOfRust.M Ty t defax
+binder 30859:30861 <> ty1:550
+binder 30863:30865 <> ty2:551
+binder 30867:30869 <> ty3:552
+R30895:30902 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30885:30890 RocqOfRust.links.M OfTy t ind
+R30892:30894 RocqOfRust.links.M <> ty1:550 var
+R30913:30920 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30903:30908 RocqOfRust.links.M OfTy t ind
+R30910:30912 RocqOfRust.links.M <> ty2:551 var
+R30931:30938 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30921:30926 RocqOfRust.links.M OfTy t ind
+R30928:30930 RocqOfRust.links.M <> ty3:552 var
+R30939:30944 RocqOfRust.links.M OfTy t ind
+R30947:30957 RocqOfRust.M Ty function defax
+R30959:30959 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30963:30964 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30968:30968 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R30960:30962 RocqOfRust.links.M <> ty1:550 var
+R30965:30967 RocqOfRust.links.M <> ty2:551 var
+R30970:30972 RocqOfRust.links.M <> ty3:552 var
+def 31002:31007 Function2 of_run
+binder 31010:31011 <> A1:553
+binder 31013:31014 <> A2:554
+binder 31016:31021 <> Output:555
+R31032:31035 RocqOfRust.links.M <> Link class
+R31037:31038 RocqOfRust.links.M <> A1:553 var
+binder 31032:31038 <> H:556
+R31043:31046 RocqOfRust.links.M <> Link class
+R31048:31049 RocqOfRust.links.M <> A2:554 var
+binder 31043:31049 <> H0:557
+R31054:31057 RocqOfRust.links.M <> Link class
+R31059:31064 RocqOfRust.links.M <> Output:555 var
+binder 31054:31064 <> H1:558
+R31078:31098 RocqOfRust.M PolymorphicFunction t def
+binder 31074:31074 <> f:559
+R31113:31116 Corelib.Init.Datatypes <> list ind
+R31118:31124 RocqOfRust.M Value t ind
+binder 31108:31109 <> ε:560
+R31139:31142 Corelib.Init.Datatypes <> list ind
+R31144:31147 RocqOfRust.M Ty t defax
+binder 31134:31135 <> τ:561
+R31178:31179 RocqOfRust.links.M <> A1:553 var
+binder 31173:31174 <> a1:562
+R31188:31189 RocqOfRust.links.M <> A2:554 var
+binder 31183:31184 <> a2:563
+R31193:31201 RocqOfRust.links.M Run Trait class
+R31228:31233 RocqOfRust.links.M <> Output:555 var
+R31211:31212 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31218:31219 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31225:31226 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31213:31214 RocqOfRust.links.M <> φ meth
+R31216:31217 RocqOfRust.links.M <> a1:562 var
+R31220:31221 RocqOfRust.links.M <> φ meth
+R31223:31224 RocqOfRust.links.M <> a2:563 var
+R31208:31209 RocqOfRust.links.M <> τ:561 var
+R31205:31206 RocqOfRust.links.M <> ε:560 var
+R31203:31203 RocqOfRust.links.M <> f:559 var
+binder 31157:31161 <> H_run:564
+R31242:31252 RocqOfRust.links.M Function2 t rec
+R31260:31265 RocqOfRust.links.M <> Output:555 var
+R31257:31258 RocqOfRust.links.M <> A2:554 var
+R31254:31255 RocqOfRust.links.M <> A1:553 var
+R31284:31292 RocqOfRust.links.M Function2 <> mod
+mod 31303:31311 <> Function3
+rec 31323:31323 Function3 t
+proj 31412:31412 Function3 f
+proj 31439:31441 Function3 run
+binder 31326:31327 <> A1:565
+binder 31329:31330 <> A2:566
+binder 31332:31333 <> A3:567
+binder 31335:31340 <> Output:568
+R31351:31354 RocqOfRust.links.M <> Link class
+R31356:31357 RocqOfRust.links.M <> A1:565 var
+binder 31351:31357 <> H:569
+R31362:31365 RocqOfRust.links.M <> Link class
+R31367:31368 RocqOfRust.links.M <> A2:566 var
+binder 31362:31368 <> H0:570
+R31373:31376 RocqOfRust.links.M <> Link class
+R31378:31379 RocqOfRust.links.M <> A3:567 var
+binder 31373:31379 <> H1:571
+R31384:31387 RocqOfRust.links.M <> Link class
+R31389:31394 RocqOfRust.links.M <> Output:568 var
+binder 31384:31394 <> H2:572
+R31428:31431 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R31416:31419 Corelib.Init.Datatypes <> list ind
+R31421:31427 RocqOfRust.M Value t ind
+R31432:31432 RocqOfRust.M <> M def
+R31458:31459 RocqOfRust.links.M <> A1:565 var
+binder 31453:31454 <> a1:575
+R31468:31469 RocqOfRust.links.M <> A2:566 var
+binder 31463:31464 <> a2:576
+R31478:31479 RocqOfRust.links.M <> A3:567 var
+binder 31473:31474 <> a3:577
+R31489:31491 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R31517:31522 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R31529:31530 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R31537:31539 RocqOfRust.links.M Run :::'{{'_x_'🔽'_x_','_x_'}}' not
+R31523:31528 RocqOfRust.links.M <> Output:568 var
+R31531:31536 RocqOfRust.links.M <> Output:568 var
+R31492:31492 RocqOfRust.links.M <> f:574 meth
+R31494:31495 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31501:31502 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31508:31509 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31515:31516 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31496:31497 RocqOfRust.links.M <> φ meth
+R31499:31500 RocqOfRust.links.M <> a1:575 var
+R31503:31504 RocqOfRust.links.M <> φ meth
+R31506:31507 RocqOfRust.links.M <> a2:576 var
+R31510:31511 RocqOfRust.links.M <> φ meth
+R31513:31514 RocqOfRust.links.M <> a3:577 var
+R31559:31559 RocqOfRust.links.M Function3 t rec
+R31559:31559 RocqOfRust.links.M Function3 t rec
+inst 31599:31604 Function3 IsLink
+binder 31607:31608 <> A1:579
+binder 31610:31611 <> A2:580
+binder 31613:31614 <> A3:581
+binder 31616:31621 <> Output:582
+R31632:31635 RocqOfRust.links.M <> Link class
+R31637:31638 RocqOfRust.links.M <> A1:579 var
+binder 31632:31638 <> H:583
+R31643:31646 RocqOfRust.links.M <> Link class
+R31648:31649 RocqOfRust.links.M <> A2:580 var
+binder 31643:31649 <> H0:584
+R31654:31657 RocqOfRust.links.M <> Link class
+R31659:31660 RocqOfRust.links.M <> A3:581 var
+binder 31654:31660 <> H1:585
+R31665:31668 RocqOfRust.links.M <> Link class
+R31670:31675 RocqOfRust.links.M <> Output:582 var
+binder 31665:31675 <> H2:586
+R31686:31689 RocqOfRust.links.M <> Link class
+R31692:31692 RocqOfRust.links.M Function3 t rec
+R31703:31708 RocqOfRust.links.M <> Output:582 var
+R31700:31701 RocqOfRust.links.M <> A3:581 var
+R31697:31698 RocqOfRust.links.M <> A2:580 var
+R31694:31695 RocqOfRust.links.M <> A1:579 var
+R31777:31778 RocqOfRust.links.M <> φ meth
+R31720:31721 RocqOfRust.links.M <> Φ meth
+R31726:31736 RocqOfRust.M Ty function defax
+R31738:31738 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31744:31745 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31751:31752 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31758:31758 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31739:31740 RocqOfRust.links.M <> Φ meth
+R31746:31747 RocqOfRust.links.M <> Φ meth
+R31753:31754 RocqOfRust.links.M <> Φ meth
+R31761:31762 RocqOfRust.links.M <> Φ meth
+binder 31780:31780 <> x:587
+R31785:31797 RocqOfRust.M Value Closure constr
+R31800:31805 RocqOfRust.M <> existS constr
+R31817:31817 RocqOfRust.links.M Function3 f proj
+R31814:31814 RocqOfRust.links.M <> x:587 var
+R31807:31807 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R31809:31810 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R31812:31812 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+def 31841:31845 Function3 of_ty
+R31866:31869 RocqOfRust.M Ty t defax
+binder 31848:31850 <> ty1:588
+binder 31852:31854 <> ty2:589
+binder 31856:31858 <> ty3:590
+binder 31860:31862 <> ty4:591
+R31888:31895 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R31878:31883 RocqOfRust.links.M OfTy t ind
+R31885:31887 RocqOfRust.links.M <> ty1:588 var
+R31906:31913 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R31896:31901 RocqOfRust.links.M OfTy t ind
+R31903:31905 RocqOfRust.links.M <> ty2:589 var
+R31924:31931 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R31914:31919 RocqOfRust.links.M OfTy t ind
+R31921:31923 RocqOfRust.links.M <> ty3:590 var
+R31942:31949 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R31932:31937 RocqOfRust.links.M OfTy t ind
+R31939:31941 RocqOfRust.links.M <> ty4:591 var
+R31950:31955 RocqOfRust.links.M OfTy t ind
+R31958:31968 RocqOfRust.M Ty function defax
+R31970:31970 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31974:31975 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31979:31980 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31984:31984 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R31971:31973 RocqOfRust.links.M <> ty1:588 var
+R31976:31978 RocqOfRust.links.M <> ty2:589 var
+R31981:31983 RocqOfRust.links.M <> ty3:590 var
+R31986:31988 RocqOfRust.links.M <> ty4:591 var
+def 32018:32023 Function3 of_run
+binder 32026:32027 <> A1:592
+binder 32029:32030 <> A2:593
+binder 32032:32033 <> A3:594
+binder 32035:32040 <> Output:595
+R32051:32054 RocqOfRust.links.M <> Link class
+R32056:32057 RocqOfRust.links.M <> A1:592 var
+binder 32051:32057 <> H:596
+R32062:32065 RocqOfRust.links.M <> Link class
+R32067:32068 RocqOfRust.links.M <> A2:593 var
+binder 32062:32068 <> H0:597
+R32073:32076 RocqOfRust.links.M <> Link class
+R32078:32079 RocqOfRust.links.M <> A3:594 var
+binder 32073:32079 <> H1:598
+R32084:32087 RocqOfRust.links.M <> Link class
+R32089:32094 RocqOfRust.links.M <> Output:595 var
+binder 32084:32094 <> H2:599
+R32108:32128 RocqOfRust.M PolymorphicFunction t def
+binder 32104:32104 <> f:600
+R32143:32146 Corelib.Init.Datatypes <> list ind
+R32148:32154 RocqOfRust.M Value t ind
+binder 32138:32139 <> ε:601
+R32169:32172 Corelib.Init.Datatypes <> list ind
+R32174:32177 RocqOfRust.M Ty t defax
+binder 32164:32165 <> τ:602
+R32208:32209 RocqOfRust.links.M <> A1:592 var
+binder 32203:32204 <> a1:603
+R32218:32219 RocqOfRust.links.M <> A2:593 var
+binder 32213:32214 <> a2:604
+R32228:32229 RocqOfRust.links.M <> A3:594 var
+binder 32223:32224 <> a3:605
+R32233:32241 RocqOfRust.links.M Run Trait class
+R32275:32280 RocqOfRust.links.M <> Output:595 var
+R32251:32252 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R32258:32259 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R32265:32266 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R32272:32273 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R32253:32254 RocqOfRust.links.M <> φ meth
+R32256:32257 RocqOfRust.links.M <> a1:603 var
+R32260:32261 RocqOfRust.links.M <> φ meth
+R32263:32264 RocqOfRust.links.M <> a2:604 var
+R32267:32268 RocqOfRust.links.M <> φ meth
+R32270:32271 RocqOfRust.links.M <> a3:605 var
+R32248:32249 RocqOfRust.links.M <> τ:602 var
+R32245:32246 RocqOfRust.links.M <> ε:601 var
+R32243:32243 RocqOfRust.links.M <> f:600 var
+binder 32187:32191 <> H_run:606
+R32289:32299 RocqOfRust.links.M Function3 t rec
+R32310:32315 RocqOfRust.links.M <> Output:595 var
+R32307:32308 RocqOfRust.links.M <> A3:594 var
+R32304:32305 RocqOfRust.links.M <> A2:593 var
+R32301:32302 RocqOfRust.links.M <> A1:592 var
+R32334:32342 RocqOfRust.links.M Function3 <> mod
+mod 32353:32367 <> OneElementTuple
+rec 32379:32379 OneElementTuple t
+proj 32416:32420 OneElementTuple value
+binder 32382:32382 <> A:607
+R32393:32396 RocqOfRust.links.M <> Link class
+R32398:32398 RocqOfRust.links.M <> A:607 var
+binder 32393:32398 <> H:608
+R32424:32424 RocqOfRust.links.M <> A:607 var
+R32444:32444 RocqOfRust.links.M OneElementTuple t rec
+R32444:32444 RocqOfRust.links.M OneElementTuple t rec
+inst 32472:32477 OneElementTuple IsLink
+binder 32480:32480 <> A:611
+R32491:32494 RocqOfRust.links.M <> Link class
+R32496:32496 RocqOfRust.links.M <> A:611 var
+binder 32491:32496 <> H:612
+R32501:32504 RocqOfRust.links.M <> Link class
+R32507:32507 RocqOfRust.links.M OneElementTuple t rec
+R32509:32509 RocqOfRust.links.M <> A:611 var
+R32548:32549 RocqOfRust.links.M <> φ meth
+R32521:32522 RocqOfRust.links.M <> Φ meth
+R32527:32534 RocqOfRust.M Ty tuple defax
+R32536:32536 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32541:32541 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32537:32538 RocqOfRust.links.M <> Φ meth
+R32555:32559 RocqOfRust.links.M OneElementTuple value proj
+R32555:32559 RocqOfRust.links.M OneElementTuple value proj
+R32555:32559 RocqOfRust.links.M OneElementTuple value proj
+binder 32564:32568 <> value:613
+binder 32552:32571 <> pat:614
+R32576:32586 RocqOfRust.M Value Tuple constr
+R32588:32588 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32597:32597 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32589:32590 RocqOfRust.links.M <> φ meth
+R32592:32596 RocqOfRust.links.M <> value:613 var
+def 32619:32623 OneElementTuple of_ty
+R32632:32635 RocqOfRust.M Ty t defax
+binder 32626:32628 <> ty':615
+R32654:32661 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R32644:32649 RocqOfRust.links.M OfTy t ind
+R32651:32653 RocqOfRust.links.M <> ty':615 var
+R32662:32667 RocqOfRust.links.M OfTy t ind
+R32670:32677 RocqOfRust.M Ty tuple defax
+R32679:32679 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32683:32683 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32680:32682 RocqOfRust.links.M <> ty':615 var
+prf 32708:32720 OneElementTuple of_value_with
+binder 32723:32723 <> A:616
+R32734:32737 RocqOfRust.links.M <> Link class
+R32739:32739 RocqOfRust.links.M <> A:616 var
+binder 32734:32739 <> H:617
+binder 32742:32746 <> value:618
+binder 32748:32753 <> value':619
+R32778:32785 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R32767:32769 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R32761:32766 RocqOfRust.links.M <> value':619 var
+R32770:32771 RocqOfRust.links.M <> φ meth
+R32773:32777 RocqOfRust.links.M <> value:618 var
+R32806:32808 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R32786:32796 RocqOfRust.M Value Tuple constr
+R32798:32798 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32805:32805 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32799:32804 RocqOfRust.links.M <> value':619 var
+R32809:32810 RocqOfRust.links.M <> φ meth
+R32813:32835 RocqOfRust.links.M OneElementTuple Build_t constr
+R32837:32837 RocqOfRust.links.M <> A:616 var
+R32841:32845 RocqOfRust.links.M <> value:618 var
+def 32875:32882 OneElementTuple of_value
+R32894:32900 RocqOfRust.M Value t ind
+binder 32885:32890 <> value':620
+R32925:32932 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R32909:32917 RocqOfRust.links.M OfValue t ind
+R32919:32924 RocqOfRust.links.M <> value':620 var
+R32933:32941 RocqOfRust.links.M OfValue t ind
+R32944:32954 RocqOfRust.M Value Tuple constr
+R32956:32956 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32963:32963 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R32957:32962 RocqOfRust.links.M <> value':620 var
+R32983:32997 RocqOfRust.links.M OneElementTuple <> mod
+mod 33008:33011 <> Pair
+inst 33032:33037 Pair IsLink
+binder 33040:33041 <> A1:621
+binder 33043:33044 <> A2:622
+R33064:33067 RocqOfRust.links.M <> Link class
+R33069:33070 RocqOfRust.links.M <> A1:621 var
+R33084:33087 RocqOfRust.links.M <> Link class
+R33089:33090 RocqOfRust.links.M <> A2:622 var
+R33101:33104 RocqOfRust.links.M <> Link class
+R33109:33111 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R33107:33108 RocqOfRust.links.M <> A1:621 var
+R33112:33113 RocqOfRust.links.M <> A2:622 var
+R33160:33161 RocqOfRust.links.M <> φ meth
+R33125:33126 RocqOfRust.links.M <> Φ meth
+R33131:33138 RocqOfRust.M Ty tuple defax
+R33140:33140 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33146:33147 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33153:33153 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33141:33142 RocqOfRust.links.M <> Φ meth
+R33148:33149 RocqOfRust.links.M <> Φ meth
+R33164:33164 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33167:33168 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33171:33171 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 33169:33170 <> a2:623
+binder 33165:33166 <> a1:624
+binder 33164:33171 <> pat:625
+R33176:33186 RocqOfRust.M Value Tuple constr
+R33188:33188 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33194:33195 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33201:33201 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33189:33190 RocqOfRust.links.M <> φ meth
+R33192:33193 RocqOfRust.links.M <> a1:624 var
+R33196:33197 RocqOfRust.links.M <> φ meth
+R33199:33200 RocqOfRust.links.M <> a2:623 var
+def 33223:33227 Pair of_ty
+R33240:33243 RocqOfRust.M Ty t defax
+binder 33230:33232 <> ty1:626
+binder 33234:33236 <> ty2:627
+R33262:33269 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R33252:33257 RocqOfRust.links.M OfTy t ind
+R33259:33261 RocqOfRust.links.M <> ty1:626 var
+R33280:33287 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R33270:33275 RocqOfRust.links.M OfTy t ind
+R33277:33279 RocqOfRust.links.M <> ty2:627 var
+R33288:33293 RocqOfRust.links.M OfTy t ind
+R33296:33303 RocqOfRust.M Ty tuple defax
+R33305:33305 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33309:33310 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33314:33314 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33306:33308 RocqOfRust.links.M <> ty1:626 var
+R33311:33313 RocqOfRust.links.M <> ty2:627 var
+prf 33339:33351 Pair of_value_with
+binder 33354:33355 <> A1:628
+binder 33357:33358 <> A2:629
+R33369:33372 RocqOfRust.links.M <> Link class
+R33374:33375 RocqOfRust.links.M <> A1:628 var
+binder 33369:33375 <> H:630
+R33380:33383 RocqOfRust.links.M <> Link class
+R33385:33386 RocqOfRust.links.M <> A2:629 var
+binder 33380:33386 <> H0:631
+binder 33389:33390 <> a1:632
+binder 33392:33393 <> a2:633
+binder 33395:33397 <> a1':634
+binder 33399:33401 <> a2':635
+R33420:33427 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R33412:33414 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R33409:33411 RocqOfRust.links.M <> a1':634 var
+R33415:33416 RocqOfRust.links.M <> φ meth
+R33418:33419 RocqOfRust.links.M <> a1:632 var
+R33439:33446 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R33431:33433 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R33428:33430 RocqOfRust.links.M <> a2':635 var
+R33434:33435 RocqOfRust.links.M <> φ meth
+R33437:33438 RocqOfRust.links.M <> a2:633 var
+R33469:33471 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R33447:33457 RocqOfRust.M Value Tuple constr
+R33459:33459 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33463:33464 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33468:33468 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33460:33462 RocqOfRust.links.M <> a1':634 var
+R33465:33467 RocqOfRust.links.M <> a2':635 var
+R33472:33473 RocqOfRust.links.M <> φ meth
+R33490:33490 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33493:33494 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33497:33497 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33491:33492 RocqOfRust.links.M <> a1:632 var
+R33495:33496 RocqOfRust.links.M <> a2:633 var
+R33483:33485 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R33481:33482 RocqOfRust.links.M <> A1:628 var
+R33486:33487 RocqOfRust.links.M <> A2:629 var
+def 33526:33533 Pair of_value
+R33546:33552 RocqOfRust.M Value t ind
+binder 33536:33538 <> a1':636
+binder 33540:33542 <> a2':637
+R33574:33581 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R33561:33569 RocqOfRust.links.M OfValue t ind
+R33571:33573 RocqOfRust.links.M <> a1':636 var
+R33595:33602 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R33582:33590 RocqOfRust.links.M OfValue t ind
+R33592:33594 RocqOfRust.links.M <> a2':637 var
+R33603:33611 RocqOfRust.links.M OfValue t ind
+R33614:33624 RocqOfRust.M Value Tuple constr
+R33626:33626 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33630:33631 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33635:33635 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R33627:33629 RocqOfRust.links.M <> a1':636 var
+R33632:33634 RocqOfRust.links.M <> a2':637 var
+mod 33661:33670 <> Pair.SubPointer
+def 33688:33698 Pair.SubPointer get_index_0
+binder 33701:33702 <> A1:638
+binder 33704:33705 <> A2:639
+R33716:33719 RocqOfRust.links.M <> Link class
+R33721:33722 RocqOfRust.links.M <> A1:638 var
+binder 33716:33722 <> H:640
+R33727:33730 RocqOfRust.links.M <> Link class
+R33732:33733 RocqOfRust.links.M <> A2:639 var
+binder 33727:33733 <> H0:641
+R33746:33764 RocqOfRust.links.M SubPointer.Runner t rec
+R33777:33795 RocqOfRust.M Pointer.Index Tuple constr
+R33769:33771 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R33767:33768 RocqOfRust.links.M <> A1:638 var
+R33772:33773 RocqOfRust.links.M <> A2:639 var
+R33812:33839 RocqOfRust.links.M SubPointer.Runner projection proj
+R33812:33839 RocqOfRust.links.M SubPointer.Runner projection proj
+R33812:33839 RocqOfRust.links.M SubPointer.Runner projection proj
+R33868:33894 RocqOfRust.links.M SubPointer.Runner injection proj
+R33868:33894 RocqOfRust.links.M SubPointer.Runner injection proj
+R33842:33842 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33845:33846 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33848:33848 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 33843:33844 <> a1:642
+binder 33842:33848 <> pat:643
+R33853:33856 Corelib.Init.Datatypes <> Some constr
+R33858:33859 RocqOfRust.links.M <> a1:642 var
+R33897:33897 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33900:33901 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33904:33904 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 33902:33903 <> a2:644
+binder 33898:33899 <> a1:645
+binder 33897:33904 <> pat:646
+binder 33906:33908 <> a1':647
+R33913:33916 Corelib.Init.Datatypes <> Some constr
+R33918:33918 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33922:33923 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33926:33926 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R33919:33921 RocqOfRust.links.M <> a1':647 var
+R33924:33925 RocqOfRust.links.M <> a2:644 var
+prf 33948:33967 Pair.SubPointer get_index_0_is_valid
+binder 33970:33971 <> A1:648
+binder 33973:33974 <> A2:649
+R33985:33988 RocqOfRust.links.M <> Link class
+R33990:33991 RocqOfRust.links.M <> A1:648 var
+binder 33985:33991 <> H:650
+R33996:33999 RocqOfRust.links.M <> Link class
+R34001:34002 RocqOfRust.links.M <> A2:649 var
+binder 33996:34002 <> H0:651
+R34013:34037 RocqOfRust.links.M SubPointer.Runner.Valid t rec
+R34040:34050 RocqOfRust.links.M Pair.SubPointer get_index_0 def
+R34070:34071 RocqOfRust.links.M <> A2:649 var
+R34059:34060 RocqOfRust.links.M <> A1:648 var
+def 34106:34116 Pair.SubPointer get_index_1
+binder 34119:34120 <> A1:652
+binder 34122:34123 <> A2:653
+R34134:34137 RocqOfRust.links.M <> Link class
+R34139:34140 RocqOfRust.links.M <> A1:652 var
+binder 34134:34140 <> H:654
+R34145:34148 RocqOfRust.links.M <> Link class
+R34150:34151 RocqOfRust.links.M <> A2:653 var
+binder 34145:34151 <> H0:655
+R34164:34182 RocqOfRust.links.M SubPointer.Runner t rec
+R34195:34213 RocqOfRust.M Pointer.Index Tuple constr
+R34187:34189 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R34185:34186 RocqOfRust.links.M <> A1:652 var
+R34190:34191 RocqOfRust.links.M <> A2:653 var
+R34230:34257 RocqOfRust.links.M SubPointer.Runner projection proj
+R34230:34257 RocqOfRust.links.M SubPointer.Runner projection proj
+R34230:34257 RocqOfRust.links.M SubPointer.Runner projection proj
+R34286:34312 RocqOfRust.links.M SubPointer.Runner injection proj
+R34286:34312 RocqOfRust.links.M SubPointer.Runner injection proj
+R34260:34260 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34262:34263 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34266:34266 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 34264:34265 <> a2:656
+binder 34260:34266 <> pat:657
+R34271:34274 Corelib.Init.Datatypes <> Some constr
+R34276:34277 RocqOfRust.links.M <> a2:656 var
+R34315:34315 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34318:34319 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34322:34322 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 34320:34321 <> a2:658
+binder 34316:34317 <> a1:659
+binder 34315:34322 <> pat:660
+binder 34324:34326 <> a2':661
+R34331:34334 Corelib.Init.Datatypes <> Some constr
+R34336:34336 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34339:34340 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34344:34344 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R34337:34338 RocqOfRust.links.M <> a1:659 var
+R34341:34343 RocqOfRust.links.M <> a2':661 var
+prf 34366:34385 Pair.SubPointer get_index_1_is_valid
+binder 34388:34389 <> A1:662
+binder 34391:34392 <> A2:663
+R34403:34406 RocqOfRust.links.M <> Link class
+R34408:34409 RocqOfRust.links.M <> A1:662 var
+binder 34403:34409 <> H:664
+R34414:34417 RocqOfRust.links.M <> Link class
+R34419:34420 RocqOfRust.links.M <> A2:663 var
+binder 34414:34420 <> H0:665
+R34431:34455 RocqOfRust.links.M SubPointer.Runner.Valid t rec
+R34458:34468 RocqOfRust.links.M Pair.SubPointer get_index_1 def
+R34488:34489 RocqOfRust.links.M <> A2:663 var
+R34477:34478 RocqOfRust.links.M <> A1:662 var
+R34514:34523 RocqOfRust.links.M Pair.SubPointer <> mod
+R34530:34533 RocqOfRust.links.M Pair <> mod

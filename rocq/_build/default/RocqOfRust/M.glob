@@ -1,0 +1,2108 @@
+DIGEST 2f20396908abdca7eeef717401975f20
+FRocqOfRust.M
+R56:80 Stdlib.Strings.PrimString <> <> lib
+R98:117 Stdlib.ZArith.ZArith <> <> lib
+R148:150 Stdlib.micromega.Lia <> <> lib
+R161:178 Stdlib.Lists.List ListNotations <> mod
+R188:203 Corelib.Strings.PrimString PStringNotations <> mod
+ind 387:390 <> sigS
+constr 429:434 <> existS
+binder 393:393 <> A:1
+R409:412 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R408:408 RocqOfRust.M <> A:1 var
+binder 404:404 <> P:2
+R450:450 RocqOfRust.M <> A:1 var
+binder 446:446 <> x:5
+R457:460 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R454:454 RocqOfRust.M <> P:2 var
+R456:456 RocqOfRust.M <> x:5 var
+R461:464 RocqOfRust.M <> sigS:3 ind
+R466:466 RocqOfRust.M <> P:2 var
+scheme 387:390 <> sigS_rect
+scheme 387:390 <> sigS_ind
+scheme 387:390 <> sigS_rec
+scheme 387:390 <> sigS_sind
+R479:484 RocqOfRust.M <> existS constr
+R479:484 RocqOfRust.M <> existS constr
+R744:747 RocqOfRust.M <> sigS ind
+binder 754:754 <> x:6
+not 728:728 <> ::type_scope:'{'_x_'@'_x_'}'
+R806:809 RocqOfRust.M <> sigS ind
+binder 825:825 <> x:7
+not 786:786 <> ::type_scope:'{'_x_':'_x_'@'_x_'}'
+R881:884 RocqOfRust.M <> sigS ind
+binder 900:902 <> pat:8
+not 857:857 <> ::type_scope:'{'_''''_x_':'_x_'@'_x_'}'
+mod 933:936 <> List
+def 950:954 List assoc
+binder 957:957 <> A:9
+R971:974 Corelib.Init.Datatypes <> list ind
+R983:985 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R977:982 Corelib.Strings.PrimString <> string prim
+R986:986 RocqOfRust.M <> A:9 var
+binder 967:967 <> l:10
+R997:1002 Corelib.Strings.PrimString <> string prim
+binder 991:993 <> key:11
+R1007:1012 Corelib.Init.Datatypes <> option ind
+R1014:1014 RocqOfRust.M <> A:9 var
+R1029:1029 RocqOfRust.M <> l:10 var
+R1042:1043 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1048:1051 Corelib.Init.Datatypes <> None constr
+R1065:1068 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1059:1059 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1061:1062 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1064:1064 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1086:1103 Corelib.Strings.PrimString <> compare prim
+R1107:1109 RocqOfRust.M <> key:11 var
+R1124:1125 Corelib.Init.Datatypes <> Eq constr
+R1130:1133 Corelib.Init.Datatypes <> Some constr
+R1150:1154 RocqOfRust.M <> assoc:12 def
+R1158:1160 RocqOfRust.M <> key:11 var
+R1156:1156 RocqOfRust.M <> l:10 var
+def 1193:1205 List assoc_replace
+binder 1208:1208 <> A:14
+R1228:1231 Corelib.Init.Datatypes <> list ind
+R1240:1242 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R1234:1239 Corelib.Strings.PrimString <> string prim
+R1243:1243 RocqOfRust.M <> A:14 var
+binder 1224:1224 <> l:15
+R1254:1259 Corelib.Strings.PrimString <> string prim
+binder 1248:1250 <> key:16
+R1272:1272 RocqOfRust.M <> A:14 var
+binder 1263:1268 <> update:17
+R1283:1286 Corelib.Init.Datatypes <> list ind
+R1295:1297 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R1289:1294 Corelib.Strings.PrimString <> string prim
+R1298:1298 RocqOfRust.M <> A:14 var
+R1314:1314 RocqOfRust.M <> l:15 var
+R1327:1328 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1333:1334 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1348:1351 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1342:1342 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1344:1345 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1347:1347 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1369:1386 Corelib.Strings.PrimString <> compare prim
+R1390:1392 RocqOfRust.M <> key:16 var
+R1407:1408 Corelib.Init.Datatypes <> Eq constr
+R1426:1429 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1413:1413 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1417:1418 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1425:1425 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1414:1416 RocqOfRust.M <> key:16 var
+R1419:1424 RocqOfRust.M <> update:17 var
+R1430:1430 RocqOfRust.M <> l:15 var
+R1451:1454 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1445:1445 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1447:1448 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1450:1450 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R1455:1467 RocqOfRust.M <> assoc_replace:18 def
+R1475:1480 RocqOfRust.M <> update:17 var
+R1471:1473 RocqOfRust.M <> key:16 var
+R1469:1469 RocqOfRust.M <> l:15 var
+mod 1602:1605 <> List.Sort
+def 1621:1625 List.Sort merge
+binder 1628:1628 <> A:20
+R1645:1648 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1644:1644 RocqOfRust.M <> A:20 var
+R1650:1653 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1649:1649 RocqOfRust.M <> A:20 var
+R1654:1657 Corelib.Init.Datatypes <> bool ind
+binder 1638:1640 <> leb:21
+R1669:1672 Corelib.Init.Datatypes <> list ind
+R1674:1674 RocqOfRust.M <> A:20 var
+binder 1661:1662 <> l1:22
+binder 1664:1665 <> l2:23
+R1679:1682 Corelib.Init.Datatypes <> list ind
+R1684:1684 RocqOfRust.M <> A:20 var
+binder 1713:1714 <> l2:25
+R1735:1736 RocqOfRust.M <> l2:25 var
+R1731:1732 RocqOfRust.M <> l1:22 var
+R1751:1752 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1760:1761 RocqOfRust.M <> l2:25 var
+R1774:1775 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1780:1781 RocqOfRust.M <> l1:22 var
+R1793:1794 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1802:1803 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1824:1826 RocqOfRust.M <> leb:21 var
+R1903:1906 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1907:1915 RocqOfRust.M <> merge_aux:26 var
+R1853:1856 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R1857:1861 RocqOfRust.M <> merge:24 def
+R1871:1872 RocqOfRust.M <> l2:25 var
+R1863:1865 RocqOfRust.M <> leb:21 var
+binder 1703:1711 <> merge_aux:29
+R1940:1948 RocqOfRust.M <> merge_aux:29 var
+R1950:1951 RocqOfRust.M <> l2:23 var
+def 1968:1986 List.Sort merge_list_to_stack
+binder 1989:1989 <> A:30
+R2006:2009 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2005:2005 RocqOfRust.M <> A:30 var
+R2011:2014 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2010:2010 RocqOfRust.M <> A:30 var
+R2015:2018 Corelib.Init.Datatypes <> bool ind
+binder 1999:2001 <> leb:31
+binder 2021:2025 <> stack:32
+binder 2027:2027 <> l:33
+R2044:2048 RocqOfRust.M <> stack:32 var
+R2063:2064 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R2069:2069 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R2076:2076 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R2070:2073 Corelib.Init.Datatypes <> Some constr
+R2075:2075 RocqOfRust.M <> l:33 var
+R2090:2093 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2086:2089 Corelib.Init.Datatypes <> None constr
+R2110:2113 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2104:2107 Corelib.Init.Datatypes <> Some constr
+R2109:2109 RocqOfRust.M <> l:33 var
+R2136:2139 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2129:2132 Corelib.Init.Datatypes <> Some constr
+R2154:2157 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2150:2153 Corelib.Init.Datatypes <> None constr
+R2158:2176 RocqOfRust.M <> merge_list_to_stack:34 def
+R2190:2194 RocqOfRust.M List.Sort merge def
+R2203:2203 RocqOfRust.M <> l:33 var
+R2196:2198 RocqOfRust.M <> leb:31 var
+R2178:2180 RocqOfRust.M <> leb:31 var
+def 2231:2241 List.Sort merge_stack
+binder 2244:2244 <> A:36
+R2261:2264 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2260:2260 RocqOfRust.M <> A:36 var
+R2266:2269 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2265:2265 RocqOfRust.M <> A:36 var
+R2270:2273 Corelib.Init.Datatypes <> bool ind
+binder 2254:2256 <> leb:37
+binder 2276:2280 <> stack:38
+R2297:2301 RocqOfRust.M <> stack:38 var
+R2316:2317 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R2322:2323 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R2337:2340 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2333:2336 Corelib.Init.Datatypes <> None constr
+R2351:2361 RocqOfRust.M <> merge_stack:39 def
+R2363:2365 RocqOfRust.M <> leb:37 var
+R2388:2391 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2382:2385 Corelib.Init.Datatypes <> Some constr
+R2402:2406 RocqOfRust.M List.Sort merge def
+R2415:2425 RocqOfRust.M <> merge_stack:39 def
+R2427:2429 RocqOfRust.M <> leb:37 var
+R2408:2410 RocqOfRust.M <> leb:37 var
+def 2464:2473 List.Sort iter_merge
+binder 2476:2476 <> A:41
+R2493:2496 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2492:2492 RocqOfRust.M <> A:41 var
+R2498:2501 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2497:2497 RocqOfRust.M <> A:41 var
+R2502:2505 Corelib.Init.Datatypes <> bool ind
+binder 2486:2488 <> leb:42
+binder 2508:2512 <> stack:43
+binder 2514:2514 <> l:44
+R2531:2531 RocqOfRust.M <> l:44 var
+R2546:2547 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R2552:2562 RocqOfRust.M List.Sort merge_stack def
+R2568:2572 RocqOfRust.M <> stack:43 var
+R2564:2566 RocqOfRust.M <> leb:42 var
+R2583:2584 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2591:2600 RocqOfRust.M <> iter_merge:45 def
+R2607:2625 RocqOfRust.M List.Sort merge_list_to_stack def
+R2637:2637 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R2639:2639 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R2631:2635 RocqOfRust.M <> stack:43 var
+R2627:2629 RocqOfRust.M <> leb:42 var
+R2602:2604 RocqOfRust.M <> leb:42 var
+def 2672:2675 List.Sort sort
+binder 2678:2678 <> A:47
+R2695:2698 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2694:2694 RocqOfRust.M <> A:47 var
+R2700:2703 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2699:2699 RocqOfRust.M <> A:47 var
+R2704:2707 Corelib.Init.Datatypes <> bool ind
+binder 2688:2690 <> leb:48
+R2715:2718 Corelib.Init.Datatypes <> list ind
+R2720:2720 RocqOfRust.M <> A:47 var
+binder 2711:2711 <> l:49
+R2725:2728 Corelib.Init.Datatypes <> list ind
+R2730:2730 RocqOfRust.M <> A:47 var
+R2741:2750 RocqOfRust.M List.Sort iter_merge def
+R2759:2759 RocqOfRust.M <> l:49 var
+R2756:2757 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R2752:2754 RocqOfRust.M <> leb:48 var
+R2768:2771 RocqOfRust.M List.Sort <> mod
+def 2788:2797 List sort_assoc
+binder 2800:2800 <> A:50
+R2814:2817 Corelib.Init.Datatypes <> list ind
+R2826:2828 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R2820:2825 Corelib.Strings.PrimString <> string prim
+R2829:2829 RocqOfRust.M <> A:50 var
+binder 2810:2810 <> l:51
+R2835:2838 Corelib.Init.Datatypes <> list ind
+R2847:2849 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R2841:2846 Corelib.Strings.PrimString <> string prim
+R2850:2850 RocqOfRust.M <> A:50 var
+binder 2868:2868 <> x:52
+binder 2870:2870 <> y:53
+R2887:2904 Corelib.Strings.PrimString <> compare prim
+R2907:2909 Corelib.Init.Datatypes <> fst def
+R2911:2911 RocqOfRust.M <> x:52 var
+R2915:2917 Corelib.Init.Datatypes <> fst def
+R2919:2919 RocqOfRust.M <> y:53 var
+R2935:2936 Corelib.Init.Datatypes <> Lt constr
+R2940:2941 Corelib.Init.Datatypes <> Eq constr
+R2946:2949 Corelib.Init.Datatypes <> true constr
+R2946:2949 Corelib.Init.Datatypes <> true constr
+R2959:2960 Corelib.Init.Datatypes <> Gt constr
+R2965:2969 Corelib.Init.Datatypes <> false constr
+binder 2864:2866 <> leb:54
+R2988:2996 RocqOfRust.M List sort def
+R3002:3002 RocqOfRust.M <> l:51 var
+R2998:3000 RocqOfRust.M <> leb:54 var
+def 3008:3086 List Unnamed_thm
+R3054:3056 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3013:3022 RocqOfRust.M List sort_assoc def
+R3024:3024 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3033:3034 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3043:3044 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3053:3053 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3025:3025 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3029:3030 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3032:3032 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3035:3035 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3039:3040 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3042:3042 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3045:3045 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3049:3050 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3052:3052 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3057:3057 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3066:3067 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3076:3077 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3086:3086 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R3058:3058 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3062:3063 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3065:3065 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3068:3068 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3072:3073 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3075:3075 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3078:3078 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3082:3083 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3085:3085 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+def 3256:3265 List replace_at
+binder 3268:3268 <> A:55
+R3282:3285 Corelib.Init.Datatypes <> list ind
+R3287:3287 RocqOfRust.M <> A:55 var
+binder 3278:3278 <> l:56
+R3299:3301 Corelib.Init.Datatypes <> nat ind
+binder 3291:3295 <> index:57
+R3314:3314 RocqOfRust.M <> A:55 var
+binder 3305:3310 <> update:58
+R3325:3328 Corelib.Init.Datatypes <> list ind
+R3330:3330 RocqOfRust.M <> A:55 var
+R3345:3345 RocqOfRust.M <> l:56 var
+R3358:3359 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R3364:3365 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R3374:3377 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R3395:3399 RocqOfRust.M <> index:57 var
+R3414:3414 Corelib.Init.Datatypes <> O constr
+R3425:3428 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R3419:3424 RocqOfRust.M <> update:58 var
+R3429:3429 RocqOfRust.M <> l:56 var
+R3439:3439 Corelib.Init.Datatypes <> S constr
+R3451:3454 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R3455:3464 RocqOfRust.M <> replace_at:59 def
+R3474:3479 RocqOfRust.M <> update:58 var
+R3468:3472 RocqOfRust.M <> index:57 var
+R3466:3466 RocqOfRust.M <> l:56 var
+prf 3509:3525 List replace_at_map_eq
+binder 3528:3528 <> A:62
+binder 3530:3530 <> B:63
+R3544:3547 Corelib.Init.Datatypes <> list ind
+R3549:3549 RocqOfRust.M <> A:62 var
+binder 3540:3540 <> l:64
+R3558:3561 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R3557:3557 RocqOfRust.M <> A:62 var
+R3562:3562 RocqOfRust.M <> B:63 var
+binder 3553:3553 <> f:65
+R3574:3576 Corelib.Init.Datatypes <> nat ind
+binder 3566:3570 <> index:66
+R3589:3589 RocqOfRust.M <> A:62 var
+binder 3580:3585 <> update:67
+R3636:3642 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3598:3605 Stdlib.Lists.List <> map abbrev
+R3610:3619 RocqOfRust.M List replace_at def
+R3629:3634 RocqOfRust.M <> update:67 var
+R3623:3627 RocqOfRust.M <> index:66 var
+R3621:3621 RocqOfRust.M <> l:64 var
+R3607:3607 RocqOfRust.M <> f:65 var
+R3643:3652 RocqOfRust.M List replace_at def
+R3676:3676 RocqOfRust.M <> f:65 var
+R3678:3683 RocqOfRust.M <> update:67 var
+R3669:3673 RocqOfRust.M <> index:66 var
+R3655:3662 Stdlib.Lists.List <> map abbrev
+R3666:3666 RocqOfRust.M <> l:64 var
+R3664:3664 RocqOfRust.M <> f:65 var
+R3778:3781 RocqOfRust.M List <> mod
+mod 3792:3802 <> IntegerKind
+ind 3817:3817 IntegerKind t
+constr 3832:3833 IntegerKind I8
+constr 3843:3845 IntegerKind I16
+constr 3855:3857 IntegerKind I32
+constr 3867:3869 IntegerKind I64
+constr 3879:3882 IntegerKind I128
+constr 3892:3896 IntegerKind Isize
+constr 3906:3907 IntegerKind U8
+constr 3917:3919 IntegerKind U16
+constr 3929:3931 IntegerKind U32
+constr 3941:3943 IntegerKind U64
+constr 3953:3956 IntegerKind U128
+constr 3966:3970 IntegerKind Usize
+R3837:3837 RocqOfRust.M <> t:68 ind
+R3849:3849 RocqOfRust.M <> t:68 ind
+R3861:3861 RocqOfRust.M <> t:68 ind
+R3873:3873 RocqOfRust.M <> t:68 ind
+R3886:3886 RocqOfRust.M <> t:68 ind
+R3900:3900 RocqOfRust.M <> t:68 ind
+R3911:3911 RocqOfRust.M <> t:68 ind
+R3923:3923 RocqOfRust.M <> t:68 ind
+R3935:3935 RocqOfRust.M <> t:68 ind
+R3947:3947 RocqOfRust.M <> t:68 ind
+R3960:3960 RocqOfRust.M <> t:68 ind
+R3974:3974 RocqOfRust.M <> t:68 ind
+scheme 3817:3817 IntegerKind t_rect
+scheme 3817:3817 IntegerKind t_ind
+scheme 3817:3817 IntegerKind t_rec
+scheme 3817:3817 IntegerKind t_sind
+def 3991:3993 IntegerKind eqb
+R4010:4010 RocqOfRust.M IntegerKind t ind
+binder 3996:4000 <> kind1:70
+binder 4002:4006 <> kind2:71
+R4015:4018 Corelib.Init.Datatypes <> bool ind
+R4040:4044 RocqOfRust.M <> kind2:71 var
+R4033:4037 RocqOfRust.M <> kind1:70 var
+R4057:4058 RocqOfRust.M IntegerKind I8 constr
+R4061:4062 RocqOfRust.M IntegerKind I8 constr
+R4067:4070 Corelib.Init.Datatypes <> true constr
+R4078:4080 RocqOfRust.M IntegerKind I16 constr
+R4083:4085 RocqOfRust.M IntegerKind I16 constr
+R4090:4093 Corelib.Init.Datatypes <> true constr
+R4101:4103 RocqOfRust.M IntegerKind I32 constr
+R4106:4108 RocqOfRust.M IntegerKind I32 constr
+R4113:4116 Corelib.Init.Datatypes <> true constr
+R4124:4126 RocqOfRust.M IntegerKind I64 constr
+R4129:4131 RocqOfRust.M IntegerKind I64 constr
+R4136:4139 Corelib.Init.Datatypes <> true constr
+R4147:4150 RocqOfRust.M IntegerKind I128 constr
+R4153:4156 RocqOfRust.M IntegerKind I128 constr
+R4161:4164 Corelib.Init.Datatypes <> true constr
+R4172:4176 RocqOfRust.M IntegerKind Isize constr
+R4179:4183 RocqOfRust.M IntegerKind Isize constr
+R4188:4191 Corelib.Init.Datatypes <> true constr
+R4199:4200 RocqOfRust.M IntegerKind U8 constr
+R4203:4204 RocqOfRust.M IntegerKind U8 constr
+R4209:4212 Corelib.Init.Datatypes <> true constr
+R4220:4222 RocqOfRust.M IntegerKind U16 constr
+R4225:4227 RocqOfRust.M IntegerKind U16 constr
+R4232:4235 Corelib.Init.Datatypes <> true constr
+R4243:4245 RocqOfRust.M IntegerKind U32 constr
+R4248:4250 RocqOfRust.M IntegerKind U32 constr
+R4255:4258 Corelib.Init.Datatypes <> true constr
+R4266:4268 RocqOfRust.M IntegerKind U64 constr
+R4271:4273 RocqOfRust.M IntegerKind U64 constr
+R4278:4281 Corelib.Init.Datatypes <> true constr
+R4289:4292 RocqOfRust.M IntegerKind U128 constr
+R4295:4298 RocqOfRust.M IntegerKind U128 constr
+R4303:4306 Corelib.Init.Datatypes <> true constr
+R4314:4318 RocqOfRust.M IntegerKind Usize constr
+R4321:4325 RocqOfRust.M IntegerKind Usize constr
+R4330:4333 Corelib.Init.Datatypes <> true constr
+R4349:4353 Corelib.Init.Datatypes <> false constr
+R4368:4378 RocqOfRust.M IntegerKind <> mod
+mod 4389:4390 <> Ty
+ax 4405:4405 Ty t
+ax 4427:4430 Ty path
+R4440:4443 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R4434:4439 Corelib.Strings.PrimString <> string prim
+R4444:4447 RocqOfRust.M Ty t defax
+ax 4463:4470 Ty function
+R4483:4486 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R4474:4477 Corelib.Init.Datatypes <> list ind
+R4479:4482 RocqOfRust.M Ty t defax
+R4491:4494 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R4487:4490 RocqOfRust.M Ty t defax
+R4495:4498 RocqOfRust.M Ty t defax
+ax 4514:4518 Ty tuple
+R4531:4534 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R4522:4525 Corelib.Init.Datatypes <> list ind
+R4527:4530 RocqOfRust.M Ty t defax
+R4535:4538 RocqOfRust.M Ty t defax
+R4545:4546 RocqOfRust.M Ty <> mod
+mod 4557:4563 <> Pointer
+mod 4575:4579 <> Pointer.Index
+ind 5017:5017 Pointer.Index t
+constr 5034:5038 Pointer.Index Tuple
+constr 5058:5062 Pointer.Index Array
+constr 5082:5093 Pointer.Index StructRecord
+constr 5130:5140 Pointer.Index StructTuple
+R5049:5049 Corelib.Numbers.BinNums <> Z ind
+binder 5041:5045 <> index:84
+R5073:5073 Corelib.Numbers.BinNums <> Z ind
+binder 5065:5069 <> index:85
+R5116:5121 Corelib.Strings.PrimString <> string prim
+binder 5096:5106 <> constructor:86
+binder 5108:5112 <> field:87
+R5157:5162 Corelib.Strings.PrimString <> string prim
+binder 5143:5153 <> constructor:88
+R5174:5174 Corelib.Numbers.BinNums <> Z ind
+binder 5166:5170 <> index:89
+scheme 5017:5017 Pointer.Index t_rect
+scheme 5017:5017 Pointer.Index t_ind
+scheme 5017:5017 Pointer.Index t_rec
+scheme 5017:5017 Pointer.Index t_sind
+R5184:5188 RocqOfRust.M Pointer.Index <> mod
+mod 5201:5204 <> Pointer.Path
+def 5222:5222 Pointer.Path t
+R5233:5236 Corelib.Init.Datatypes <> list ind
+R5238:5244 RocqOfRust.M Pointer.Index t ind
+R5253:5256 RocqOfRust.M Pointer.Path <> mod
+mod 5269:5272 <> Pointer.Core
+ind 5289:5289 Pointer.Core t
+constr 5473:5481 Pointer.Core Immediate
+constr 5512:5518 Pointer.Core Mutable
+binder 5292:5296 <> Value:90
+R5492:5497 Corelib.Init.Datatypes <> option ind
+R5499:5503 RocqOfRust.M <> Value:90 var
+binder 5484:5488 <> value:93
+binder 5521:5527 <> Address:94
+R5547:5553 RocqOfRust.M <> Address:94 var
+binder 5537:5543 <> address:95
+R5564:5569 RocqOfRust.M Pointer.Path t def
+binder 5557:5560 <> path:96
+scheme 5289:5289 Pointer.Core t_rect
+scheme 5289:5289 Pointer.Core t_ind
+scheme 5289:5289 Pointer.Core t_rec
+scheme 5289:5289 Pointer.Core t_sind
+R5587:5595 RocqOfRust.M Pointer.Core Immediate constr
+R5587:5595 RocqOfRust.M Pointer.Core Immediate constr
+R5616:5622 RocqOfRust.M Pointer.Core Mutable constr
+R5616:5622 RocqOfRust.M Pointer.Core Mutable constr
+R5637:5640 RocqOfRust.M Pointer.Core <> mod
+mod 5653:5656 <> Pointer.Kind
+ind 5673:5673 Pointer.Kind t
+constr 5848:5850 Pointer.Kind Raw
+constr 5858:5860 Pointer.Kind Ref
+constr 5868:5873 Pointer.Kind MutRef
+constr 5881:5892 Pointer.Kind ConstPointer
+constr 5900:5909 Pointer.Kind MutPointer
+scheme 5673:5673 Pointer.Kind t_rect
+scheme 5673:5673 Pointer.Kind t_ind
+scheme 5673:5673 Pointer.Kind t_rec
+scheme 5673:5673 Pointer.Kind t_sind
+def 5928:5937 Pointer.Kind to_ty_path
+R5947:5947 RocqOfRust.M Pointer.Kind t ind
+binder 5940:5943 <> kind:99
+R5952:5957 Corelib.Strings.PrimString <> string prim
+R5974:5977 RocqOfRust.M <> kind:99 var
+R5992:5994 RocqOfRust.M Pointer.Kind Raw constr
+R6011:6013 RocqOfRust.M Pointer.Kind Ref constr
+R6030:6035 RocqOfRust.M Pointer.Kind MutRef constr
+R6055:6066 RocqOfRust.M Pointer.Kind ConstPointer constr
+R6088:6097 RocqOfRust.M Pointer.Kind MutPointer constr
+R6126:6129 RocqOfRust.M Pointer.Kind <> mod
+rec 6142:6142 Pointer t
+proj 6173:6176 Pointer kind
+proj 6192:6195 Pointer core
+binder 6145:6149 <> Value:101
+R6180:6185 RocqOfRust.M Pointer t ind
+R6199:6204 RocqOfRust.M Pointer t ind
+R6206:6210 RocqOfRust.M <> Value:101 var
+R6230:6230 RocqOfRust.M Pointer t rec
+R6230:6230 RocqOfRust.M Pointer t rec
+def 6265:6269 Pointer deref
+binder 6272:6276 <> Value:105
+R6296:6296 RocqOfRust.M Pointer t rec
+R6298:6302 RocqOfRust.M <> Value:105 var
+binder 6286:6292 <> pointer:106
+R6307:6307 RocqOfRust.M Pointer t rec
+R6309:6313 RocqOfRust.M <> Value:105 var
+R6331:6334 RocqOfRust.M Pointer kind proj
+R6331:6334 RocqOfRust.M Pointer kind proj
+R6331:6334 RocqOfRust.M Pointer kind proj
+R6355:6358 RocqOfRust.M Pointer core proj
+R6355:6358 RocqOfRust.M Pointer core proj
+R6339:6346 RocqOfRust.M Pointer Raw constr
+R6371:6374 RocqOfRust.M Pointer core proj
+R6362:6368 RocqOfRust.M <> pointer:106 var
+R6390:6396 RocqOfRust.M Pointer <> mod
+mod 6407:6411 <> Value
+ind 6426:6426 Value t
+constr 6441:6444 Value Bool
+constr 6462:6468 Value Integer
+constr 6584:6588 Value Float
+constr 6608:6618 Value UnicodeChar
+constr 6633:6638 Value String
+constr 6658:6662 Value Tuple
+constr 6682:6686 Value Array
+constr 6706:6717 Value StructRecord
+constr 6780:6790 Value StructTuple
+constr 6843:6849 Value Pointer
+constr 7052:7058 Value Closure
+constr 7527:7531 Value Error
+constr 7647:7666 Value DeclaredButUndefined
+R6452:6455 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6448:6451 Corelib.Init.Datatypes <> bool ind
+R6456:6456 RocqOfRust.M <> t:107 ind
+R6478:6490 RocqOfRust.M IntegerKind t ind
+binder 6471:6474 <> kind:109
+R6498:6498 Corelib.Numbers.BinNums <> Z ind
+binder 6494:6494 <> z:110
+R6503:6503 RocqOfRust.M <> t:107 ind
+R6598:6601 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6592:6597 Corelib.Strings.PrimString <> string prim
+R6602:6602 RocqOfRust.M <> t:107 ind
+R6623:6626 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6622:6622 Corelib.Numbers.BinNums <> Z ind
+R6627:6627 RocqOfRust.M <> t:107 ind
+R6648:6651 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6642:6647 Corelib.Strings.PrimString <> string prim
+R6652:6652 RocqOfRust.M <> t:107 ind
+R6672:6675 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6666:6669 Corelib.Init.Datatypes <> list ind
+R6671:6671 RocqOfRust.M <> t:107 ind
+R6676:6676 RocqOfRust.M <> t:107 ind
+R6696:6699 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6690:6693 Corelib.Init.Datatypes <> list ind
+R6695:6695 RocqOfRust.M <> t:107 ind
+R6700:6700 RocqOfRust.M <> t:107 ind
+R6727:6730 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6721:6726 Corelib.Strings.PrimString <> string prim
+R6737:6740 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6731:6734 Corelib.Init.Datatypes <> list ind
+R6736:6736 RocqOfRust.M <> t:107 ind
+R6750:6752 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6741:6744 Corelib.Init.Datatypes <> list ind
+R6746:6749 RocqOfRust.M Ty t defax
+R6770:6773 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6753:6756 Corelib.Init.Datatypes <> list ind
+R6765:6767 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R6759:6764 Corelib.Strings.PrimString <> string prim
+R6768:6768 RocqOfRust.M <> t:107 ind
+R6774:6774 RocqOfRust.M <> t:107 ind
+R6800:6803 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6794:6799 Corelib.Strings.PrimString <> string prim
+R6810:6813 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6804:6807 Corelib.Init.Datatypes <> list ind
+R6809:6809 RocqOfRust.M <> t:107 ind
+R6823:6826 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6814:6817 Corelib.Init.Datatypes <> list ind
+R6819:6822 RocqOfRust.M Ty t defax
+R6833:6836 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6827:6830 Corelib.Init.Datatypes <> list ind
+R6832:6832 RocqOfRust.M <> t:107 ind
+R6837:6837 RocqOfRust.M <> t:107 ind
+R6864:6867 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6853:6861 RocqOfRust.M Pointer t rec
+R6863:6863 RocqOfRust.M <> t:107 ind
+R6868:6868 RocqOfRust.M <> t:107 ind
+R7107:7110 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R7062:7063 RocqOfRust.M <> ::type_scope:'{'_''''_x_':'_x_'@'_x_'}' not
+R7074:7077 RocqOfRust.M <> ::type_scope:'{'_''''_x_':'_x_'@'_x_'}' not
+R7087:7090 RocqOfRust.M <> ::type_scope:'{'_''''_x_':'_x_'@'_x_'}' not
+R7106:7106 RocqOfRust.M <> ::type_scope:'{'_''''_x_':'_x_'@'_x_'}' not
+R7081:7083 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R7064:7064 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7070:7071 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7073:7073 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+binder 7072:7072 <> M:111
+binder 7065:7069 <> Value:112
+binder 7064:7073 <> pat:113
+R7101:7104 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R7091:7094 Corelib.Init.Datatypes <> list ind
+R7096:7100 RocqOfRust.M <> Value:112 var
+R7105:7105 RocqOfRust.M <> M:111 var
+R7111:7111 RocqOfRust.M <> t:107 ind
+R7544:7549 Corelib.Strings.PrimString <> string prim
+binder 7534:7540 <> message:114
+scheme 6426:6426 Value t_rect
+scheme 6426:6426 Value t_ind
+scheme 6426:6426 Value t_rec
+scheme 6426:6426 Value t_sind
+def 7926:7939 Value mkStructRecord
+R7962:7967 Corelib.Strings.PrimString <> string prim
+binder 7948:7958 <> constructor:115
+R7986:7989 Corelib.Init.Datatypes <> list ind
+R7991:7991 RocqOfRust.M Value t ind
+binder 7977:7982 <> consts:116
+R8007:8010 Corelib.Init.Datatypes <> list ind
+R8012:8015 RocqOfRust.M Ty t defax
+binder 8001:8003 <> tys:117
+R8034:8037 Corelib.Init.Datatypes <> list ind
+R8046:8048 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R8040:8045 Corelib.Strings.PrimString <> string prim
+R8049:8049 RocqOfRust.M Value t ind
+binder 8025:8030 <> fields:118
+R8061:8061 RocqOfRust.M Value t ind
+R8070:8081 RocqOfRust.M Value StructRecord constr
+R8083:8093 RocqOfRust.M <> constructor:115 var
+R8095:8100 RocqOfRust.M <> consts:116 var
+R8102:8104 RocqOfRust.M <> tys:117 var
+R8107:8121 RocqOfRust.M List sort_assoc def
+R8123:8128 RocqOfRust.M <> fields:118 var
+R8144:8157 RocqOfRust.M Value mkStructRecord def
+def 8337:8346 Value read_index
+R8357:8363 RocqOfRust.M Value t ind
+binder 8349:8353 <> value:119
+R8375:8389 RocqOfRust.M Pointer.Index t ind
+binder 8367:8371 <> index:120
+R8394:8399 Corelib.Init.Datatypes <> option ind
+R8401:8407 RocqOfRust.M Value t ind
+R8422:8426 RocqOfRust.M <> index:120 var
+R8439:8457 RocqOfRust.M Pointer.Index Tuple constr
+R8480:8484 RocqOfRust.M <> value:119 var
+R8499:8503 RocqOfRust.M Value Tuple constr
+R8515:8528 Stdlib.Lists.List <> nth_error def
+R8538:8545 Stdlib.ZArith.BinInt Z to_nat def
+R8547:8551 RocqOfRust.M <> index:120 var
+R8567:8570 Corelib.Init.Datatypes <> None constr
+R8588:8606 RocqOfRust.M Pointer.Index Array constr
+R8629:8633 RocqOfRust.M <> value:119 var
+R8648:8652 RocqOfRust.M Value Array constr
+R8664:8677 Stdlib.Lists.List <> nth_error def
+R8687:8694 Stdlib.ZArith.BinInt Z to_nat def
+R8696:8700 RocqOfRust.M <> index:120 var
+R8716:8719 Corelib.Init.Datatypes <> None constr
+R8737:8762 RocqOfRust.M Pointer.Index StructRecord constr
+R8797:8801 RocqOfRust.M <> value:119 var
+R8816:8827 RocqOfRust.M Value StructRecord constr
+R8859:8876 Corelib.Strings.PrimString <> compare prim
+R8907:8908 Corelib.Init.Datatypes <> Eq constr
+R8913:8922 RocqOfRust.M List assoc def
+R8952:8955 Corelib.Init.Datatypes <> None constr
+R8982:8985 Corelib.Init.Datatypes <> None constr
+R9003:9027 RocqOfRust.M Pointer.Index StructTuple constr
+R9062:9066 RocqOfRust.M <> value:119 var
+R9081:9091 RocqOfRust.M Value StructTuple constr
+R9123:9140 Corelib.Strings.PrimString <> compare prim
+R9171:9172 Corelib.Init.Datatypes <> Eq constr
+R9177:9190 Stdlib.Lists.List <> nth_error def
+R9200:9207 Stdlib.ZArith.BinInt Z to_nat def
+R9209:9213 RocqOfRust.M <> index:120 var
+R9231:9234 Corelib.Init.Datatypes <> None constr
+R9261:9264 Corelib.Init.Datatypes <> None constr
+def 9415:9425 Value write_index
+R9442:9448 RocqOfRust.M Value t ind
+binder 9434:9438 <> value:126
+R9460:9474 RocqOfRust.M Pointer.Index t ind
+binder 9452:9456 <> index:127
+R9487:9493 RocqOfRust.M Value t ind
+binder 9478:9483 <> update:128
+R9504:9509 Corelib.Init.Datatypes <> option ind
+R9511:9517 RocqOfRust.M Value t ind
+R9532:9536 RocqOfRust.M <> index:127 var
+R9549:9567 RocqOfRust.M Pointer.Index Tuple constr
+R9590:9594 RocqOfRust.M <> value:126 var
+R9609:9613 RocqOfRust.M Value Tuple constr
+R9625:9628 Corelib.Init.Datatypes <> Some constr
+R9631:9635 RocqOfRust.M Value Tuple constr
+R9638:9652 RocqOfRust.M List replace_at def
+R9678:9683 RocqOfRust.M <> update:128 var
+R9662:9669 Stdlib.ZArith.BinInt Z to_nat def
+R9671:9675 RocqOfRust.M <> index:127 var
+R9700:9703 Corelib.Init.Datatypes <> None constr
+R9721:9739 RocqOfRust.M Pointer.Index Array constr
+R9762:9766 RocqOfRust.M <> value:126 var
+R9781:9785 RocqOfRust.M Value Array constr
+R9811:9824 Stdlib.Lists.List <> nth_error def
+R9834:9841 Stdlib.ZArith.BinInt Z to_nat def
+R9843:9847 RocqOfRust.M <> index:127 var
+R9865:9868 Corelib.Init.Datatypes <> Some constr
+R9875:9878 Corelib.Init.Datatypes <> Some constr
+R9881:9885 RocqOfRust.M Value Array constr
+R9888:9902 RocqOfRust.M List replace_at def
+R9928:9933 RocqOfRust.M <> update:128 var
+R9912:9919 Stdlib.ZArith.BinInt Z to_nat def
+R9921:9925 RocqOfRust.M <> index:127 var
+R9947:9950 Corelib.Init.Datatypes <> None constr
+R9955:9958 Corelib.Init.Datatypes <> None constr
+R9985:9988 Corelib.Init.Datatypes <> None constr
+R10006:10031 RocqOfRust.M Pointer.Index StructRecord constr
+R10066:10070 RocqOfRust.M <> value:126 var
+R10085:10096 RocqOfRust.M Value StructRecord constr
+R10135:10152 Corelib.Strings.PrimString <> compare prim
+R10183:10184 Corelib.Init.Datatypes <> Eq constr
+R10189:10192 Corelib.Init.Datatypes <> Some constr
+R10195:10206 RocqOfRust.M Value StructRecord constr
+R10222:10239 RocqOfRust.M List assoc_replace def
+R10254:10259 RocqOfRust.M <> update:128 var
+R10278:10281 Corelib.Init.Datatypes <> None constr
+R10308:10311 Corelib.Init.Datatypes <> None constr
+R10329:10353 RocqOfRust.M Pointer.Index StructTuple constr
+R10388:10392 RocqOfRust.M <> value:126 var
+R10407:10417 RocqOfRust.M Value StructTuple constr
+R10456:10473 Corelib.Strings.PrimString <> compare prim
+R10504:10505 Corelib.Init.Datatypes <> Eq constr
+R10510:10513 Corelib.Init.Datatypes <> Some constr
+R10516:10526 RocqOfRust.M Value StructTuple constr
+R10542:10556 RocqOfRust.M List replace_at def
+R10582:10587 RocqOfRust.M <> update:128 var
+R10566:10573 Stdlib.ZArith.BinInt Z to_nat def
+R10575:10579 RocqOfRust.M <> index:127 var
+R10606:10609 Corelib.Init.Datatypes <> None constr
+R10636:10639 Corelib.Init.Datatypes <> None constr
+R10664:10668 RocqOfRust.M Value <> mod
+mod 10679:10687 <> Primitive
+ind 10702:10702 Primitive t
+constr 10717:10726 Primitive StateAlloc
+constr 10770:10778 Primitive StateRead
+constr 10808:10817 Primitive StateWrite
+constr 10869:10881 Primitive GetSubPointer
+constr 10941:10951 Primitive GetFunction
+constr 11043:11063 Primitive GetAssociatedFunction
+constr 11171:11184 Primitive GetTraitMethod
+R10738:10741 RocqOfRust.M Ty t defax
+binder 10733:10734 <> ty:136
+R10757:10763 RocqOfRust.M Value t ind
+binder 10749:10753 <> value:137
+R10795:10801 RocqOfRust.M Value t ind
+binder 10785:10791 <> pointer:138
+R10834:10840 RocqOfRust.M Value t ind
+binder 10824:10830 <> pointer:139
+R10856:10862 RocqOfRust.M Value t ind
+binder 10848:10852 <> value:140
+R10898:10904 RocqOfRust.M Value t ind
+binder 10888:10894 <> pointer:141
+R10920:10934 RocqOfRust.M Pointer.Index t ind
+binder 10912:10916 <> index:142
+R10965:10970 Corelib.Strings.PrimString <> string prim
+binder 10958:10961 <> path:143
+R10995:10998 Corelib.Init.Datatypes <> list ind
+R11000:11006 RocqOfRust.M Value t ind
+binder 10978:10991 <> generic_consts:144
+R11028:11031 Corelib.Init.Datatypes <> list ind
+R11033:11036 RocqOfRust.M Ty t defax
+binder 11014:11024 <> generic_tys:145
+R11075:11078 RocqOfRust.M Ty t defax
+binder 11070:11071 <> ty:146
+R11093:11098 Corelib.Strings.PrimString <> string prim
+binder 11086:11089 <> name:147
+R11123:11126 Corelib.Init.Datatypes <> list ind
+R11128:11134 RocqOfRust.M Value t ind
+binder 11106:11119 <> generic_consts:148
+R11156:11159 Corelib.Init.Datatypes <> list ind
+R11161:11164 RocqOfRust.M Ty t defax
+binder 11142:11152 <> generic_tys:149
+R11199:11204 Corelib.Strings.PrimString <> string prim
+binder 11191:11195 <> trait:150
+R11222:11225 RocqOfRust.M Ty t defax
+binder 11212:11218 <> self_ty:151
+R11248:11251 Corelib.Init.Datatypes <> list ind
+R11253:11259 RocqOfRust.M Value t ind
+binder 11233:11244 <> trait_consts:152
+R11279:11282 Corelib.Init.Datatypes <> list ind
+R11284:11287 RocqOfRust.M Ty t defax
+binder 11267:11275 <> trait_tys:153
+R11304:11309 Corelib.Strings.PrimString <> string prim
+binder 11295:11300 <> method:154
+R11334:11337 Corelib.Init.Datatypes <> list ind
+R11339:11345 RocqOfRust.M Value t ind
+binder 11317:11330 <> generic_consts:155
+R11367:11370 Corelib.Init.Datatypes <> list ind
+R11372:11375 RocqOfRust.M Ty t defax
+binder 11353:11363 <> generic_tys:156
+scheme 10702:10702 Primitive t_rect
+scheme 10702:10702 Primitive t_ind
+scheme 10702:10702 Primitive t_rec
+scheme 10702:10702 Primitive t_sind
+R11383:11391 RocqOfRust.M Primitive <> mod
+mod 11402:11410 <> LogicalOp
+ind 11425:11425 LogicalOp t
+constr 11440:11442 LogicalOp And
+constr 11448:11449 LogicalOp Or
+scheme 11425:11425 LogicalOp t_rect
+scheme 11425:11425 LogicalOp t_ind
+scheme 11425:11425 LogicalOp t_rec
+scheme 11425:11425 LogicalOp t_sind
+R11456:11464 RocqOfRust.M LogicalOp <> mod
+mod 11475:11478 <> LowM
+ind 11493:11493 LowM t
+constr 11518:11521 LowM Pure
+constr 11539:11551 LowM CallPrimitive
+constr 11604:11614 LowM CallClosure
+constr 11689:11701 LowM CallLogicalOp
+constr 11769:11771 LowM Let
+constr 11814:11821 LowM LetAlloc
+constr 11864:11867 LowM Loop
+constr 11913:11922 LowM MatchTuple
+constr 11972:11981 LowM IfThenElse
+constr 12059:12068 LowM Impossible
+binder 11496:11496 <> A:159
+R11532:11532 RocqOfRust.M <> A:159 var
+binder 11524:11528 <> value:162
+R11566:11576 RocqOfRust.M Primitive t ind
+binder 11554:11562 <> primitive:163
+R11591:11594 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11584:11590 RocqOfRust.M Value t ind
+R11595:11595 RocqOfRust.M <> t:160 ind
+R11597:11597 RocqOfRust.M <> A:159 var
+binder 11580:11580 <> k:164
+R11622:11625 RocqOfRust.M Ty t defax
+binder 11617:11618 <> ty:165
+R11639:11645 RocqOfRust.M Value t ind
+binder 11629:11635 <> closure:166
+R11656:11659 Corelib.Init.Datatypes <> list ind
+R11661:11667 RocqOfRust.M Value t ind
+binder 11649:11652 <> args:167
+R11676:11679 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11675:11675 RocqOfRust.M <> A:159 var
+R11680:11680 RocqOfRust.M <> t:160 ind
+R11682:11682 RocqOfRust.M <> A:159 var
+binder 11671:11671 <> k:168
+R11709:11719 RocqOfRust.M LogicalOp t ind
+binder 11704:11705 <> op:169
+R11729:11735 RocqOfRust.M Value t ind
+binder 11723:11725 <> lhs:170
+R11745:11745 RocqOfRust.M <> t:160 ind
+R11747:11747 RocqOfRust.M <> A:159 var
+binder 11739:11741 <> rhs:171
+R11756:11759 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11755:11755 RocqOfRust.M <> A:159 var
+R11760:11760 RocqOfRust.M <> t:160 ind
+R11762:11762 RocqOfRust.M <> A:159 var
+binder 11751:11751 <> k:172
+R11779:11782 RocqOfRust.M Ty t defax
+binder 11774:11775 <> ty:173
+R11790:11790 RocqOfRust.M <> t:160 ind
+R11792:11792 RocqOfRust.M <> A:159 var
+binder 11786:11786 <> e:174
+R11801:11804 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11800:11800 RocqOfRust.M <> A:159 var
+R11805:11805 RocqOfRust.M <> t:160 ind
+R11807:11807 RocqOfRust.M <> A:159 var
+binder 11796:11796 <> k:175
+R11829:11832 RocqOfRust.M Ty t defax
+binder 11824:11825 <> ty:176
+R11840:11840 RocqOfRust.M <> t:160 ind
+R11842:11842 RocqOfRust.M <> A:159 var
+binder 11836:11836 <> e:177
+R11851:11854 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11850:11850 RocqOfRust.M <> A:159 var
+R11855:11855 RocqOfRust.M <> t:160 ind
+R11857:11857 RocqOfRust.M <> A:159 var
+binder 11846:11846 <> k:178
+R11875:11878 RocqOfRust.M Ty t defax
+binder 11870:11871 <> ty:179
+R11889:11889 RocqOfRust.M <> t:160 ind
+R11891:11891 RocqOfRust.M <> A:159 var
+binder 11882:11885 <> body:180
+R11900:11903 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11899:11899 RocqOfRust.M <> A:159 var
+R11904:11904 RocqOfRust.M <> t:160 ind
+R11906:11906 RocqOfRust.M <> A:159 var
+binder 11895:11895 <> k:181
+R11933:11939 RocqOfRust.M Value t ind
+binder 11925:11929 <> tuple:182
+R11959:11962 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R11947:11950 Corelib.Init.Datatypes <> list ind
+R11952:11958 RocqOfRust.M Value t ind
+R11963:11963 RocqOfRust.M <> t:160 ind
+R11965:11965 RocqOfRust.M <> A:159 var
+binder 11943:11943 <> k:183
+R11989:11992 RocqOfRust.M Ty t defax
+binder 11984:11985 <> ty:184
+R12003:12009 RocqOfRust.M Value t ind
+binder 11996:11999 <> cond:185
+R12021:12021 RocqOfRust.M <> t:160 ind
+R12023:12023 RocqOfRust.M <> A:159 var
+binder 12013:12017 <> then_:186
+R12035:12035 RocqOfRust.M <> t:160 ind
+R12037:12037 RocqOfRust.M <> A:159 var
+binder 12027:12031 <> else_:187
+R12046:12049 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R12045:12045 RocqOfRust.M <> A:159 var
+R12050:12050 RocqOfRust.M <> t:160 ind
+R12052:12052 RocqOfRust.M <> A:159 var
+binder 12041:12041 <> k:188
+binder 12071:12071 <> T:189
+R12091:12091 RocqOfRust.M <> T:189 var
+binder 12081:12087 <> payload:190
+scheme 11493:11493 LowM t_rect
+scheme 11493:11493 LowM t_ind
+scheme 11493:11493 LowM t_rec
+scheme 11493:11493 LowM t_sind
+R12107:12110 RocqOfRust.M LowM Pure constr
+R12107:12110 RocqOfRust.M LowM Pure constr
+R12129:12141 RocqOfRust.M LowM CallPrimitive constr
+R12129:12141 RocqOfRust.M LowM CallPrimitive constr
+R12160:12170 RocqOfRust.M LowM CallClosure constr
+R12160:12170 RocqOfRust.M LowM CallClosure constr
+R12189:12201 RocqOfRust.M LowM CallLogicalOp constr
+R12189:12201 RocqOfRust.M LowM CallLogicalOp constr
+R12220:12222 RocqOfRust.M LowM Let constr
+R12220:12222 RocqOfRust.M LowM Let constr
+R12241:12248 RocqOfRust.M LowM LetAlloc constr
+R12241:12248 RocqOfRust.M LowM LetAlloc constr
+R12267:12270 RocqOfRust.M LowM Loop constr
+R12267:12270 RocqOfRust.M LowM Loop constr
+R12289:12298 RocqOfRust.M LowM MatchTuple constr
+R12289:12298 RocqOfRust.M LowM MatchTuple constr
+R12317:12326 RocqOfRust.M LowM IfThenElse constr
+R12317:12326 RocqOfRust.M LowM IfThenElse constr
+R12345:12354 RocqOfRust.M LowM Impossible constr
+R12345:12354 RocqOfRust.M LowM Impossible constr
+def 12375:12378 LowM let_
+binder 12381:12381 <> A:191
+R12396:12396 RocqOfRust.M LowM t ind
+R12398:12398 RocqOfRust.M <> A:191 var
+binder 12391:12392 <> e1:192
+R12408:12411 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R12407:12407 RocqOfRust.M <> A:191 var
+R12412:12412 RocqOfRust.M LowM t ind
+R12414:12414 RocqOfRust.M <> A:191 var
+binder 12402:12403 <> e2:193
+R12419:12419 RocqOfRust.M LowM t ind
+R12421:12421 RocqOfRust.M <> A:191 var
+R12436:12437 RocqOfRust.M <> e1:192 var
+R12450:12453 RocqOfRust.M LowM Pure constr
+R12460:12461 RocqOfRust.M <> e2:193 var
+R12471:12483 RocqOfRust.M LowM CallPrimitive constr
+R12506:12518 RocqOfRust.M LowM CallPrimitive constr
+binder 12535:12535 <> v:196
+R12540:12543 RocqOfRust.M <> let_:194 def
+R12551:12552 RocqOfRust.M <> e2:193 var
+R12548:12548 RocqOfRust.M <> v:196 var
+R12561:12571 RocqOfRust.M LowM CallClosure constr
+R12594:12604 RocqOfRust.M LowM CallClosure constr
+binder 12621:12621 <> v:197
+R12626:12629 RocqOfRust.M <> let_:194 def
+R12637:12638 RocqOfRust.M <> e2:193 var
+R12634:12634 RocqOfRust.M <> v:197 var
+R12647:12659 RocqOfRust.M LowM CallLogicalOp constr
+R12683:12695 RocqOfRust.M LowM CallLogicalOp constr
+binder 12713:12713 <> v:198
+R12718:12721 RocqOfRust.M <> let_:194 def
+R12729:12730 RocqOfRust.M <> e2:193 var
+R12726:12726 RocqOfRust.M <> v:198 var
+R12739:12741 RocqOfRust.M LowM Let constr
+R12759:12761 RocqOfRust.M LowM Let constr
+binder 12773:12773 <> v:199
+R12778:12781 RocqOfRust.M <> let_:194 def
+R12789:12790 RocqOfRust.M <> e2:193 var
+R12786:12786 RocqOfRust.M <> v:199 var
+R12799:12802 RocqOfRust.M LowM Loop constr
+R12823:12826 RocqOfRust.M LowM Loop constr
+binder 12841:12841 <> v:200
+R12846:12849 RocqOfRust.M <> let_:194 def
+R12857:12858 RocqOfRust.M <> e2:193 var
+R12854:12854 RocqOfRust.M <> v:200 var
+R12867:12874 RocqOfRust.M LowM LetAlloc constr
+R12892:12899 RocqOfRust.M LowM LetAlloc constr
+binder 12911:12911 <> v:201
+R12916:12919 RocqOfRust.M <> let_:194 def
+R12927:12928 RocqOfRust.M <> e2:193 var
+R12924:12924 RocqOfRust.M <> v:201 var
+R12937:12946 RocqOfRust.M LowM MatchTuple constr
+R12965:12974 RocqOfRust.M LowM MatchTuple constr
+binder 12987:12992 <> fields:202
+R12997:13000 RocqOfRust.M <> let_:194 def
+R13013:13014 RocqOfRust.M <> e2:193 var
+R13005:13010 RocqOfRust.M <> fields:202 var
+R13023:13032 RocqOfRust.M LowM IfThenElse constr
+R13065:13074 RocqOfRust.M LowM IfThenElse constr
+binder 13101:13101 <> v:203
+R13106:13109 RocqOfRust.M <> let_:194 def
+R13117:13118 RocqOfRust.M <> e2:193 var
+R13114:13114 RocqOfRust.M <> v:203 var
+R13127:13136 RocqOfRust.M LowM Impossible constr
+R13149:13158 RocqOfRust.M LowM Impossible constr
+R13181:13184 RocqOfRust.M LowM <> mod
+mod 13195:13203 <> Exception
+ind 13218:13218 Exception t
+constr 13273:13278 Exception Return
+constr 13348:13355 Exception Continue
+constr 13404:13408 Exception Break
+constr 13488:13497 Exception BreakMatch
+R13289:13295 RocqOfRust.M Value t ind
+binder 13281:13285 <> value:206
+R13300:13300 RocqOfRust.M <> t:204 ind
+R13359:13359 RocqOfRust.M <> t:204 ind
+R13412:13412 RocqOfRust.M <> t:204 ind
+R13501:13501 RocqOfRust.M <> t:204 ind
+scheme 13218:13218 Exception t_rect
+scheme 13218:13218 Exception t_ind
+scheme 13218:13218 Exception t_rec
+scheme 13218:13218 Exception t_sind
+def 13518:13526 Exception is_return
+R13541:13541 RocqOfRust.M Exception t ind
+binder 13529:13537 <> exception:207
+R13546:13551 Corelib.Init.Datatypes <> option ind
+R13553:13559 RocqOfRust.M Value t ind
+R13574:13582 RocqOfRust.M <> exception:207 var
+R13595:13600 RocqOfRust.M Exception Return constr
+R13611:13614 Corelib.Init.Datatypes <> Some constr
+R13633:13636 Corelib.Init.Datatypes <> None constr
+def 13661:13671 Exception is_continue
+R13686:13686 RocqOfRust.M Exception t ind
+binder 13674:13682 <> exception:209
+R13691:13694 Corelib.Init.Datatypes <> bool ind
+R13709:13717 RocqOfRust.M <> exception:209 var
+R13730:13737 RocqOfRust.M Exception Continue constr
+R13742:13745 Corelib.Init.Datatypes <> true constr
+R13758:13762 Corelib.Init.Datatypes <> false constr
+def 13787:13794 Exception is_break
+R13809:13809 RocqOfRust.M Exception t ind
+binder 13797:13805 <> exception:211
+R13814:13817 Corelib.Init.Datatypes <> bool ind
+R13832:13840 RocqOfRust.M <> exception:211 var
+R13853:13857 RocqOfRust.M Exception Break constr
+R13862:13865 Corelib.Init.Datatypes <> true constr
+R13878:13882 Corelib.Init.Datatypes <> false constr
+def 13907:13920 Exception is_break_match
+R13935:13935 RocqOfRust.M Exception t ind
+binder 13923:13931 <> exception:213
+R13940:13943 Corelib.Init.Datatypes <> bool ind
+R13958:13966 RocqOfRust.M <> exception:213 var
+R13979:13988 RocqOfRust.M Exception BreakMatch constr
+R13993:13996 Corelib.Init.Datatypes <> true constr
+R14009:14013 Corelib.Init.Datatypes <> false constr
+R14028:14036 RocqOfRust.M Exception <> mod
+def 14051:14051 <> M
+R14064:14069 RocqOfRust.M <> t ind
+R14079:14081 Corelib.Init.Datatypes <> ::type_scope:x_'+'_x not
+R14072:14078 RocqOfRust.M <> t ind
+R14082:14092 RocqOfRust.M <> t ind
+def 14108:14111 <> pure
+R14118:14124 RocqOfRust.M <> t ind
+binder 14114:14114 <> v:215
+R14129:14129 RocqOfRust.M <> M def
+R14136:14144 RocqOfRust.M <> Pure constr
+R14147:14149 Corelib.Init.Datatypes <> inl constr
+R14151:14151 RocqOfRust.M <> v:215 var
+R14165:14168 RocqOfRust.M <> pure def
+def 14185:14188 <> let_
+R14196:14196 RocqOfRust.M <> M def
+binder 14191:14192 <> e1:216
+R14212:14215 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R14205:14211 RocqOfRust.M <> t ind
+R14216:14216 RocqOfRust.M <> M def
+binder 14200:14201 <> e2:217
+R14221:14221 RocqOfRust.M <> M def
+R14228:14236 RocqOfRust.M <> let_ def
+binder 14246:14247 <> v1:218
+R14260:14261 RocqOfRust.M <> v1:218 var
+R14272:14274 Corelib.Init.Datatypes <> inl constr
+R14282:14283 RocqOfRust.M <> e2:217 var
+R14285:14286 RocqOfRust.M <> v1:218 var
+R14292:14294 Corelib.Init.Datatypes <> inr constr
+R14305:14313 RocqOfRust.M <> Pure constr
+R14316:14318 Corelib.Init.Datatypes <> inr constr
+R14238:14239 RocqOfRust.M <> e1:216 var
+def 14347:14354 <> let_user
+R14362:14365 RocqOfRust.M <> t defax
+binder 14357:14358 <> ty:220
+R14374:14380 RocqOfRust.M <> t ind
+binder 14369:14370 <> e1:221
+R14396:14399 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R14389:14395 RocqOfRust.M <> t ind
+R14400:14406 RocqOfRust.M <> t ind
+binder 14384:14385 <> e2:222
+R14411:14417 RocqOfRust.M <> t ind
+R14424:14425 RocqOfRust.M <> e2:222 var
+R14427:14428 RocqOfRust.M <> e1:221 var
+def 14443:14458 <> let_user_monadic
+R14466:14469 RocqOfRust.M <> t defax
+binder 14461:14462 <> ty:223
+R14478:14478 RocqOfRust.M <> M def
+binder 14473:14474 <> e1:224
+R14494:14497 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R14487:14493 RocqOfRust.M <> t ind
+R14498:14498 RocqOfRust.M <> M def
+binder 14482:14483 <> e2:225
+R14503:14503 RocqOfRust.M <> M def
+R14510:14522 RocqOfRust.M <> LetAlloc constr
+binder 14535:14536 <> v1:226
+R14549:14550 RocqOfRust.M <> v1:226 var
+R14561:14563 Corelib.Init.Datatypes <> inl constr
+R14571:14572 RocqOfRust.M <> e2:225 var
+R14574:14575 RocqOfRust.M <> v1:226 var
+R14581:14583 Corelib.Init.Datatypes <> inr constr
+R14594:14602 RocqOfRust.M <> Pure constr
+R14605:14607 Corelib.Init.Datatypes <> inr constr
+R14527:14528 RocqOfRust.M <> e1:224 var
+R14524:14525 RocqOfRust.M <> ty:223 var
+R14634:14649 RocqOfRust.M <> let_user_monadic def
+mod 14662:14680 <> PolymorphicFunction
+def 14696:14696 PolymorphicFunction t
+R14723:14726 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R14711:14714 Corelib.Init.Datatypes <> list ind
+R14716:14722 RocqOfRust.M Value t ind
+R14736:14739 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R14727:14730 Corelib.Init.Datatypes <> list ind
+R14732:14735 RocqOfRust.M Ty t defax
+R14752:14755 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R14740:14743 Corelib.Init.Datatypes <> list ind
+R14745:14751 RocqOfRust.M Value t ind
+R14756:14756 RocqOfRust.M <> M def
+R14763:14781 RocqOfRust.M PolymorphicFunction <> mod
+mod 14792:14804 <> InstanceField
+ind 14819:14819 InstanceField t
+constr 14834:14839 InstanceField Method
+constr 14878:14879 InstanceField Ty
+R14851:14871 RocqOfRust.M PolymorphicFunction t def
+binder 14842:14847 <> method:230
+R14887:14890 RocqOfRust.M Ty t defax
+binder 14882:14883 <> ty:231
+scheme 14819:14819 InstanceField t_rect
+scheme 14819:14819 InstanceField t_ind
+scheme 14819:14819 InstanceField t_rec
+scheme 14819:14819 InstanceField t_sind
+R14898:14910 RocqOfRust.M InstanceField <> mod
+mod 14921:14928 <> Instance
+def 14944:14944 Instance t
+R14955:14958 Corelib.Init.Datatypes <> list ind
+R14967:14969 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R14961:14966 Corelib.Strings.PrimString <> string prim
+R14970:14984 RocqOfRust.M InstanceField t ind
+R14992:14999 RocqOfRust.M Instance <> mod
+ax 15013:15027 <> IsTraitInstance
+R15058:15063 Corelib.Strings.PrimString <> string prim
+binder 15045:15054 <> trait_name:232
+R15086:15089 Corelib.Init.Datatypes <> list ind
+R15091:15097 RocqOfRust.M <> t ind
+binder 15071:15082 <> trait_consts:233
+R15117:15120 Corelib.Init.Datatypes <> list ind
+R15122:15125 RocqOfRust.M <> t defax
+binder 15105:15113 <> trait_tys:234
+R15140:15143 RocqOfRust.M <> t defax
+binder 15133:15136 <> Self:235
+R15162:15171 RocqOfRust.M <> t def
+binder 15151:15158 <> instance:236
+mod 15191:15200 <> IsFunction
+ax 15215:15215 IsFunction t
+R15244:15249 Corelib.Strings.PrimString <> string prim
+binder 15231:15240 <> trait_name:239
+R15268:15288 RocqOfRust.M PolymorphicFunction t def
+binder 15257:15264 <> function:240
+rec 15311:15311 IsFunction C
+proj 15398:15408 IsFunction is_function
+R15331:15336 Corelib.Strings.PrimString <> string prim
+binder 15318:15327 <> trait_name:243
+R15355:15375 RocqOfRust.M PolymorphicFunction t def
+binder 15344:15351 <> function:244
+R15412:15412 RocqOfRust.M IsFunction t defax
+R15414:15423 RocqOfRust.M <> trait_name:243 var
+R15425:15432 RocqOfRust.M <> function:244 var
+R15444:15453 RocqOfRust.M IsFunction <> mod
+mod 15464:15483 <> IsAssociatedFunction
+ax 15498:15498 IsAssociatedFunction t
+R15521:15524 RocqOfRust.M Ty t defax
+binder 15514:15517 <> Self:247
+R15548:15553 Corelib.Strings.PrimString <> string prim
+binder 15532:15544 <> function_name:248
+R15572:15592 RocqOfRust.M PolymorphicFunction t def
+binder 15561:15568 <> function:249
+rec 15615:15615 IsAssociatedFunction C
+proj 15723:15744 IsAssociatedFunction is_associated_function
+R15629:15632 RocqOfRust.M Ty t defax
+binder 15622:15625 <> Self:252
+R15656:15661 Corelib.Strings.PrimString <> string prim
+binder 15640:15652 <> function_name:253
+R15680:15700 RocqOfRust.M PolymorphicFunction t def
+binder 15669:15676 <> function:254
+R15748:15748 RocqOfRust.M IsAssociatedFunction t defax
+R15750:15753 RocqOfRust.M <> Self:252 var
+R15755:15767 RocqOfRust.M <> function_name:253 var
+R15769:15776 RocqOfRust.M <> function:254 var
+R15788:15807 RocqOfRust.M IsAssociatedFunction <> mod
+ax 15821:15836 <> IsProvidedMethod
+R15867:15872 Corelib.Strings.PrimString <> string prim
+binder 15854:15863 <> trait_name:257
+R15894:15899 Corelib.Strings.PrimString <> string prim
+binder 15880:15890 <> method_name:258
+R15920:15923 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R15916:15919 RocqOfRust.M <> t defax
+R15924:15944 RocqOfRust.M <> t def
+binder 15907:15912 <> method:259
+ax 15967:15980 <> IsDiscriminant
+R16013:16018 Corelib.Strings.PrimString <> string prim
+binder 15998:16009 <> variant_name:262
+R16041:16041 Corelib.Numbers.BinNums <> Z ind
+binder 16026:16037 <> discriminant:263
+mod 16061:16071 <> TraitHeader
+rec 16083:16083 TraitHeader t
+proj 16100:16109 TraitHeader trait_name
+proj 16125:16136 TraitHeader trait_consts
+proj 16158:16166 TraitHeader trait_tys
+proj 16185:16191 TraitHeader self_ty
+R16113:16118 Corelib.Strings.PrimString <> string prim
+R16140:16143 Corelib.Init.Datatypes <> list ind
+R16145:16151 RocqOfRust.M Value t ind
+R16170:16173 Corelib.Init.Datatypes <> list ind
+R16175:16178 RocqOfRust.M Ty t defax
+R16195:16198 RocqOfRust.M Ty t defax
+R16210:16220 RocqOfRust.M TraitHeader <> mod
+mod 16231:16243 <> IsTraitMethod
+ind 16258:16258 IsTraitMethod t
+constr 16366:16372 IsTraitMethod Defined
+constr 16730:16737 IsTraitMethod Provided
+R16275:16287 RocqOfRust.M TraitHeader t rec
+binder 16267:16271 <> trait:271
+R16311:16316 Corelib.Strings.PrimString <> string prim
+binder 16297:16307 <> method_name:272
+R16327:16327 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16349:16353 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16328:16348 RocqOfRust.M PolymorphicFunction t def
+R16386:16395 RocqOfRust.M Instance t def
+binder 16375:16382 <> instance:275
+R16408:16428 RocqOfRust.M PolymorphicFunction t def
+binder 16399:16404 <> method:276
+R16615:16622 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16437:16453 RocqOfRust.M <> IsTraitInstance defax
+R16468:16489 RocqOfRust.M TraitHeader trait_name proj
+R16461:16465 RocqOfRust.M <> trait:271 var
+R16505:16528 RocqOfRust.M TraitHeader trait_consts proj
+R16498:16502 RocqOfRust.M <> trait:271 var
+R16544:16564 RocqOfRust.M TraitHeader trait_tys proj
+R16537:16541 RocqOfRust.M <> trait:271 var
+R16580:16598 RocqOfRust.M TraitHeader self_ty proj
+R16573:16577 RocqOfRust.M <> trait:271 var
+R16607:16614 RocqOfRust.M <> instance:275 var
+R16691:16698 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16654:16656 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R16623:16632 RocqOfRust.M List assoc def
+R16643:16653 RocqOfRust.M <> method_name:272 var
+R16634:16641 RocqOfRust.M <> instance:275 var
+R16657:16660 Corelib.Init.Datatypes <> Some constr
+R16663:16682 RocqOfRust.M InstanceField Method constr
+R16684:16689 RocqOfRust.M <> method:276 var
+R16699:16699 RocqOfRust.M <> t:273 ind
+R16719:16724 RocqOfRust.M <> method:276 var
+R16707:16717 RocqOfRust.M <> method_name:272 var
+R16701:16705 RocqOfRust.M <> trait:271 var
+R16751:16760 RocqOfRust.M Instance t def
+binder 16740:16747 <> instance:277
+R16777:16780 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16773:16776 RocqOfRust.M Ty t defax
+R16781:16801 RocqOfRust.M PolymorphicFunction t def
+binder 16764:16769 <> method:278
+R16988:16995 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R16810:16826 RocqOfRust.M <> IsTraitInstance defax
+R16841:16862 RocqOfRust.M TraitHeader trait_name proj
+R16834:16838 RocqOfRust.M <> trait:271 var
+R16878:16901 RocqOfRust.M TraitHeader trait_consts proj
+R16871:16875 RocqOfRust.M <> trait:271 var
+R16917:16937 RocqOfRust.M TraitHeader trait_tys proj
+R16910:16914 RocqOfRust.M <> trait:271 var
+R16953:16971 RocqOfRust.M TraitHeader self_ty proj
+R16946:16950 RocqOfRust.M <> trait:271 var
+R16980:16987 RocqOfRust.M <> instance:277 var
+R17034:17041 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17027:17029 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R16996:17005 RocqOfRust.M List assoc def
+R17016:17026 RocqOfRust.M <> method_name:272 var
+R17007:17014 RocqOfRust.M <> instance:277 var
+R17030:17033 Corelib.Init.Datatypes <> None constr
+R17110:17117 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17042:17059 RocqOfRust.M <> IsProvidedMethod defax
+R17068:17089 RocqOfRust.M TraitHeader trait_name proj
+R17061:17065 RocqOfRust.M <> trait:271 var
+R17092:17102 RocqOfRust.M <> method_name:272 var
+R17104:17109 RocqOfRust.M <> method:278 var
+R17118:17118 RocqOfRust.M <> t:273 ind
+R17139:17144 RocqOfRust.M <> method:278 var
+R17153:17171 RocqOfRust.M TraitHeader self_ty proj
+R17146:17150 RocqOfRust.M <> trait:271 var
+R17126:17136 RocqOfRust.M <> method_name:272 var
+R17120:17124 RocqOfRust.M <> trait:271 var
+scheme 16258:16258 IsTraitMethod t_rect
+scheme 16258:16258 IsTraitMethod t_ind
+scheme 16258:16258 IsTraitMethod t_rec
+scheme 16258:16258 IsTraitMethod t_sind
+rec 17185:17185 IsTraitMethod C
+proj 17301:17304 IsTraitMethod Make
+R17200:17212 RocqOfRust.M TraitHeader t rec
+binder 17192:17196 <> trait:279
+R17234:17239 Corelib.Strings.PrimString <> string prim
+binder 17220:17230 <> method_name:280
+R17256:17276 RocqOfRust.M PolymorphicFunction t def
+binder 17247:17252 <> method:281
+R17308:17308 RocqOfRust.M IsTraitMethod t ind
+R17310:17314 RocqOfRust.M <> trait:279 var
+R17316:17326 RocqOfRust.M <> method_name:280 var
+R17328:17333 RocqOfRust.M <> method:281 var
+R17345:17357 RocqOfRust.M IsTraitMethod <> mod
+def 17372:17392 <> IsTraitAssociatedType
+R17412:17417 Corelib.Strings.PrimString <> string prim
+binder 17399:17408 <> trait_name:284
+R17440:17443 Corelib.Init.Datatypes <> list ind
+R17445:17451 RocqOfRust.M <> t ind
+binder 17425:17436 <> trait_consts:285
+R17471:17474 Corelib.Init.Datatypes <> list ind
+R17476:17479 RocqOfRust.M <> t defax
+binder 17459:17467 <> trait_tys:286
+R17497:17500 RocqOfRust.M <> t defax
+binder 17487:17493 <> self_ty:287
+R17531:17536 Corelib.Strings.PrimString <> string prim
+binder 17508:17527 <> associated_type_name:288
+R17549:17552 RocqOfRust.M <> t defax
+binder 17544:17545 <> ty:289
+R17571:17577 Corelib.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+R17586:17591 Corelib.Init.Logic <> ::type_scope:'exists'_x_'..'_x_','_x not
+binder 17578:17585 <> instance:290
+R17660:17667 Corelib.Init.Logic <> ::type_scope:x_'/\'_x not
+R17592:17608 RocqOfRust.M <> IsTraitInstance defax
+R17610:17619 RocqOfRust.M <> trait_name:284 var
+R17621:17632 RocqOfRust.M <> trait_consts:285 var
+R17634:17642 RocqOfRust.M <> trait_tys:286 var
+R17644:17650 RocqOfRust.M <> self_ty:287 var
+R17652:17659 RocqOfRust.M <> instance:290 var
+R17708:17710 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R17668:17677 RocqOfRust.M <> assoc def
+R17688:17707 RocqOfRust.M <> associated_type_name:288 var
+R17679:17686 RocqOfRust.M <> instance:290 var
+R17711:17714 Corelib.Init.Datatypes <> Some constr
+R17717:17732 RocqOfRust.M <> Ty constr
+R17734:17735 RocqOfRust.M <> ty:289 var
+mod 17747:17752 <> Option
+def 17768:17770 Option map
+binder 17773:17773 <> A:291
+binder 17775:17775 <> B:292
+R17789:17794 Corelib.Init.Datatypes <> option ind
+R17796:17796 RocqOfRust.M <> A:291 var
+binder 17785:17785 <> x:293
+R17805:17808 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17804:17804 RocqOfRust.M <> A:291 var
+R17809:17809 RocqOfRust.M <> B:292 var
+binder 17800:17800 <> f:294
+R17814:17819 Corelib.Init.Datatypes <> option ind
+R17821:17821 RocqOfRust.M <> B:292 var
+R17836:17836 RocqOfRust.M <> x:293 var
+R17849:17852 Corelib.Init.Datatypes <> Some constr
+R17859:17862 Corelib.Init.Datatypes <> Some constr
+R17865:17865 RocqOfRust.M <> f:294 var
+R17867:17867 RocqOfRust.M <> x:293 var
+R17876:17879 Corelib.Init.Datatypes <> None constr
+R17884:17887 Corelib.Init.Datatypes <> None constr
+def 17912:17915 Option bind
+binder 17918:17918 <> A:296
+binder 17920:17920 <> B:297
+R17934:17939 Corelib.Init.Datatypes <> option ind
+R17941:17941 RocqOfRust.M <> A:296 var
+binder 17930:17930 <> x:298
+R17950:17953 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R17949:17949 RocqOfRust.M <> A:296 var
+R17954:17959 Corelib.Init.Datatypes <> option ind
+R17961:17961 RocqOfRust.M <> B:297 var
+binder 17945:17945 <> f:299
+R17966:17971 Corelib.Init.Datatypes <> option ind
+R17973:17973 RocqOfRust.M <> B:297 var
+R17988:17988 RocqOfRust.M <> x:298 var
+R18001:18004 Corelib.Init.Datatypes <> Some constr
+R18011:18011 RocqOfRust.M <> f:299 var
+R18013:18013 RocqOfRust.M <> x:298 var
+R18021:18024 Corelib.Init.Datatypes <> None constr
+R18029:18032 Corelib.Init.Datatypes <> None constr
+R18047:18052 RocqOfRust.M Option <> mod
+ax 18381:18383 <> run
+R18388:18391 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R18387:18387 RocqOfRust.M <> M def
+R18392:18398 RocqOfRust.M <> t ind
+mod 18409:18417 <> Notations
+R18462:18470 RocqOfRust.M LowM let_ def
+binder 18479:18479 <> a:303
+not 18431:18431 Notations :::'let-'_x_':='_x_'in'_x
+R18577:18580 RocqOfRust.M <> let_ def
+binder 18589:18589 <> a:304
+not 18546:18546 Notations :::'let*'_x_':='_x_'in'_x
+R18691:18694 RocqOfRust.M <> let_ def
+binder 18703:18703 <> a:305
+not 18656:18656 Notations :::'let*'_''''_x_':='_x_'in'_x
+R18823:18830 RocqOfRust.M <> let_user def
+binder 18842:18842 <> a:306
+not 18787:18787 Notations :::'let~'_x_':'_x_':='_x_'in'_x
+R18946:18961 RocqOfRust.M <> let_user_monadic def
+binder 18973:18973 <> a:307
+not 18909:18909 Notations :::'let*~'_x_':'_x_':='_x_'in'_x
+R19071:19073 RocqOfRust.M <> run defax
+not 19040:19040 Notations :::x_'(|'_x_','_'..'_','_x_'|)'
+R19145:19147 RocqOfRust.M <> run defax
+not 19128:19128 Notations :::x_'(||)'
+R19176:19184 RocqOfRust.M Notations <> mod
+R19194:19202 RocqOfRust.M Notations <> mod
+binder 19462:19462 <> v:308
+R19477:19477 RocqOfRust.M <> v:308 var
+binder 19462:19462 <> v:309
+R19477:19477 RocqOfRust.M <> v:309 var
+R20162:20166 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+R20168:20170 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+R20174:20177 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+R20180:20183 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+binder 20167:20167 <> v:310
+R20188:20188 RocqOfRust.M <> v:310 var
+R20162:20166 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+R20168:20170 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+R20174:20177 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+R20180:20183 RocqOfRust.M Notations :::'let~'_x_':'_x_':='_x_'in'_x not
+binder 20167:20167 <> v:311
+R20188:20188 RocqOfRust.M <> v:311 var
+R20682:20684 RocqOfRust.M <> run defax
+R20682:20684 RocqOfRust.M <> run defax
+R20986:20986 RocqOfRust.M <> M def
+R20986:20986 RocqOfRust.M <> M def
+R21017:21020 RocqOfRust.M <> pure def
+R20739:20741 RocqOfRust.M <> run defax
+R20739:20741 RocqOfRust.M <> run defax
+R20783:20786 RocqOfRust.M <> let_ def
+R20721:20723 RocqOfRust.M <> run defax
+R20206:20221 RocqOfRust.M <> let_user_monadic def
+R20469:20472 RocqOfRust.M <> let_ def
+binder 20379:20379 <> v:312
+R19495:19498 RocqOfRust.M <> let_ def
+R19743:19746 RocqOfRust.M <> let_ def
+binder 19653:19653 <> v:313
+def 21052:21056 <> raise
+R21071:21081 RocqOfRust.M <> t ind
+binder 21059:21067 <> exception:314
+R21086:21086 RocqOfRust.M <> M def
+R21093:21101 RocqOfRust.M <> Pure constr
+R21104:21106 Corelib.Init.Datatypes <> inr constr
+R21108:21116 RocqOfRust.M <> exception:314 var
+def 21132:21138 <> return_
+R21145:21151 RocqOfRust.M <> t ind
+binder 21141:21141 <> r:315
+R21156:21156 RocqOfRust.M <> M def
+R21163:21167 RocqOfRust.M <> raise def
+R21170:21185 RocqOfRust.M <> Return constr
+R21187:21187 RocqOfRust.M <> r:315 var
+def 21203:21210 <> continue
+R21214:21214 RocqOfRust.M <> M def
+R21221:21225 RocqOfRust.M <> raise def
+R21227:21244 RocqOfRust.M <> Continue constr
+def 21259:21263 <> break
+R21267:21267 RocqOfRust.M <> M def
+R21274:21278 RocqOfRust.M <> raise def
+R21280:21294 RocqOfRust.M <> Break constr
+def 21309:21319 <> break_match
+R21323:21323 RocqOfRust.M <> M def
+R21330:21334 RocqOfRust.M <> raise def
+R21336:21355 RocqOfRust.M <> BreakMatch constr
+def 21370:21381 <> call_closure
+R21389:21392 RocqOfRust.M <> t defax
+binder 21384:21385 <> ty:316
+R21400:21406 RocqOfRust.M <> t ind
+binder 21396:21396 <> f:317
+R21417:21420 Corelib.Init.Datatypes <> list ind
+R21422:21428 RocqOfRust.M <> t ind
+binder 21410:21413 <> args:318
+R21433:21433 RocqOfRust.M <> M def
+R21440:21455 RocqOfRust.M <> CallClosure constr
+R21467:21475 RocqOfRust.M <> Pure constr
+R21462:21465 RocqOfRust.M <> args:318 var
+R21460:21460 RocqOfRust.M <> f:317 var
+R21457:21458 RocqOfRust.M <> ty:316 var
+R21488:21499 RocqOfRust.M <> call_closure def
+def 21516:21530 <> call_logical_op
+R21538:21548 RocqOfRust.M <> t ind
+binder 21533:21534 <> op:319
+R21558:21564 RocqOfRust.M <> t ind
+binder 21552:21554 <> lhs:320
+R21574:21574 RocqOfRust.M <> M def
+binder 21568:21570 <> rhs:321
+R21579:21579 RocqOfRust.M <> M def
+R21586:21603 RocqOfRust.M <> CallLogicalOp constr
+R21616:21624 RocqOfRust.M <> Pure constr
+R21612:21614 RocqOfRust.M <> rhs:321 var
+R21608:21610 RocqOfRust.M <> lhs:320 var
+R21605:21606 RocqOfRust.M <> op:319 var
+R21637:21651 RocqOfRust.M <> call_logical_op def
+def 21668:21677 <> impossible
+binder 21680:21680 <> A:322
+R21700:21700 RocqOfRust.M <> A:322 var
+binder 21690:21696 <> payload:323
+R21705:21705 RocqOfRust.M <> M def
+R21712:21726 RocqOfRust.M <> Impossible constr
+R21728:21734 RocqOfRust.M <> payload:323 var
+mod 21745:21749 <> Panic
+ind 21764:21764 Panic t
+constr 21779:21782 Panic Make
+R21795:21800 Corelib.Strings.PrimString <> string prim
+binder 21785:21791 <> message:326
+scheme 21764:21764 Panic t_rect
+scheme 21764:21764 Panic t_ind
+scheme 21764:21764 Panic t_rec
+scheme 21764:21764 Panic t_sind
+R21808:21812 RocqOfRust.M Panic <> mod
+def 21926:21930 <> panic
+R21941:21947 RocqOfRust.M <> t ind
+binder 21933:21937 <> panic:327
+R21952:21952 RocqOfRust.M <> M def
+R21959:21968 RocqOfRust.M <> impossible def
+def 22008:22021 <> call_primitive
+R22036:22046 RocqOfRust.M <> t ind
+binder 22024:22032 <> primitive:328
+R22051:22051 RocqOfRust.M <> M def
+R22058:22075 RocqOfRust.M <> CallPrimitive constr
+binder 22092:22097 <> result:329
+R22104:22112 RocqOfRust.M <> Pure constr
+R22115:22117 Corelib.Init.Datatypes <> inl constr
+R22119:22124 RocqOfRust.M <> result:329 var
+R22077:22085 RocqOfRust.M <> primitive:328 var
+R22165:22178 RocqOfRust.M <> call_primitive def
+def 22195:22199 <> alloc
+R22207:22210 RocqOfRust.M <> t defax
+binder 22202:22203 <> ty:330
+R22218:22224 RocqOfRust.M <> t ind
+binder 22214:22214 <> v:331
+R22229:22229 RocqOfRust.M <> M def
+R22236:22249 RocqOfRust.M <> call_primitive def
+R22252:22271 RocqOfRust.M <> StateAlloc constr
+R22273:22274 RocqOfRust.M <> ty:330 var
+R22276:22276 RocqOfRust.M <> v:331 var
+R22290:22294 RocqOfRust.M <> alloc def
+def 22311:22314 <> read
+R22327:22333 RocqOfRust.M <> t ind
+binder 22317:22323 <> pointer:332
+R22338:22338 RocqOfRust.M <> M def
+R22345:22358 RocqOfRust.M <> call_primitive def
+R22361:22379 RocqOfRust.M <> StateRead constr
+R22381:22387 RocqOfRust.M <> pointer:332 var
+R22401:22404 RocqOfRust.M <> read def
+def 22421:22425 <> write
+R22438:22444 RocqOfRust.M <> t ind
+binder 22428:22434 <> pointer:333
+R22457:22463 RocqOfRust.M <> t ind
+binder 22448:22453 <> update:334
+R22468:22468 RocqOfRust.M <> M def
+R22475:22488 RocqOfRust.M <> call_primitive def
+R22491:22510 RocqOfRust.M <> StateWrite constr
+R22512:22518 RocqOfRust.M <> pointer:333 var
+R22520:22525 RocqOfRust.M <> update:334 var
+def 22541:22544 <> copy
+R22552:22555 RocqOfRust.M <> t defax
+binder 22547:22548 <> ty:335
+R22563:22569 RocqOfRust.M <> t ind
+binder 22559:22559 <> r:336
+R22574:22574 RocqOfRust.M <> M def
+R22581:22585 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R22587:22590 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R22597:22602 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R22591:22594 RocqOfRust.M <> read def
+R22596:22596 RocqOfRust.M <> r:336 var
+binder 22586:22586 <> v:337
+R22603:22607 RocqOfRust.M <> alloc def
+R22609:22610 RocqOfRust.M <> ty:335 var
+R22612:22612 RocqOfRust.M <> v:337 var
+R22625:22628 RocqOfRust.M <> copy def
+def 22790:22804 <> get_sub_pointer
+R22817:22823 RocqOfRust.M <> t ind
+binder 22807:22813 <> pointer:338
+R22835:22849 RocqOfRust.M <> t ind
+binder 22827:22831 <> index:339
+R22854:22854 RocqOfRust.M <> M def
+R22861:22874 RocqOfRust.M <> call_primitive def
+R22877:22899 RocqOfRust.M <> GetSubPointer constr
+R22901:22907 RocqOfRust.M <> pointer:338 var
+R22909:22913 RocqOfRust.M <> index:339 var
+def 22929:22940 <> get_function
+R22950:22955 Corelib.Strings.PrimString <> string prim
+binder 22943:22946 <> path:340
+R22976:22979 Corelib.Init.Datatypes <> list ind
+R22981:22987 RocqOfRust.M <> t ind
+binder 22959:22972 <> generic_consts:341
+R23005:23008 Corelib.Init.Datatypes <> list ind
+R23010:23013 RocqOfRust.M <> t defax
+binder 22991:23001 <> generic_tys:342
+R23022:23022 RocqOfRust.M <> M def
+R23029:23042 RocqOfRust.M <> call_primitive def
+R23045:23065 RocqOfRust.M <> GetFunction constr
+R23067:23070 RocqOfRust.M <> path:340 var
+R23072:23085 RocqOfRust.M <> generic_consts:341 var
+R23087:23097 RocqOfRust.M <> generic_tys:342 var
+def 23113:23135 <> get_associated_function
+R23145:23148 RocqOfRust.M <> t defax
+binder 23140:23141 <> ty:343
+R23161:23166 Corelib.Strings.PrimString <> string prim
+binder 23154:23157 <> name:344
+R23189:23192 Corelib.Init.Datatypes <> list ind
+R23194:23200 RocqOfRust.M <> t ind
+binder 23172:23185 <> generic_consts:345
+R23220:23223 Corelib.Init.Datatypes <> list ind
+R23225:23228 RocqOfRust.M <> t defax
+binder 23206:23216 <> generic_tys:346
+R23235:23235 RocqOfRust.M <> M def
+R23242:23255 RocqOfRust.M <> call_primitive def
+R23258:23288 RocqOfRust.M <> GetAssociatedFunction constr
+R23290:23291 RocqOfRust.M <> ty:343 var
+R23293:23296 RocqOfRust.M <> name:344 var
+R23298:23311 RocqOfRust.M <> generic_consts:345 var
+R23313:23323 RocqOfRust.M <> generic_tys:346 var
+def 23339:23354 <> get_trait_method
+R23369:23374 Corelib.Strings.PrimString <> string prim
+binder 23361:23365 <> trait:347
+R23392:23395 RocqOfRust.M <> t defax
+binder 23382:23388 <> self_ty:348
+R23418:23421 Corelib.Init.Datatypes <> list ind
+R23423:23429 RocqOfRust.M <> t ind
+binder 23403:23414 <> trait_consts:349
+R23449:23452 Corelib.Init.Datatypes <> list ind
+R23454:23457 RocqOfRust.M <> t defax
+binder 23437:23445 <> trait_tys:350
+R23474:23479 Corelib.Strings.PrimString <> string prim
+binder 23465:23470 <> method:351
+R23504:23507 Corelib.Init.Datatypes <> list ind
+R23509:23515 RocqOfRust.M <> t ind
+binder 23487:23500 <> generic_consts:352
+R23537:23540 Corelib.Init.Datatypes <> list ind
+R23542:23545 RocqOfRust.M <> t defax
+binder 23523:23533 <> generic_tys:353
+R23554:23554 RocqOfRust.M <> M def
+R23561:23574 RocqOfRust.M <> call_primitive def
+R23577:23600 RocqOfRust.M <> GetTraitMethod constr
+R23606:23610 RocqOfRust.M <> trait:347 var
+R23612:23618 RocqOfRust.M <> self_ty:348 var
+R23620:23631 RocqOfRust.M <> trait_consts:349 var
+R23633:23641 RocqOfRust.M <> trait_tys:350 var
+R23643:23648 RocqOfRust.M <> method:351 var
+R23650:23663 RocqOfRust.M <> generic_consts:352 var
+R23665:23675 RocqOfRust.M <> generic_tys:353 var
+def 23694:23698 <> catch
+R23706:23709 RocqOfRust.M <> t defax
+binder 23701:23702 <> ty:354
+R23720:23720 RocqOfRust.M <> M def
+binder 23713:23716 <> body:355
+R23745:23748 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R23734:23744 RocqOfRust.M <> t ind
+R23749:23749 RocqOfRust.M <> M def
+binder 23724:23730 <> handler:356
+R23754:23754 RocqOfRust.M <> M def
+R23761:23768 RocqOfRust.M <> Let constr
+binder 23783:23788 <> result:357
+R23801:23806 RocqOfRust.M <> result:357 var
+R23817:23819 Corelib.Init.Datatypes <> inl constr
+R23826:23829 RocqOfRust.M <> pure def
+R23837:23839 Corelib.Init.Datatypes <> inr constr
+R23854:23860 RocqOfRust.M <> handler:356 var
+R23773:23776 RocqOfRust.M <> body:355 var
+R23770:23771 RocqOfRust.M <> ty:354 var
+def 23892:23903 <> catch_return
+R23911:23914 RocqOfRust.M <> t defax
+binder 23906:23907 <> ty:359
+R23925:23925 RocqOfRust.M <> M def
+binder 23918:23921 <> body:360
+R23930:23930 RocqOfRust.M <> M def
+R23937:23941 RocqOfRust.M <> catch def
+R23947:23948 RocqOfRust.M <> ty:359 var
+R23954:23957 RocqOfRust.M <> body:360 var
+binder 23968:23976 <> exception:361
+R23993:24011 RocqOfRust.M <> is_return def
+R24013:24021 RocqOfRust.M <> exception:361 var
+R24036:24039 Corelib.Init.Datatypes <> Some constr
+R24046:24049 RocqOfRust.M <> pure def
+R24061:24064 Corelib.Init.Datatypes <> None constr
+R24069:24073 RocqOfRust.M <> raise def
+R24075:24083 RocqOfRust.M <> exception:361 var
+def 24114:24127 <> catch_continue
+R24135:24138 RocqOfRust.M <> t defax
+binder 24130:24131 <> ty:362
+R24149:24149 RocqOfRust.M <> M def
+binder 24142:24145 <> body:363
+R24154:24154 RocqOfRust.M <> M def
+R24161:24165 RocqOfRust.M <> catch def
+R24171:24172 RocqOfRust.M <> ty:362 var
+R24178:24181 RocqOfRust.M <> body:363 var
+binder 24192:24200 <> exception:364
+R24214:24234 RocqOfRust.M <> is_continue def
+R24236:24244 RocqOfRust.M <> exception:364 var
+R24315:24319 RocqOfRust.M <> raise def
+R24321:24329 RocqOfRust.M <> exception:364 var
+R24259:24263 RocqOfRust.M <> alloc def
+R24266:24273 RocqOfRust.M <> tuple defax
+R24275:24276 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R24280:24290 RocqOfRust.M <> Tuple constr
+R24292:24293 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+def 24350:24360 <> catch_break
+R24368:24371 RocqOfRust.M <> t defax
+binder 24363:24364 <> ty:365
+R24382:24382 RocqOfRust.M <> M def
+binder 24375:24378 <> body:366
+R24387:24387 RocqOfRust.M <> M def
+R24394:24398 RocqOfRust.M <> catch def
+R24404:24405 RocqOfRust.M <> ty:365 var
+R24411:24414 RocqOfRust.M <> body:366 var
+binder 24425:24433 <> exception:367
+R24447:24464 RocqOfRust.M <> is_break def
+R24466:24474 RocqOfRust.M <> exception:367 var
+R24545:24549 RocqOfRust.M <> raise def
+R24551:24559 RocqOfRust.M <> exception:367 var
+R24489:24493 RocqOfRust.M <> alloc def
+R24496:24503 RocqOfRust.M <> tuple defax
+R24505:24506 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R24510:24520 RocqOfRust.M <> Tuple constr
+R24522:24523 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+def 24580:24583 <> loop
+R24591:24594 RocqOfRust.M <> t defax
+binder 24586:24587 <> ty:368
+R24605:24605 RocqOfRust.M <> M def
+binder 24598:24601 <> body:369
+R24610:24610 RocqOfRust.M <> M def
+R24617:24625 RocqOfRust.M <> Loop constr
+binder 24684:24689 <> result:370
+R24700:24710 RocqOfRust.M <> catch_break def
+R24712:24713 RocqOfRust.M <> ty:368 var
+R24716:24724 RocqOfRust.M <> Pure constr
+R24726:24731 RocqOfRust.M <> result:370 var
+R24639:24642 RocqOfRust.M <> let_ def
+R24645:24658 RocqOfRust.M <> catch_continue def
+R24660:24661 RocqOfRust.M <> ty:368 var
+R24663:24666 RocqOfRust.M <> body:369 var
+R24669:24672 RocqOfRust.M <> read def
+R24631:24632 RocqOfRust.M <> ty:368 var
+def 24792:24805 <> match_operator
+R24817:24820 RocqOfRust.M <> t defax
+binder 24812:24813 <> ty:371
+R24840:24846 RocqOfRust.M <> t ind
+binder 24828:24836 <> scrutinee:372
+R24861:24864 Corelib.Init.Datatypes <> list ind
+R24874:24877 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R24867:24873 RocqOfRust.M <> t ind
+R24878:24878 RocqOfRust.M <> M def
+binder 24854:24857 <> arms:373
+R24888:24888 RocqOfRust.M <> M def
+R24901:24904 RocqOfRust.M <> arms:373 var
+R24915:24917 Corelib.Init.Datatypes <> nil constr
+R25022:25026 RocqOfRust.M <> panic def
+R25029:25038 RocqOfRust.M <> Make constr
+R25073:25076 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R25089:25093 RocqOfRust.M <> catch def
+R25101:25102 RocqOfRust.M <> ty:371 var
+R25115:25123 RocqOfRust.M <> scrutinee:372 var
+binder 25137:25145 <> exception:376
+R25161:25184 RocqOfRust.M <> is_break_match def
+R25186:25194 RocqOfRust.M <> exception:376 var
+R25267:25271 RocqOfRust.M <> raise def
+R25273:25281 RocqOfRust.M <> exception:376 var
+R25211:25224 RocqOfRust.M <> match_operator:374 def
+R25239:25242 RocqOfRust.M <> arms:373 var
+R25229:25237 RocqOfRust.M <> scrutinee:372 var
+R25226:25227 RocqOfRust.M <> ty:371 var
+def 25450:25468 <> find_or_pattern_aux
+R25484:25487 RocqOfRust.M <> t defax
+binder 25475:25480 <> arm_ty:377
+R25507:25513 RocqOfRust.M <> t ind
+binder 25495:25503 <> scrutinee:378
+R25528:25531 Corelib.Init.Datatypes <> list ind
+R25541:25544 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25534:25540 RocqOfRust.M <> t ind
+R25545:25545 RocqOfRust.M <> M def
+binder 25521:25524 <> arms:379
+R25555:25555 RocqOfRust.M <> M def
+R25568:25571 RocqOfRust.M <> arms:379 var
+R25582:25584 Corelib.Init.Datatypes <> nil constr
+R25589:25599 RocqOfRust.M <> break_match def
+R25608:25611 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R25624:25628 RocqOfRust.M <> catch def
+R25636:25641 RocqOfRust.M <> arm_ty:377 var
+R25654:25662 RocqOfRust.M <> scrutinee:378 var
+binder 25676:25684 <> exception:382
+R25703:25711 RocqOfRust.M <> exception:382 var
+R25728:25747 RocqOfRust.M <> BreakMatch constr
+R25752:25770 RocqOfRust.M <> find_or_pattern_aux:380 def
+R25789:25792 RocqOfRust.M <> arms:379 var
+R25779:25787 RocqOfRust.M <> scrutinee:378 var
+R25772:25777 RocqOfRust.M <> arm_ty:377 var
+R25809:25813 RocqOfRust.M <> raise def
+R25815:25823 RocqOfRust.M <> exception:382 var
+def 25864:25878 <> find_or_pattern
+R25894:25897 RocqOfRust.M <> t defax
+binder 25885:25890 <> arm_ty:384
+R25917:25923 RocqOfRust.M <> t ind
+binder 25905:25913 <> scrutinee:385
+R25938:25941 Corelib.Init.Datatypes <> list ind
+R25951:25954 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25944:25950 RocqOfRust.M <> t ind
+R25955:25955 RocqOfRust.M <> M def
+binder 25931:25934 <> arms:386
+R25983:25986 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R25971:25974 Corelib.Init.Datatypes <> list ind
+R25976:25982 RocqOfRust.M <> t ind
+R25987:25987 RocqOfRust.M <> M def
+binder 25964:25967 <> body:387
+R25996:25996 RocqOfRust.M <> M def
+R26003:26007 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R26017:26020 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R26062:26067 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R26021:26039 RocqOfRust.M <> find_or_pattern_aux def
+R26041:26046 RocqOfRust.M <> arm_ty:384 var
+R26048:26056 RocqOfRust.M <> scrutinee:385 var
+R26058:26061 RocqOfRust.M <> arms:386 var
+binder 26008:26016 <> free_vars:388
+R26068:26082 RocqOfRust.M <> MatchTuple constr
+R26094:26097 RocqOfRust.M <> body:387 var
+R26084:26092 RocqOfRust.M <> free_vars:388 var
+def 26112:26123 <> never_to_any
+R26130:26136 RocqOfRust.M <> t ind
+binder 26126:26126 <> x:389
+R26141:26141 RocqOfRust.M <> M def
+R26148:26154 RocqOfRust.M <> panic def
+R26157:26166 RocqOfRust.M <> Make constr
+def 26208:26210 <> use
+R26217:26223 RocqOfRust.M <> t ind
+binder 26213:26213 <> x:390
+R26228:26234 RocqOfRust.M <> t ind
+R26241:26241 RocqOfRust.M <> x:390 var
+def 26256:26261 <> borrow
+R26271:26284 RocqOfRust.M <> t ind
+binder 26264:26267 <> kind:391
+R26296:26302 RocqOfRust.M <> t ind
+binder 26288:26292 <> value:392
+R26307:26307 RocqOfRust.M <> M def
+R26320:26324 RocqOfRust.M <> value:392 var
+R26335:26347 RocqOfRust.M <> Pointer constr
+R26352:26363 RocqOfRust.M <> kind proj
+R26352:26363 RocqOfRust.M <> kind proj
+R26352:26363 RocqOfRust.M <> kind proj
+R26386:26397 RocqOfRust.M <> core proj
+R26386:26397 RocqOfRust.M <> core proj
+R26368:26383 RocqOfRust.M <> Raw constr
+R26417:26420 RocqOfRust.M <> pure def
+R26423:26435 RocqOfRust.M <> Pointer constr
+R26440:26451 RocqOfRust.M <> kind proj
+R26440:26451 RocqOfRust.M <> kind proj
+R26440:26451 RocqOfRust.M <> kind proj
+R26462:26473 RocqOfRust.M <> core proj
+R26462:26473 RocqOfRust.M <> core proj
+R26456:26459 RocqOfRust.M <> kind:391 var
+R26496:26505 RocqOfRust.M <> impossible def
+R26553:26558 RocqOfRust.M <> borrow def
+def 26573:26577 <> deref
+R26588:26594 RocqOfRust.M <> t ind
+binder 26580:26584 <> value:394
+R26599:26599 RocqOfRust.M <> M def
+R26612:26616 RocqOfRust.M <> value:394 var
+R26627:26639 RocqOfRust.M <> Pointer constr
+R26652:26655 RocqOfRust.M <> pure def
+R26658:26670 RocqOfRust.M <> Pointer constr
+R26673:26685 RocqOfRust.M <> deref def
+R26706:26715 RocqOfRust.M <> impossible def
+R26759:26763 RocqOfRust.M <> deref def
+mod 26774:26783 <> SubPointer
+def 26799:26813 SubPointer get_tuple_field
+R26824:26830 RocqOfRust.M Value t ind
+binder 26816:26820 <> value:396
+R26842:26842 Corelib.Numbers.BinNums <> Z ind
+binder 26834:26838 <> index:397
+R26847:26847 RocqOfRust.M <> M def
+R26856:26870 RocqOfRust.M <> get_sub_pointer def
+R26872:26876 RocqOfRust.M <> value:396 var
+R26879:26897 RocqOfRust.M Pointer.Index Tuple constr
+R26899:26903 RocqOfRust.M <> index:397 var
+def 26921:26935 SubPointer get_array_field
+R26946:26952 RocqOfRust.M Value t ind
+binder 26938:26942 <> value:398
+R26964:26970 RocqOfRust.M Value t ind
+binder 26956:26960 <> index:399
+R26975:26975 RocqOfRust.M <> M def
+R26990:26994 RocqOfRust.M <> index:399 var
+R27007:27019 RocqOfRust.M Value Integer constr
+R27021:27037 RocqOfRust.M IntegerKind Usize constr
+R27048:27062 RocqOfRust.M <> get_sub_pointer def
+R27064:27068 RocqOfRust.M <> value:398 var
+R27071:27089 RocqOfRust.M Pointer.Index Array constr
+R27091:27095 RocqOfRust.M <> index:399 var
+R27109:27118 RocqOfRust.M <> impossible def
+def 27188:27209 SubPointer get_struct_tuple_field
+R27220:27226 RocqOfRust.M Value t ind
+binder 27212:27216 <> value:401
+R27244:27249 Corelib.Strings.PrimString <> string prim
+binder 27230:27240 <> constructor:402
+R27261:27261 Corelib.Numbers.BinNums <> Z ind
+binder 27253:27257 <> index:403
+R27266:27266 RocqOfRust.M <> M def
+R27275:27279 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R27285:27288 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R27300:27307 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R27289:27293 RocqOfRust.M <> deref def
+R27295:27299 RocqOfRust.M <> value:401 var
+binder 27280:27284 <> value:404
+R27308:27322 RocqOfRust.M <> get_sub_pointer def
+R27324:27328 RocqOfRust.M <> value:404 var
+R27331:27355 RocqOfRust.M Pointer.Index StructTuple constr
+R27357:27367 RocqOfRust.M <> constructor:402 var
+R27369:27373 RocqOfRust.M <> index:403 var
+R27389:27410 RocqOfRust.M SubPointer get_struct_tuple_field def
+def 27429:27451 SubPointer get_struct_record_field
+R27462:27468 RocqOfRust.M Value t ind
+binder 27454:27458 <> value:405
+R27492:27497 Corelib.Strings.PrimString <> string prim
+binder 27472:27482 <> constructor:406
+binder 27484:27488 <> field:407
+R27502:27502 RocqOfRust.M <> M def
+R27511:27525 RocqOfRust.M <> get_sub_pointer def
+R27527:27531 RocqOfRust.M <> value:405 var
+R27534:27559 RocqOfRust.M Pointer.Index StructRecord constr
+R27561:27571 RocqOfRust.M <> constructor:406 var
+R27573:27577 RocqOfRust.M <> field:407 var
+def 27640:27654 SubPointer get_slice_index
+R27665:27671 RocqOfRust.M Value t ind
+binder 27657:27661 <> value:408
+R27683:27683 Corelib.Numbers.BinNums <> Z ind
+binder 27675:27679 <> index:409
+R27688:27688 RocqOfRust.M <> M def
+R27697:27711 RocqOfRust.M <> get_sub_pointer def
+R27713:27717 RocqOfRust.M <> value:408 var
+R27720:27738 RocqOfRust.M Pointer.Index Array constr
+R27740:27744 RocqOfRust.M <> index:409 var
+ax 27828:27846 SubPointer get_slice_rev_index
+R27857:27860 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R27850:27856 RocqOfRust.M Value t ind
+R27862:27865 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R27861:27861 Corelib.Numbers.BinNums <> Z ind
+R27866:27866 RocqOfRust.M <> M def
+ax 28012:28025 SubPointer get_slice_rest
+R28036:28039 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R28029:28035 RocqOfRust.M Value t ind
+R28041:28044 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R28040:28040 Corelib.Numbers.BinNums <> Z ind
+R28046:28049 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R28045:28045 Corelib.Numbers.BinNums <> Z ind
+R28050:28050 RocqOfRust.M <> M def
+R28057:28066 RocqOfRust.M SubPointer <> mod
+def 28081:28097 <> if_then_else_bool
+R28105:28108 RocqOfRust.M <> t defax
+binder 28100:28101 <> ty:414
+R28124:28130 RocqOfRust.M <> t ind
+binder 28112:28120 <> condition:415
+R28148:28148 RocqOfRust.M <> M def
+binder 28134:28138 <> then_:416
+binder 28140:28144 <> else_:417
+R28153:28153 RocqOfRust.M <> M def
+R28160:28174 RocqOfRust.M <> IfThenElse constr
+R28201:28209 RocqOfRust.M <> Pure constr
+R28195:28199 RocqOfRust.M <> else_:417 var
+R28189:28193 RocqOfRust.M <> then_:416 var
+R28179:28187 RocqOfRust.M <> condition:415 var
+R28176:28177 RocqOfRust.M <> ty:414 var
+def 28224:28238 <> is_struct_tuple
+R28249:28255 RocqOfRust.M <> t ind
+binder 28241:28245 <> value:418
+R28273:28278 Corelib.Strings.PrimString <> string prim
+binder 28259:28269 <> constructor:419
+R28283:28283 RocqOfRust.M <> M def
+R28290:28294 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R28300:28303 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R28315:28320 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R28304:28308 RocqOfRust.M <> deref def
+R28310:28314 RocqOfRust.M <> value:418 var
+binder 28295:28299 <> value:420
+R28321:28325 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R28331:28334 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R28345:28350 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R28335:28338 RocqOfRust.M <> read def
+R28340:28344 RocqOfRust.M <> value:420 var
+binder 28326:28330 <> value:421
+R28357:28361 RocqOfRust.M <> value:421 var
+R28372:28388 RocqOfRust.M <> StructTuple constr
+R28429:28446 Corelib.Strings.PrimString <> compare prim
+R28468:28478 RocqOfRust.M <> constructor:419 var
+R28491:28492 Corelib.Init.Datatypes <> Eq constr
+R28497:28500 RocqOfRust.M <> pure def
+R28503:28513 RocqOfRust.M <> Tuple constr
+R28515:28516 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R28530:28540 RocqOfRust.M <> break_match def
+R28559:28569 RocqOfRust.M <> break_match def
+R28588:28602 RocqOfRust.M <> is_struct_tuple def
+mod 28807:28821 <> PointerCoercion
+mod 28901:28906 <> PointerCoercion.Safety
+ind 28923:28923 PointerCoercion.Safety t
+constr 28940:28945 PointerCoercion.Safety Unsafe
+constr 28953:28956 PointerCoercion.Safety Safe
+scheme 28923:28923 PointerCoercion.Safety t_rect
+scheme 28923:28923 PointerCoercion.Safety t_ind
+scheme 28923:28923 PointerCoercion.Safety t_rec
+scheme 28923:28923 PointerCoercion.Safety t_sind
+R28965:28970 RocqOfRust.M PointerCoercion.Safety <> mod
+ind 28986:28986 PointerCoercion t
+constr 29001:29014 PointerCoercion ReifyFnPointer
+constr 29020:29034 PointerCoercion UnsafeFnPointer
+constr 29040:29055 PointerCoercion ClosureFnPointer
+constr 29081:29097 PointerCoercion MutToConstPointer
+constr 29103:29116 PointerCoercion ArrayToPointer
+constr 29122:29127 PointerCoercion Unsize
+constr 29133:29139 PointerCoercion DynStar
+R29067:29074 RocqOfRust.M PointerCoercion t ind
+binder 29058:29063 <> safety:427
+scheme 28986:28986 PointerCoercion t_rect
+scheme 28986:28986 PointerCoercion t_ind
+scheme 28986:28986 PointerCoercion t_rec
+scheme 28986:28986 PointerCoercion t_sind
+R29146:29160 RocqOfRust.M PointerCoercion <> mod
+ax 29346:29349 <> cast
+R29357:29360 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R29353:29356 RocqOfRust.M <> t defax
+R29368:29371 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R29361:29367 RocqOfRust.M <> t ind
+R29372:29378 RocqOfRust.M <> t ind
+def 29393:29399 <> closure
+R29418:29421 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R29406:29409 Corelib.Init.Datatypes <> list ind
+R29411:29417 RocqOfRust.M <> t ind
+R29422:29422 RocqOfRust.M <> M def
+binder 29402:29402 <> f:430
+R29427:29433 RocqOfRust.M <> t ind
+R29440:29452 RocqOfRust.M <> Closure constr
+R29455:29460 RocqOfRust.M <> existS constr
+R29469:29469 RocqOfRust.M <> f:430 var
+R29462:29462 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R29464:29465 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R29467:29467 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R29483:29489 RocqOfRust.M <> closure def
+def 29506:29527 <> constructor_as_closure
+R29544:29549 Corelib.Strings.PrimString <> string prim
+binder 29530:29540 <> constructor:431
+R29562:29565 Corelib.Init.Datatypes <> list ind
+R29567:29573 RocqOfRust.M <> t ind
+binder 29553:29558 <> consts:432
+R29583:29586 Corelib.Init.Datatypes <> list ind
+R29588:29591 RocqOfRust.M <> t defax
+binder 29577:29579 <> tys:433
+R29600:29606 RocqOfRust.M <> t ind
+R29613:29619 RocqOfRust.M <> closure def
+binder 29626:29629 <> args:434
+R29638:29641 RocqOfRust.M <> pure def
+R29644:29660 RocqOfRust.M <> StructTuple constr
+R29662:29672 RocqOfRust.M <> constructor:431 var
+R29674:29679 RocqOfRust.M <> consts:432 var
+R29681:29683 RocqOfRust.M <> tys:433 var
+R29685:29688 RocqOfRust.M <> args:434 var
+ax 29704:29729 <> pointer_coercion_intrinsic
+R29750:29753 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R29733:29749 RocqOfRust.M <> t ind
+R29754:29774 RocqOfRust.M <> t def
+def 29789:29804 <> pointer_coercion
+R29818:29834 RocqOfRust.M <> t ind
+binder 29807:29814 <> coercion:437
+R29854:29857 RocqOfRust.M <> t defax
+binder 29838:29843 <> source:438
+binder 29845:29850 <> target:439
+R29862:29868 RocqOfRust.M <> t ind
+R29875:29883 RocqOfRust.M <> closure def
+R29886:29911 RocqOfRust.M <> pointer_coercion_intrinsic defax
+R29913:29920 RocqOfRust.M <> coercion:437 var
+R29922:29923 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R29925:29925 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R29932:29933 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R29940:29940 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R29926:29931 RocqOfRust.M <> source:438 var
+R29934:29939 RocqOfRust.M <> target:439 var
+R29954:29969 RocqOfRust.M <> pointer_coercion def
+ax 29985:30004 <> struct_record_update
+R30015:30018 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30008:30014 RocqOfRust.M <> t ind
+R30042:30045 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30019:30022 Corelib.Init.Datatypes <> list ind
+R30031:30033 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R30025:30030 Corelib.Strings.PrimString <> string prim
+R30034:30040 RocqOfRust.M <> t ind
+R30046:30052 RocqOfRust.M <> t ind
+ax 30066:30082 <> unevaluated_const
+R30093:30096 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30086:30092 RocqOfRust.M <> t ind
+R30097:30103 RocqOfRust.M <> t ind
+ax 30117:30121 <> yield
+R30132:30135 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R30125:30131 RocqOfRust.M <> t ind
+R30136:30136 RocqOfRust.M <> M def

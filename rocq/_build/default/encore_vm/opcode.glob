@@ -1,0 +1,817 @@
+DIGEST 7501a61c0152453083c91cf852c2c05a
+Fencore_vm.opcode
+R47:67 RocqOfRust.RocqOfRust <> <> lib
+mod 78:83 <> opcode
+def 99:107 opcode value_FIN
+R115:118 Corelib.Init.Datatypes <> list ind
+R120:126 RocqOfRust.M Value t ind
+binder 110:111 <> ε:1
+R135:138 Corelib.Init.Datatypes <> list ind
+R140:143 RocqOfRust.M Ty t defax
+binder 130:131 <> τ:2
+R152:155 Corelib.Init.Datatypes <> list ind
+R157:163 RocqOfRust.M Value t ind
+binder 147:148 <> α:3
+R168:168 RocqOfRust.M <> M def
+R201:204 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R217:218 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R249:251 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R219:231 RocqOfRust.M Value Integer constr
+R233:246 RocqOfRust.M IntegerKind U8 constr
+R205:211 RocqOfRust.M Ty path defax
+R194:200 RocqOfRust.M <> alloc def
+R201:204 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R217:218 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R249:251 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R219:231 RocqOfRust.M Value Integer constr
+R233:246 RocqOfRust.M IntegerKind U8 constr
+R205:211 RocqOfRust.M Ty path defax
+R194:200 RocqOfRust.M <> alloc def
+inst 277:305 opcode Instance_IsConstant_value_FIN
+R309:322 RocqOfRust.M IsFunction C class
+R349:357 encore_vm.opcode opcode value_FIN def
+def 427:435 opcode value_MOV
+R443:446 Corelib.Init.Datatypes <> list ind
+R448:454 RocqOfRust.M Value t ind
+binder 438:439 <> ε:4
+R463:466 Corelib.Init.Datatypes <> list ind
+R468:471 RocqOfRust.M Ty t defax
+binder 458:459 <> τ:5
+R480:483 Corelib.Init.Datatypes <> list ind
+R485:491 RocqOfRust.M Value t ind
+binder 475:476 <> α:6
+R496:496 RocqOfRust.M <> M def
+R529:532 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R545:546 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R577:579 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R547:559 RocqOfRust.M Value Integer constr
+R561:574 RocqOfRust.M IntegerKind U8 constr
+R533:539 RocqOfRust.M Ty path defax
+R522:528 RocqOfRust.M <> alloc def
+R529:532 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R545:546 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R577:579 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R547:559 RocqOfRust.M Value Integer constr
+R561:574 RocqOfRust.M IntegerKind U8 constr
+R533:539 RocqOfRust.M Ty path defax
+R522:528 RocqOfRust.M <> alloc def
+inst 605:633 opcode Instance_IsConstant_value_MOV
+R637:650 RocqOfRust.M IsFunction C class
+R677:685 encore_vm.opcode opcode value_MOV def
+def 755:767 opcode value_CAPTURE
+R775:778 Corelib.Init.Datatypes <> list ind
+R780:786 RocqOfRust.M Value t ind
+binder 770:771 <> ε:7
+R795:798 Corelib.Init.Datatypes <> list ind
+R800:803 RocqOfRust.M Ty t defax
+binder 790:791 <> τ:8
+R812:815 Corelib.Init.Datatypes <> list ind
+R817:823 RocqOfRust.M Value t ind
+binder 807:808 <> α:9
+R828:828 RocqOfRust.M <> M def
+R861:864 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R877:878 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R909:911 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R879:891 RocqOfRust.M Value Integer constr
+R893:906 RocqOfRust.M IntegerKind U8 constr
+R865:871 RocqOfRust.M Ty path defax
+R854:860 RocqOfRust.M <> alloc def
+R861:864 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R877:878 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R909:911 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R879:891 RocqOfRust.M Value Integer constr
+R893:906 RocqOfRust.M IntegerKind U8 constr
+R865:871 RocqOfRust.M Ty path defax
+R854:860 RocqOfRust.M <> alloc def
+inst 937:969 opcode Instance_IsConstant_value_CAPTURE
+R977:990 RocqOfRust.M IsFunction C class
+R1021:1033 encore_vm.opcode opcode value_CAPTURE def
+def 1107:1118 opcode value_GLOBAL
+R1126:1129 Corelib.Init.Datatypes <> list ind
+R1131:1137 RocqOfRust.M Value t ind
+binder 1121:1122 <> ε:10
+R1146:1149 Corelib.Init.Datatypes <> list ind
+R1151:1154 RocqOfRust.M Ty t defax
+binder 1141:1142 <> τ:11
+R1163:1166 Corelib.Init.Datatypes <> list ind
+R1168:1174 RocqOfRust.M Value t ind
+binder 1158:1159 <> α:12
+R1179:1179 RocqOfRust.M <> M def
+R1212:1215 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1228:1229 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1260:1262 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1230:1242 RocqOfRust.M Value Integer constr
+R1244:1257 RocqOfRust.M IntegerKind U8 constr
+R1216:1222 RocqOfRust.M Ty path defax
+R1205:1211 RocqOfRust.M <> alloc def
+R1212:1215 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1228:1229 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1260:1262 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1230:1242 RocqOfRust.M Value Integer constr
+R1244:1257 RocqOfRust.M IntegerKind U8 constr
+R1216:1222 RocqOfRust.M Ty path defax
+R1205:1211 RocqOfRust.M <> alloc def
+inst 1288:1319 opcode Instance_IsConstant_value_GLOBAL
+R1327:1340 RocqOfRust.M IsFunction C class
+R1370:1381 encore_vm.opcode opcode value_GLOBAL def
+def 1454:1466 opcode value_CLOSURE
+R1474:1477 Corelib.Init.Datatypes <> list ind
+R1479:1485 RocqOfRust.M Value t ind
+binder 1469:1470 <> ε:13
+R1494:1497 Corelib.Init.Datatypes <> list ind
+R1499:1502 RocqOfRust.M Ty t defax
+binder 1489:1490 <> τ:14
+R1511:1514 Corelib.Init.Datatypes <> list ind
+R1516:1522 RocqOfRust.M Value t ind
+binder 1506:1507 <> α:15
+R1527:1527 RocqOfRust.M <> M def
+R1560:1563 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1576:1577 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1608:1610 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1578:1590 RocqOfRust.M Value Integer constr
+R1592:1605 RocqOfRust.M IntegerKind U8 constr
+R1564:1570 RocqOfRust.M Ty path defax
+R1553:1559 RocqOfRust.M <> alloc def
+R1560:1563 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1576:1577 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1608:1610 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1578:1590 RocqOfRust.M Value Integer constr
+R1592:1605 RocqOfRust.M IntegerKind U8 constr
+R1564:1570 RocqOfRust.M Ty path defax
+R1553:1559 RocqOfRust.M <> alloc def
+inst 1636:1668 opcode Instance_IsConstant_value_CLOSURE
+R1676:1689 RocqOfRust.M IsFunction C class
+R1720:1732 encore_vm.opcode opcode value_CLOSURE def
+def 1806:1815 opcode value_PACK
+R1823:1826 Corelib.Init.Datatypes <> list ind
+R1828:1834 RocqOfRust.M Value t ind
+binder 1818:1819 <> ε:16
+R1843:1846 Corelib.Init.Datatypes <> list ind
+R1848:1851 RocqOfRust.M Ty t defax
+binder 1838:1839 <> τ:17
+R1860:1863 Corelib.Init.Datatypes <> list ind
+R1865:1871 RocqOfRust.M Value t ind
+binder 1855:1856 <> α:18
+R1876:1876 RocqOfRust.M <> M def
+R1909:1912 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1925:1926 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1957:1959 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1927:1939 RocqOfRust.M Value Integer constr
+R1941:1954 RocqOfRust.M IntegerKind U8 constr
+R1913:1919 RocqOfRust.M Ty path defax
+R1902:1908 RocqOfRust.M <> alloc def
+R1909:1912 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1925:1926 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1957:1959 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R1927:1939 RocqOfRust.M Value Integer constr
+R1941:1954 RocqOfRust.M IntegerKind U8 constr
+R1913:1919 RocqOfRust.M Ty path defax
+R1902:1908 RocqOfRust.M <> alloc def
+inst 1985:2014 opcode Instance_IsConstant_value_PACK
+R2022:2035 RocqOfRust.M IsFunction C class
+R2063:2072 encore_vm.opcode opcode value_PACK def
+def 2143:2153 opcode value_FIELD
+R2161:2164 Corelib.Init.Datatypes <> list ind
+R2166:2172 RocqOfRust.M Value t ind
+binder 2156:2157 <> ε:19
+R2181:2184 Corelib.Init.Datatypes <> list ind
+R2186:2189 RocqOfRust.M Ty t defax
+binder 2176:2177 <> τ:20
+R2198:2201 Corelib.Init.Datatypes <> list ind
+R2203:2209 RocqOfRust.M Value t ind
+binder 2193:2194 <> α:21
+R2214:2214 RocqOfRust.M <> M def
+R2247:2250 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2263:2264 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2295:2297 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2265:2277 RocqOfRust.M Value Integer constr
+R2279:2292 RocqOfRust.M IntegerKind U8 constr
+R2251:2257 RocqOfRust.M Ty path defax
+R2240:2246 RocqOfRust.M <> alloc def
+R2247:2250 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2263:2264 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2295:2297 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2265:2277 RocqOfRust.M Value Integer constr
+R2279:2292 RocqOfRust.M IntegerKind U8 constr
+R2251:2257 RocqOfRust.M Ty path defax
+R2240:2246 RocqOfRust.M <> alloc def
+inst 2323:2353 opcode Instance_IsConstant_value_FIELD
+R2361:2374 RocqOfRust.M IsFunction C class
+R2403:2413 encore_vm.opcode opcode value_FIELD def
+def 2485:2495 opcode value_MATCH
+R2503:2506 Corelib.Init.Datatypes <> list ind
+R2508:2514 RocqOfRust.M Value t ind
+binder 2498:2499 <> ε:22
+R2523:2526 Corelib.Init.Datatypes <> list ind
+R2528:2531 RocqOfRust.M Ty t defax
+binder 2518:2519 <> τ:23
+R2540:2543 Corelib.Init.Datatypes <> list ind
+R2545:2551 RocqOfRust.M Value t ind
+binder 2535:2536 <> α:24
+R2556:2556 RocqOfRust.M <> M def
+R2589:2592 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2605:2606 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2637:2639 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2607:2619 RocqOfRust.M Value Integer constr
+R2621:2634 RocqOfRust.M IntegerKind U8 constr
+R2593:2599 RocqOfRust.M Ty path defax
+R2582:2588 RocqOfRust.M <> alloc def
+R2589:2592 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2605:2606 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2637:2639 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2607:2619 RocqOfRust.M Value Integer constr
+R2621:2634 RocqOfRust.M IntegerKind U8 constr
+R2593:2599 RocqOfRust.M Ty path defax
+R2582:2588 RocqOfRust.M <> alloc def
+inst 2665:2695 opcode Instance_IsConstant_value_MATCH
+R2703:2716 RocqOfRust.M IsFunction C class
+R2745:2755 encore_vm.opcode opcode value_MATCH def
+def 2827:2838 opcode value_ENCORE
+R2846:2849 Corelib.Init.Datatypes <> list ind
+R2851:2857 RocqOfRust.M Value t ind
+binder 2841:2842 <> ε:25
+R2866:2869 Corelib.Init.Datatypes <> list ind
+R2871:2874 RocqOfRust.M Ty t defax
+binder 2861:2862 <> τ:26
+R2883:2886 Corelib.Init.Datatypes <> list ind
+R2888:2894 RocqOfRust.M Value t ind
+binder 2878:2879 <> α:27
+R2899:2899 RocqOfRust.M <> M def
+R2932:2935 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2948:2949 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2981:2983 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2950:2962 RocqOfRust.M Value Integer constr
+R2964:2977 RocqOfRust.M IntegerKind U8 constr
+R2936:2942 RocqOfRust.M Ty path defax
+R2925:2931 RocqOfRust.M <> alloc def
+R2932:2935 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2948:2949 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2981:2983 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R2950:2962 RocqOfRust.M Value Integer constr
+R2964:2977 RocqOfRust.M IntegerKind U8 constr
+R2936:2942 RocqOfRust.M Ty path defax
+R2925:2931 RocqOfRust.M <> alloc def
+inst 3009:3040 opcode Instance_IsConstant_value_ENCORE
+R3048:3061 RocqOfRust.M IsFunction C class
+R3091:3102 encore_vm.opcode opcode value_ENCORE def
+def 3175:3188 opcode value_FUNCTION
+R3196:3199 Corelib.Init.Datatypes <> list ind
+R3201:3207 RocqOfRust.M Value t ind
+binder 3191:3192 <> ε:28
+R3216:3219 Corelib.Init.Datatypes <> list ind
+R3221:3224 RocqOfRust.M Ty t defax
+binder 3211:3212 <> τ:29
+R3233:3236 Corelib.Init.Datatypes <> list ind
+R3238:3244 RocqOfRust.M Value t ind
+binder 3228:3229 <> α:30
+R3249:3249 RocqOfRust.M <> M def
+R3282:3285 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3298:3299 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3331:3333 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3300:3312 RocqOfRust.M Value Integer constr
+R3314:3327 RocqOfRust.M IntegerKind U8 constr
+R3286:3292 RocqOfRust.M Ty path defax
+R3275:3281 RocqOfRust.M <> alloc def
+R3282:3285 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3298:3299 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3331:3333 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3300:3312 RocqOfRust.M Value Integer constr
+R3314:3327 RocqOfRust.M IntegerKind U8 constr
+R3286:3292 RocqOfRust.M Ty path defax
+R3275:3281 RocqOfRust.M <> alloc def
+inst 3359:3392 opcode Instance_IsConstant_value_FUNCTION
+R3400:3413 RocqOfRust.M IsFunction C class
+R3445:3458 encore_vm.opcode opcode value_FUNCTION def
+def 3533:3544 opcode value_UNPACK
+R3552:3555 Corelib.Init.Datatypes <> list ind
+R3557:3563 RocqOfRust.M Value t ind
+binder 3547:3548 <> ε:31
+R3572:3575 Corelib.Init.Datatypes <> list ind
+R3577:3580 RocqOfRust.M Ty t defax
+binder 3567:3568 <> τ:32
+R3589:3592 Corelib.Init.Datatypes <> list ind
+R3594:3600 RocqOfRust.M Value t ind
+binder 3584:3585 <> α:33
+R3605:3605 RocqOfRust.M <> M def
+R3638:3641 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3654:3655 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3687:3689 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3656:3668 RocqOfRust.M Value Integer constr
+R3670:3683 RocqOfRust.M IntegerKind U8 constr
+R3642:3648 RocqOfRust.M Ty path defax
+R3631:3637 RocqOfRust.M <> alloc def
+R3638:3641 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3654:3655 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3687:3689 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3656:3668 RocqOfRust.M Value Integer constr
+R3670:3683 RocqOfRust.M IntegerKind U8 constr
+R3642:3648 RocqOfRust.M Ty path defax
+R3631:3637 RocqOfRust.M <> alloc def
+inst 3715:3746 opcode Instance_IsConstant_value_UNPACK
+R3754:3767 RocqOfRust.M IsFunction C class
+R3797:3808 encore_vm.opcode opcode value_UNPACK def
+def 3881:3889 opcode value_INT
+R3897:3900 Corelib.Init.Datatypes <> list ind
+R3902:3908 RocqOfRust.M Value t ind
+binder 3892:3893 <> ε:34
+R3917:3920 Corelib.Init.Datatypes <> list ind
+R3922:3925 RocqOfRust.M Ty t defax
+binder 3912:3913 <> τ:35
+R3934:3937 Corelib.Init.Datatypes <> list ind
+R3939:3945 RocqOfRust.M Value t ind
+binder 3929:3930 <> α:36
+R3950:3950 RocqOfRust.M <> M def
+R3983:3986 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3999:4000 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4032:4034 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4001:4013 RocqOfRust.M Value Integer constr
+R4015:4028 RocqOfRust.M IntegerKind U8 constr
+R3987:3993 RocqOfRust.M Ty path defax
+R3976:3982 RocqOfRust.M <> alloc def
+R3983:3986 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R3999:4000 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4032:4034 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4001:4013 RocqOfRust.M Value Integer constr
+R4015:4028 RocqOfRust.M IntegerKind U8 constr
+R3987:3993 RocqOfRust.M Ty path defax
+R3976:3982 RocqOfRust.M <> alloc def
+inst 4060:4088 opcode Instance_IsConstant_value_INT
+R4092:4105 RocqOfRust.M IsFunction C class
+R4132:4140 encore_vm.opcode opcode value_INT def
+def 4210:4222 opcode value_INT_ADD
+R4230:4233 Corelib.Init.Datatypes <> list ind
+R4235:4241 RocqOfRust.M Value t ind
+binder 4225:4226 <> ε:37
+R4250:4253 Corelib.Init.Datatypes <> list ind
+R4255:4258 RocqOfRust.M Ty t defax
+binder 4245:4246 <> τ:38
+R4267:4270 Corelib.Init.Datatypes <> list ind
+R4272:4278 RocqOfRust.M Value t ind
+binder 4262:4263 <> α:39
+R4283:4283 RocqOfRust.M <> M def
+R4316:4319 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4332:4333 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4365:4367 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4334:4346 RocqOfRust.M Value Integer constr
+R4348:4361 RocqOfRust.M IntegerKind U8 constr
+R4320:4326 RocqOfRust.M Ty path defax
+R4309:4315 RocqOfRust.M <> alloc def
+R4316:4319 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4332:4333 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4365:4367 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4334:4346 RocqOfRust.M Value Integer constr
+R4348:4361 RocqOfRust.M IntegerKind U8 constr
+R4320:4326 RocqOfRust.M Ty path defax
+R4309:4315 RocqOfRust.M <> alloc def
+inst 4393:4425 opcode Instance_IsConstant_value_INT_ADD
+R4433:4446 RocqOfRust.M IsFunction C class
+R4477:4489 encore_vm.opcode opcode value_INT_ADD def
+def 4563:4575 opcode value_INT_SUB
+R4583:4586 Corelib.Init.Datatypes <> list ind
+R4588:4594 RocqOfRust.M Value t ind
+binder 4578:4579 <> ε:40
+R4603:4606 Corelib.Init.Datatypes <> list ind
+R4608:4611 RocqOfRust.M Ty t defax
+binder 4598:4599 <> τ:41
+R4620:4623 Corelib.Init.Datatypes <> list ind
+R4625:4631 RocqOfRust.M Value t ind
+binder 4615:4616 <> α:42
+R4636:4636 RocqOfRust.M <> M def
+R4669:4672 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4685:4686 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4718:4720 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4687:4699 RocqOfRust.M Value Integer constr
+R4701:4714 RocqOfRust.M IntegerKind U8 constr
+R4673:4679 RocqOfRust.M Ty path defax
+R4662:4668 RocqOfRust.M <> alloc def
+R4669:4672 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4685:4686 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4718:4720 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R4687:4699 RocqOfRust.M Value Integer constr
+R4701:4714 RocqOfRust.M IntegerKind U8 constr
+R4673:4679 RocqOfRust.M Ty path defax
+R4662:4668 RocqOfRust.M <> alloc def
+inst 4746:4778 opcode Instance_IsConstant_value_INT_SUB
+R4786:4799 RocqOfRust.M IsFunction C class
+R4830:4842 encore_vm.opcode opcode value_INT_SUB def
+def 4916:4928 opcode value_INT_MUL
+R4936:4939 Corelib.Init.Datatypes <> list ind
+R4941:4947 RocqOfRust.M Value t ind
+binder 4931:4932 <> ε:43
+R4956:4959 Corelib.Init.Datatypes <> list ind
+R4961:4964 RocqOfRust.M Ty t defax
+binder 4951:4952 <> τ:44
+R4973:4976 Corelib.Init.Datatypes <> list ind
+R4978:4984 RocqOfRust.M Value t ind
+binder 4968:4969 <> α:45
+R4989:4989 RocqOfRust.M <> M def
+R5022:5025 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5038:5039 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5071:5073 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5040:5052 RocqOfRust.M Value Integer constr
+R5054:5067 RocqOfRust.M IntegerKind U8 constr
+R5026:5032 RocqOfRust.M Ty path defax
+R5015:5021 RocqOfRust.M <> alloc def
+R5022:5025 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5038:5039 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5071:5073 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5040:5052 RocqOfRust.M Value Integer constr
+R5054:5067 RocqOfRust.M IntegerKind U8 constr
+R5026:5032 RocqOfRust.M Ty path defax
+R5015:5021 RocqOfRust.M <> alloc def
+inst 5099:5131 opcode Instance_IsConstant_value_INT_MUL
+R5139:5152 RocqOfRust.M IsFunction C class
+R5183:5195 encore_vm.opcode opcode value_INT_MUL def
+def 5269:5280 opcode value_INT_EQ
+R5288:5291 Corelib.Init.Datatypes <> list ind
+R5293:5299 RocqOfRust.M Value t ind
+binder 5283:5284 <> ε:46
+R5308:5311 Corelib.Init.Datatypes <> list ind
+R5313:5316 RocqOfRust.M Ty t defax
+binder 5303:5304 <> τ:47
+R5325:5328 Corelib.Init.Datatypes <> list ind
+R5330:5336 RocqOfRust.M Value t ind
+binder 5320:5321 <> α:48
+R5341:5341 RocqOfRust.M <> M def
+R5374:5377 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5390:5391 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5423:5425 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5392:5404 RocqOfRust.M Value Integer constr
+R5406:5419 RocqOfRust.M IntegerKind U8 constr
+R5378:5384 RocqOfRust.M Ty path defax
+R5367:5373 RocqOfRust.M <> alloc def
+R5374:5377 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5390:5391 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5423:5425 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5392:5404 RocqOfRust.M Value Integer constr
+R5406:5419 RocqOfRust.M IntegerKind U8 constr
+R5378:5384 RocqOfRust.M Ty path defax
+R5367:5373 RocqOfRust.M <> alloc def
+inst 5451:5482 opcode Instance_IsConstant_value_INT_EQ
+R5490:5503 RocqOfRust.M IsFunction C class
+R5533:5544 encore_vm.opcode opcode value_INT_EQ def
+def 5617:5628 opcode value_INT_LT
+R5636:5639 Corelib.Init.Datatypes <> list ind
+R5641:5647 RocqOfRust.M Value t ind
+binder 5631:5632 <> ε:49
+R5656:5659 Corelib.Init.Datatypes <> list ind
+R5661:5664 RocqOfRust.M Ty t defax
+binder 5651:5652 <> τ:50
+R5673:5676 Corelib.Init.Datatypes <> list ind
+R5678:5684 RocqOfRust.M Value t ind
+binder 5668:5669 <> α:51
+R5689:5689 RocqOfRust.M <> M def
+R5722:5725 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5738:5739 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5771:5773 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5740:5752 RocqOfRust.M Value Integer constr
+R5754:5767 RocqOfRust.M IntegerKind U8 constr
+R5726:5732 RocqOfRust.M Ty path defax
+R5715:5721 RocqOfRust.M <> alloc def
+R5722:5725 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5738:5739 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5771:5773 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R5740:5752 RocqOfRust.M Value Integer constr
+R5754:5767 RocqOfRust.M IntegerKind U8 constr
+R5726:5732 RocqOfRust.M Ty path defax
+R5715:5721 RocqOfRust.M <> alloc def
+inst 5799:5830 opcode Instance_IsConstant_value_INT_LT
+R5838:5851 RocqOfRust.M IsFunction C class
+R5881:5892 encore_vm.opcode opcode value_INT_LT def
+def 5965:5978 opcode value_INT_BYTE
+R5986:5989 Corelib.Init.Datatypes <> list ind
+R5991:5997 RocqOfRust.M Value t ind
+binder 5981:5982 <> ε:52
+R6006:6009 Corelib.Init.Datatypes <> list ind
+R6011:6014 RocqOfRust.M Ty t defax
+binder 6001:6002 <> τ:53
+R6023:6026 Corelib.Init.Datatypes <> list ind
+R6028:6034 RocqOfRust.M Value t ind
+binder 6018:6019 <> α:54
+R6039:6039 RocqOfRust.M <> M def
+R6072:6075 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6088:6089 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6121:6123 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6090:6102 RocqOfRust.M Value Integer constr
+R6104:6117 RocqOfRust.M IntegerKind U8 constr
+R6076:6082 RocqOfRust.M Ty path defax
+R6065:6071 RocqOfRust.M <> alloc def
+R6072:6075 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6088:6089 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6121:6123 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6090:6102 RocqOfRust.M Value Integer constr
+R6104:6117 RocqOfRust.M IntegerKind U8 constr
+R6076:6082 RocqOfRust.M Ty path defax
+R6065:6071 RocqOfRust.M <> alloc def
+inst 6149:6182 opcode Instance_IsConstant_value_INT_BYTE
+R6190:6203 RocqOfRust.M IsFunction C class
+R6235:6248 encore_vm.opcode opcode value_INT_BYTE def
+def 6323:6333 opcode value_INT_0
+R6341:6344 Corelib.Init.Datatypes <> list ind
+R6346:6352 RocqOfRust.M Value t ind
+binder 6336:6337 <> ε:55
+R6361:6364 Corelib.Init.Datatypes <> list ind
+R6366:6369 RocqOfRust.M Ty t defax
+binder 6356:6357 <> τ:56
+R6378:6381 Corelib.Init.Datatypes <> list ind
+R6383:6389 RocqOfRust.M Value t ind
+binder 6373:6374 <> α:57
+R6394:6394 RocqOfRust.M <> M def
+R6427:6430 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6443:6444 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6476:6478 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6445:6457 RocqOfRust.M Value Integer constr
+R6459:6472 RocqOfRust.M IntegerKind U8 constr
+R6431:6437 RocqOfRust.M Ty path defax
+R6420:6426 RocqOfRust.M <> alloc def
+R6427:6430 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6443:6444 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6476:6478 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6445:6457 RocqOfRust.M Value Integer constr
+R6459:6472 RocqOfRust.M IntegerKind U8 constr
+R6431:6437 RocqOfRust.M Ty path defax
+R6420:6426 RocqOfRust.M <> alloc def
+inst 6504:6534 opcode Instance_IsConstant_value_INT_0
+R6542:6555 RocqOfRust.M IsFunction C class
+R6584:6594 encore_vm.opcode opcode value_INT_0 def
+def 6666:6676 opcode value_INT_1
+R6684:6687 Corelib.Init.Datatypes <> list ind
+R6689:6695 RocqOfRust.M Value t ind
+binder 6679:6680 <> ε:58
+R6704:6707 Corelib.Init.Datatypes <> list ind
+R6709:6712 RocqOfRust.M Ty t defax
+binder 6699:6700 <> τ:59
+R6721:6724 Corelib.Init.Datatypes <> list ind
+R6726:6732 RocqOfRust.M Value t ind
+binder 6716:6717 <> α:60
+R6737:6737 RocqOfRust.M <> M def
+R6770:6773 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6786:6787 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6819:6821 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6788:6800 RocqOfRust.M Value Integer constr
+R6802:6815 RocqOfRust.M IntegerKind U8 constr
+R6774:6780 RocqOfRust.M Ty path defax
+R6763:6769 RocqOfRust.M <> alloc def
+R6770:6773 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6786:6787 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6819:6821 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R6788:6800 RocqOfRust.M Value Integer constr
+R6802:6815 RocqOfRust.M IntegerKind U8 constr
+R6774:6780 RocqOfRust.M Ty path defax
+R6763:6769 RocqOfRust.M <> alloc def
+inst 6847:6877 opcode Instance_IsConstant_value_INT_1
+R6885:6898 RocqOfRust.M IsFunction C class
+R6927:6937 encore_vm.opcode opcode value_INT_1 def
+def 7009:7019 opcode value_INT_2
+R7027:7030 Corelib.Init.Datatypes <> list ind
+R7032:7038 RocqOfRust.M Value t ind
+binder 7022:7023 <> ε:61
+R7047:7050 Corelib.Init.Datatypes <> list ind
+R7052:7055 RocqOfRust.M Ty t defax
+binder 7042:7043 <> τ:62
+R7064:7067 Corelib.Init.Datatypes <> list ind
+R7069:7075 RocqOfRust.M Value t ind
+binder 7059:7060 <> α:63
+R7080:7080 RocqOfRust.M <> M def
+R7113:7116 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7129:7130 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7162:7164 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7131:7143 RocqOfRust.M Value Integer constr
+R7145:7158 RocqOfRust.M IntegerKind U8 constr
+R7117:7123 RocqOfRust.M Ty path defax
+R7106:7112 RocqOfRust.M <> alloc def
+R7113:7116 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7129:7130 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7162:7164 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7131:7143 RocqOfRust.M Value Integer constr
+R7145:7158 RocqOfRust.M IntegerKind U8 constr
+R7117:7123 RocqOfRust.M Ty path defax
+R7106:7112 RocqOfRust.M <> alloc def
+inst 7190:7220 opcode Instance_IsConstant_value_INT_2
+R7228:7241 RocqOfRust.M IsFunction C class
+R7270:7280 encore_vm.opcode opcode value_INT_2 def
+def 7352:7363 opcode value_EXTERN
+R7371:7374 Corelib.Init.Datatypes <> list ind
+R7376:7382 RocqOfRust.M Value t ind
+binder 7366:7367 <> ε:64
+R7391:7394 Corelib.Init.Datatypes <> list ind
+R7396:7399 RocqOfRust.M Ty t defax
+binder 7386:7387 <> τ:65
+R7408:7411 Corelib.Init.Datatypes <> list ind
+R7413:7419 RocqOfRust.M Value t ind
+binder 7403:7404 <> α:66
+R7424:7424 RocqOfRust.M <> M def
+R7457:7460 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7473:7474 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7506:7508 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7475:7487 RocqOfRust.M Value Integer constr
+R7489:7502 RocqOfRust.M IntegerKind U8 constr
+R7461:7467 RocqOfRust.M Ty path defax
+R7450:7456 RocqOfRust.M <> alloc def
+R7457:7460 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7473:7474 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7506:7508 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7475:7487 RocqOfRust.M Value Integer constr
+R7489:7502 RocqOfRust.M IntegerKind U8 constr
+R7461:7467 RocqOfRust.M Ty path defax
+R7450:7456 RocqOfRust.M <> alloc def
+inst 7534:7565 opcode Instance_IsConstant_value_EXTERN
+R7573:7586 RocqOfRust.M IsFunction C class
+R7616:7627 encore_vm.opcode opcode value_EXTERN def
+def 7700:7710 opcode value_BYTES
+R7718:7721 Corelib.Init.Datatypes <> list ind
+R7723:7729 RocqOfRust.M Value t ind
+binder 7713:7714 <> ε:67
+R7738:7741 Corelib.Init.Datatypes <> list ind
+R7743:7746 RocqOfRust.M Ty t defax
+binder 7733:7734 <> τ:68
+R7755:7758 Corelib.Init.Datatypes <> list ind
+R7760:7766 RocqOfRust.M Value t ind
+binder 7750:7751 <> α:69
+R7771:7771 RocqOfRust.M <> M def
+R7804:7807 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7820:7821 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7853:7855 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7822:7834 RocqOfRust.M Value Integer constr
+R7836:7849 RocqOfRust.M IntegerKind U8 constr
+R7808:7814 RocqOfRust.M Ty path defax
+R7797:7803 RocqOfRust.M <> alloc def
+R7804:7807 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7820:7821 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7853:7855 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R7822:7834 RocqOfRust.M Value Integer constr
+R7836:7849 RocqOfRust.M IntegerKind U8 constr
+R7808:7814 RocqOfRust.M Ty path defax
+R7797:7803 RocqOfRust.M <> alloc def
+inst 7881:7911 opcode Instance_IsConstant_value_BYTES
+R7919:7932 RocqOfRust.M IsFunction C class
+R7961:7971 encore_vm.opcode opcode value_BYTES def
+def 8043:8057 opcode value_BYTES_LEN
+R8065:8068 Corelib.Init.Datatypes <> list ind
+R8070:8076 RocqOfRust.M Value t ind
+binder 8060:8061 <> ε:70
+R8085:8088 Corelib.Init.Datatypes <> list ind
+R8090:8093 RocqOfRust.M Ty t defax
+binder 8080:8081 <> τ:71
+R8102:8105 Corelib.Init.Datatypes <> list ind
+R8107:8113 RocqOfRust.M Value t ind
+binder 8097:8098 <> α:72
+R8118:8118 RocqOfRust.M <> M def
+R8151:8154 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8167:8168 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8200:8202 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8169:8181 RocqOfRust.M Value Integer constr
+R8183:8196 RocqOfRust.M IntegerKind U8 constr
+R8155:8161 RocqOfRust.M Ty path defax
+R8144:8150 RocqOfRust.M <> alloc def
+R8151:8154 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8167:8168 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8200:8202 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8169:8181 RocqOfRust.M Value Integer constr
+R8183:8196 RocqOfRust.M IntegerKind U8 constr
+R8155:8161 RocqOfRust.M Ty path defax
+R8144:8150 RocqOfRust.M <> alloc def
+inst 8228:8262 opcode Instance_IsConstant_value_BYTES_LEN
+R8270:8283 RocqOfRust.M IsFunction C class
+R8316:8330 encore_vm.opcode opcode value_BYTES_LEN def
+def 8406:8420 opcode value_BYTES_GET
+R8428:8431 Corelib.Init.Datatypes <> list ind
+R8433:8439 RocqOfRust.M Value t ind
+binder 8423:8424 <> ε:73
+R8448:8451 Corelib.Init.Datatypes <> list ind
+R8453:8456 RocqOfRust.M Ty t defax
+binder 8443:8444 <> τ:74
+R8465:8468 Corelib.Init.Datatypes <> list ind
+R8470:8476 RocqOfRust.M Value t ind
+binder 8460:8461 <> α:75
+R8481:8481 RocqOfRust.M <> M def
+R8514:8517 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8530:8531 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8563:8565 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8532:8544 RocqOfRust.M Value Integer constr
+R8546:8559 RocqOfRust.M IntegerKind U8 constr
+R8518:8524 RocqOfRust.M Ty path defax
+R8507:8513 RocqOfRust.M <> alloc def
+R8514:8517 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8530:8531 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8563:8565 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8532:8544 RocqOfRust.M Value Integer constr
+R8546:8559 RocqOfRust.M IntegerKind U8 constr
+R8518:8524 RocqOfRust.M Ty path defax
+R8507:8513 RocqOfRust.M <> alloc def
+inst 8591:8625 opcode Instance_IsConstant_value_BYTES_GET
+R8633:8646 RocqOfRust.M IsFunction C class
+R8679:8693 encore_vm.opcode opcode value_BYTES_GET def
+def 8769:8786 opcode value_BYTES_CONCAT
+R8794:8797 Corelib.Init.Datatypes <> list ind
+R8799:8805 RocqOfRust.M Value t ind
+binder 8789:8790 <> ε:76
+R8814:8817 Corelib.Init.Datatypes <> list ind
+R8819:8822 RocqOfRust.M Ty t defax
+binder 8809:8810 <> τ:77
+R8831:8834 Corelib.Init.Datatypes <> list ind
+R8836:8842 RocqOfRust.M Value t ind
+binder 8826:8827 <> α:78
+R8847:8847 RocqOfRust.M <> M def
+R8880:8883 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8896:8897 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8929:8931 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8898:8910 RocqOfRust.M Value Integer constr
+R8912:8925 RocqOfRust.M IntegerKind U8 constr
+R8884:8890 RocqOfRust.M Ty path defax
+R8873:8879 RocqOfRust.M <> alloc def
+R8880:8883 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8896:8897 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8929:8931 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R8898:8910 RocqOfRust.M Value Integer constr
+R8912:8925 RocqOfRust.M IntegerKind U8 constr
+R8884:8890 RocqOfRust.M Ty path defax
+R8873:8879 RocqOfRust.M <> alloc def
+inst 8957:8994 opcode Instance_IsConstant_value_BYTES_CONCAT
+R9002:9015 RocqOfRust.M IsFunction C class
+R9051:9068 encore_vm.opcode opcode value_BYTES_CONCAT def
+def 9147:9163 opcode value_BYTES_SLICE
+R9171:9174 Corelib.Init.Datatypes <> list ind
+R9176:9182 RocqOfRust.M Value t ind
+binder 9166:9167 <> ε:79
+R9191:9194 Corelib.Init.Datatypes <> list ind
+R9196:9199 RocqOfRust.M Ty t defax
+binder 9186:9187 <> τ:80
+R9208:9211 Corelib.Init.Datatypes <> list ind
+R9213:9219 RocqOfRust.M Value t ind
+binder 9203:9204 <> α:81
+R9224:9224 RocqOfRust.M <> M def
+R9257:9260 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9273:9274 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9306:9308 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9275:9287 RocqOfRust.M Value Integer constr
+R9289:9302 RocqOfRust.M IntegerKind U8 constr
+R9261:9267 RocqOfRust.M Ty path defax
+R9250:9256 RocqOfRust.M <> alloc def
+R9257:9260 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9273:9274 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9306:9308 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9275:9287 RocqOfRust.M Value Integer constr
+R9289:9302 RocqOfRust.M IntegerKind U8 constr
+R9261:9267 RocqOfRust.M Ty path defax
+R9250:9256 RocqOfRust.M <> alloc def
+inst 9334:9370 opcode Instance_IsConstant_value_BYTES_SLICE
+R9378:9391 RocqOfRust.M IsFunction C class
+R9426:9442 encore_vm.opcode opcode value_BYTES_SLICE def
+def 9520:9533 opcode value_BYTES_EQ
+R9541:9544 Corelib.Init.Datatypes <> list ind
+R9546:9552 RocqOfRust.M Value t ind
+binder 9536:9537 <> ε:82
+R9561:9564 Corelib.Init.Datatypes <> list ind
+R9566:9569 RocqOfRust.M Ty t defax
+binder 9556:9557 <> τ:83
+R9578:9581 Corelib.Init.Datatypes <> list ind
+R9583:9589 RocqOfRust.M Value t ind
+binder 9573:9574 <> α:84
+R9594:9594 RocqOfRust.M <> M def
+R9627:9630 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9643:9644 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9676:9678 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9645:9657 RocqOfRust.M Value Integer constr
+R9659:9672 RocqOfRust.M IntegerKind U8 constr
+R9631:9637 RocqOfRust.M Ty path defax
+R9620:9626 RocqOfRust.M <> alloc def
+R9627:9630 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9643:9644 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9676:9678 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9645:9657 RocqOfRust.M Value Integer constr
+R9659:9672 RocqOfRust.M IntegerKind U8 constr
+R9631:9637 RocqOfRust.M Ty path defax
+R9620:9626 RocqOfRust.M <> alloc def
+inst 9704:9737 opcode Instance_IsConstant_value_BYTES_EQ
+R9745:9758 RocqOfRust.M IsFunction C class
+R9790:9803 encore_vm.opcode opcode value_BYTES_EQ def
+def 9878:9887 opcode value_NULL
+R9895:9898 Corelib.Init.Datatypes <> list ind
+R9900:9906 RocqOfRust.M Value t ind
+binder 9890:9891 <> ε:85
+R9915:9918 Corelib.Init.Datatypes <> list ind
+R9920:9923 RocqOfRust.M Ty t defax
+binder 9910:9911 <> τ:86
+R9932:9935 Corelib.Init.Datatypes <> list ind
+R9937:9943 RocqOfRust.M Value t ind
+binder 9927:9928 <> α:87
+R9948:9948 RocqOfRust.M <> M def
+R9981:9984 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9997:9998 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R10031:10033 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9999:10011 RocqOfRust.M Value Integer constr
+R10013:10026 RocqOfRust.M IntegerKind U8 constr
+R9985:9991 RocqOfRust.M Ty path defax
+R9974:9980 RocqOfRust.M <> alloc def
+R9981:9984 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9997:9998 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R10031:10033 RocqOfRust.M Notations :::x_'(|'_x_','_'..'_','_x_'|)' not
+R9999:10011 RocqOfRust.M Value Integer constr
+R10013:10026 RocqOfRust.M IntegerKind U8 constr
+R9985:9991 RocqOfRust.M Ty path defax
+R9974:9980 RocqOfRust.M <> alloc def
+inst 10059:10088 opcode Instance_IsConstant_value_NULL
+R10096:10109 RocqOfRust.M IsFunction C class
+R10137:10146 encore_vm.opcode opcode value_NULL def
+R10205:10210 encore_vm.opcode opcode <> mod

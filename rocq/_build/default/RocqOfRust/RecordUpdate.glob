@@ -1,0 +1,126 @@
+DIGEST 019426de00592234ee3784fb24a59d63
+FRocqOfRust.RecordUpdate
+R253:273 Stdlib.Program.Basics <> <> lib
+R291:301 Ltac2.Ltac2 <> <> lib
+R312:323 Ltac2.Option <> <> lib
+R341:350 Ltac2.Bool <> <> lib
+binder 2243:2243 <> v:1
+binder 2245:2245 <> r:2
+ind 2523:2528 <> Setter
+constr 2568:2570 <> set
+rec 2523:2528 <> Setter
+proj 2568:2570 <> set
+binder 2530:2530 <> R:3
+binder 2532:2532 <> E:4
+R2550:2553 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2549:2549 RocqOfRust.RecordUpdate <> R:3 var
+R2554:2554 RocqOfRust.RecordUpdate <> E:4 var
+binder 2541:2546 <> getter:5
+R2575:2578 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2574:2574 RocqOfRust.RecordUpdate <> E:4 var
+R2580:2583 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R2579:2579 RocqOfRust.RecordUpdate <> R:3 var
+R2584:2584 RocqOfRust.RecordUpdate <> R:3 var
+R2598:2600 RocqOfRust.RecordUpdate <> set def
+R2598:2600 RocqOfRust.RecordUpdate <> set def
+R2670:2675 RocqOfRust.RecordUpdate <> Setter class
+mod 2757:2775 <> RecordSetNotations1
+R2900:2902 RocqOfRust.RecordUpdate <> set def
+not 2870:2870 RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>'
+R3037:3055 RocqOfRust.RecordUpdate RecordSetNotations1 <> mod
+mod 3066:3082 <> RecordSetterTests
+mod 3094:3106 <> RecordSetterTests.PrimProjTests
+rec 3158:3161 RecordSetterTests.PrimProjTests Test
+proj 3185:3186 RecordSetterTests.PrimProjTests f1
+proj 3199:3200 RecordSetterTests.PrimProjTests f2
+binder 3164:3164 <> X:8
+R3190:3190 RocqOfRust.RecordUpdate <> X:8 var
+R3205:3207 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R3204:3204 RocqOfRust.RecordUpdate <> X:8 var
+R3208:3208 RocqOfRust.RecordUpdate <> X:8 var
+R3233:3234 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f1 proj
+R3233:3234 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f1 proj
+R3255:3256 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f2 proj
+R3255:3256 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f2 proj
+def 3268:3333 RecordSetterTests.PrimProjTests Unnamed_thm
+binder 3280:3280 <> X:12
+R3287:3290 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests Test rec
+R3292:3292 RocqOfRust.RecordUpdate <> X:12 var
+binder 3283:3283 <> t:13
+R3300:3300 RocqOfRust.RecordUpdate <> X:12 var
+binder 3296:3296 <> x:14
+R3330:3332 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3327:3328 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f1 proj
+R3311:3314 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3317:3320 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3322:3324 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3315:3316 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f1 proj
+R3321:3321 RocqOfRust.RecordUpdate <> x:14 var
+R3310:3310 RocqOfRust.RecordUpdate <> t:13 var
+R3333:3333 RocqOfRust.RecordUpdate <> x:14 var
+def 3388:3458 RecordSetterTests.PrimProjTests Unnamed_thm0
+binder 3400:3400 <> X:15
+R3407:3410 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests Test rec
+R3412:3412 RocqOfRust.RecordUpdate <> X:15 var
+binder 3403:3403 <> t:16
+R3420:3420 RocqOfRust.RecordUpdate <> X:15 var
+binder 3416:3416 <> x:17
+R3450:3452 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3447:3448 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f2 proj
+R3431:3434 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3437:3440 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3442:3444 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3435:3436 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f1 proj
+R3441:3441 RocqOfRust.RecordUpdate <> x:17 var
+R3430:3430 RocqOfRust.RecordUpdate <> t:16 var
+R3456:3457 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests f2 proj
+R3453:3453 RocqOfRust.RecordUpdate <> t:16 var
+R3514:3526 RocqOfRust.RecordUpdate RecordSetterTests.PrimProjTests <> mod
+mod 3539:3554 <> RecordSetterTests.NonPrimProjTests
+rec 3568:3571 RecordSetterTests.NonPrimProjTests Test
+proj 3595:3596 RecordSetterTests.NonPrimProjTests f1
+proj 3609:3610 RecordSetterTests.NonPrimProjTests f2
+binder 3574:3574 <> X:18
+R3600:3600 RocqOfRust.RecordUpdate <> X:18 var
+R3615:3617 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R3614:3614 RocqOfRust.RecordUpdate <> X:18 var
+R3618:3618 RocqOfRust.RecordUpdate <> X:18 var
+R3643:3644 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f1 proj
+R3643:3644 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f1 proj
+R3665:3666 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f2 proj
+R3665:3666 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f2 proj
+def 3678:3743 RecordSetterTests.NonPrimProjTests Unnamed_thm
+binder 3690:3690 <> X:22
+R3697:3700 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests Test rec
+R3702:3702 RocqOfRust.RecordUpdate <> X:22 var
+binder 3693:3693 <> t:23
+R3710:3710 RocqOfRust.RecordUpdate <> X:22 var
+binder 3706:3706 <> x:24
+R3740:3742 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3737:3738 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f1 proj
+R3721:3724 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3727:3730 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3732:3734 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3725:3726 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f1 proj
+R3731:3731 RocqOfRust.RecordUpdate <> x:24 var
+R3720:3720 RocqOfRust.RecordUpdate <> t:23 var
+R3743:3743 RocqOfRust.RecordUpdate <> x:24 var
+def 3798:3868 RecordSetterTests.NonPrimProjTests Unnamed_thm0
+binder 3810:3810 <> X:25
+R3817:3820 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests Test rec
+R3822:3822 RocqOfRust.RecordUpdate <> X:25 var
+binder 3813:3813 <> t:26
+R3830:3830 RocqOfRust.RecordUpdate <> X:25 var
+binder 3826:3826 <> x:27
+R3860:3862 Corelib.Init.Logic <> ::type_scope:x_'='_x not
+R3857:3858 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f2 proj
+R3841:3844 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3847:3850 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3852:3854 RocqOfRust.RecordUpdate RecordSetNotations1 ::record_set:x_'<|'_x_':='_x_'|>' not
+R3845:3846 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f1 proj
+R3851:3851 RocqOfRust.RecordUpdate <> x:27 var
+R3840:3840 RocqOfRust.RecordUpdate <> t:26 var
+R3866:3867 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests f2 proj
+R3863:3863 RocqOfRust.RecordUpdate <> t:26 var
+R3924:3939 RocqOfRust.RecordUpdate RecordSetterTests.NonPrimProjTests <> mod
+R3946:3962 RocqOfRust.RecordUpdate RecordSetterTests <> mod

@@ -1,0 +1,788 @@
+DIGEST 1f6519319da22d30cac8c6e2016f8782
+FRocqOfRust.lib.lib
+R15:51 Stdlib.Numbers.Cyclic.Int63.PrimInt63 <> <> lib
+R69:88 Stdlib.Strings.Ascii <> <> lib
+R106:130 Stdlib.Strings.PrimString <> <> lib
+R148:167 Stdlib.ZArith.ZArith <> <> lib
+R185:207 RocqOfRust.RecordUpdate <> <> lib
+R488:505 Stdlib.Lists.List ListNotations <> mod
+R524:535 RocqOfRust.M <> <> lib
+R545:555 RocqOfRust.M Notations <> mod
+mod 566:569 <> List
+def 625:627 List eqb
+binder 630:630 <> A:1
+R652:655 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R651:651 RocqOfRust.lib.lib <> A:1 var
+R657:660 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R656:656 RocqOfRust.lib.lib <> A:1 var
+R661:664 Corelib.Init.Datatypes <> bool ind
+binder 640:647 <> item_eqb:2
+R677:680 Corelib.Init.Datatypes <> list ind
+R682:682 RocqOfRust.lib.lib <> A:1 var
+binder 669:670 <> l1:3
+binder 672:673 <> l2:4
+R687:690 Corelib.Init.Datatypes <> bool ind
+R709:710 RocqOfRust.lib.lib <> l2:4 var
+R705:706 RocqOfRust.lib.lib <> l1:3 var
+R723:724 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R727:728 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R733:736 Corelib.Init.Datatypes <> true constr
+R746:749 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R756:759 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R766:769 Corelib.Init.Datatypes <> andb def
+R793:800 RocqOfRust.lib.lib <> item_eqb:2 var
+R772:774 RocqOfRust.lib.lib <> eqb:5 def
+R788:789 RocqOfRust.lib.lib <> l2:4 var
+R785:786 RocqOfRust.lib.lib <> l1:3 var
+R776:783 RocqOfRust.lib.lib <> item_eqb:2 var
+R823:827 Corelib.Init.Datatypes <> false constr
+R842:845 RocqOfRust.lib.lib List <> mod
+mod 856:857 <> Ty
+ax 872:876 Ty apply
+R884:887 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R880:883 RocqOfRust.M Ty t defax
+R900:903 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R888:891 Corelib.Init.Datatypes <> list ind
+R893:899 RocqOfRust.M Value t ind
+R913:916 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R904:907 Corelib.Init.Datatypes <> list ind
+R909:912 RocqOfRust.M Ty t defax
+R917:920 RocqOfRust.M Ty t defax
+ax 1069:1071 Ty dyn
+R1100:1103 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1075:1078 Corelib.Init.Datatypes <> list ind
+R1087:1089 Corelib.Init.Datatypes <> ::type_scope:x_'*'_x not
+R1081:1086 Corelib.Strings.PrimString <> string prim
+R1090:1093 Corelib.Init.Datatypes <> list ind
+R1095:1098 RocqOfRust.M Ty t defax
+R1104:1107 RocqOfRust.M Ty t defax
+ax 1123:1141 Ty associated_in_trait
+R1151:1154 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1145:1150 Corelib.Strings.PrimString <> string prim
+R1167:1170 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1155:1158 Corelib.Init.Datatypes <> list ind
+R1160:1166 RocqOfRust.M Value t ind
+R1180:1183 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1171:1174 Corelib.Init.Datatypes <> list ind
+R1176:1179 RocqOfRust.M Ty t defax
+R1188:1191 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1184:1187 RocqOfRust.M Ty t defax
+R1198:1201 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R1192:1197 Corelib.Strings.PrimString <> string prim
+R1202:1205 RocqOfRust.M Ty t defax
+ax 1298:1315 Ty associated_unknown
+R1319:1322 RocqOfRust.M Ty t defax
+R1329:1330 RocqOfRust.lib.lib Ty <> mod
+def 1345:1350 <> assign
+R1362:1368 RocqOfRust.M Value t ind
+binder 1353:1358 <> target:16
+R1381:1387 RocqOfRust.M Value t ind
+binder 1372:1377 <> source:17
+R1392:1392 RocqOfRust.M <> M def
+R1399:1403 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1405:1408 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1430:1435 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1409:1415 RocqOfRust.M <> write def
+R1417:1422 RocqOfRust.lib.lib <> target:16 var
+R1424:1429 RocqOfRust.lib.lib <> source:17 var
+R1436:1442 RocqOfRust.M <> alloc def
+R1445:1452 RocqOfRust.M Ty tuple defax
+R1454:1455 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1459:1469 RocqOfRust.M Value Tuple constr
+R1471:1472 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+def 1488:1499 <> get_constant
+R1509:1514 Corelib.Strings.PrimString <> string prim
+binder 1502:1505 <> name:18
+R1530:1533 RocqOfRust.M Ty t defax
+binder 1518:1526 <> return_ty:19
+R1538:1538 RocqOfRust.M <> M def
+R1545:1549 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1558:1561 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1611:1616 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1562:1575 RocqOfRust.M <> call_primitive def
+R1578:1598 RocqOfRust.M Primitive GetFunction constr
+R1600:1603 RocqOfRust.lib.lib <> name:18 var
+R1605:1606 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1608:1609 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+binder 1550:1557 <> constant:20
+R1617:1628 RocqOfRust.M <> call_closure def
+R1631:1638 RocqOfRust.lib.lib <> apply defax
+R1641:1647 RocqOfRust.M Ty path defax
+R1654:1655 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1657:1657 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R1667:1667 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R1658:1666 RocqOfRust.lib.lib <> return_ty:19 var
+R1670:1677 RocqOfRust.lib.lib <> constant:20 var
+R1679:1680 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+def 1695:1717 <> get_associated_constant
+R1725:1728 RocqOfRust.M Ty t defax
+binder 1720:1721 <> ty:21
+R1739:1744 Corelib.Strings.PrimString <> string prim
+binder 1732:1735 <> name:22
+R1760:1763 RocqOfRust.M Ty t defax
+binder 1748:1756 <> return_ty:23
+R1768:1768 RocqOfRust.M <> M def
+R1775:1779 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1788:1791 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1854:1859 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R1792:1805 RocqOfRust.M <> call_primitive def
+R1808:1838 RocqOfRust.M Primitive GetAssociatedFunction constr
+R1840:1841 RocqOfRust.lib.lib <> ty:21 var
+R1843:1846 RocqOfRust.lib.lib <> name:22 var
+R1848:1849 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1851:1852 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+binder 1780:1787 <> constant:24
+R1860:1871 RocqOfRust.M <> call_closure def
+R1874:1881 RocqOfRust.lib.lib <> apply defax
+R1884:1890 RocqOfRust.M Ty path defax
+R1897:1898 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R1900:1900 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R1910:1910 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R1901:1909 RocqOfRust.lib.lib <> return_ty:23 var
+R1913:1920 RocqOfRust.lib.lib <> constant:24 var
+R1922:1923 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+def 2013:2018 <> mk_str
+R2025:2030 Corelib.Strings.PrimString <> string prim
+binder 2021:2021 <> s:25
+R2035:2035 RocqOfRust.M <> M def
+R2042:2046 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R2054:2057 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R2098:2103 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R2058:2064 RocqOfRust.M <> alloc def
+R2067:2073 RocqOfRust.M Ty path defax
+R2083:2094 RocqOfRust.M Value String constr
+R2096:2096 RocqOfRust.lib.lib <> s:25 var
+binder 2047:2053 <> pointer:26
+R2104:2111 RocqOfRust.M <> borrow def
+R2113:2128 RocqOfRust.M Pointer.Kind Ref constr
+R2130:2136 RocqOfRust.lib.lib <> pointer:26 var
+mod 2147:2153 <> Integer
+def 2169:2171 Integer min
+R2181:2193 RocqOfRust.M IntegerKind t ind
+binder 2174:2177 <> kind:27
+R2198:2198 Corelib.Numbers.BinNums <> Z ind
+R2213:2216 RocqOfRust.lib.lib <> kind:27 var
+R2229:2242 RocqOfRust.M IntegerKind U8 constr
+R2255:2269 RocqOfRust.M IntegerKind U16 constr
+R2282:2296 RocqOfRust.M IntegerKind U32 constr
+R2309:2323 RocqOfRust.M IntegerKind U64 constr
+R2336:2351 RocqOfRust.M IntegerKind U128 constr
+R2364:2380 RocqOfRust.M IntegerKind Usize constr
+R2393:2406 RocqOfRust.M IntegerKind I8 constr
+R2411:2411 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2413:2413 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2422:2436 RocqOfRust.M IntegerKind I16 constr
+R2441:2441 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2443:2443 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2453:2467 RocqOfRust.M IntegerKind I32 constr
+R2472:2472 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2474:2474 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2484:2498 RocqOfRust.M IntegerKind I64 constr
+R2503:2503 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2505:2505 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2515:2530 RocqOfRust.M IntegerKind I128 constr
+R2535:2535 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2537:2537 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2548:2564 RocqOfRust.M IntegerKind Isize constr
+R2569:2569 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2571:2571 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2605:2607 RocqOfRust.lib.lib Integer min def
+def 2640:2642 Integer max
+R2652:2664 RocqOfRust.M IntegerKind t ind
+binder 2645:2648 <> kind:29
+R2669:2669 Corelib.Numbers.BinNums <> Z ind
+R2684:2687 RocqOfRust.lib.lib <> kind:29 var
+R2700:2713 RocqOfRust.M IntegerKind U8 constr
+R2721:2723 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2719:2719 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2732:2746 RocqOfRust.M IntegerKind U16 constr
+R2755:2757 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2752:2752 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2766:2780 RocqOfRust.M IntegerKind U32 constr
+R2789:2791 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2786:2786 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2800:2814 RocqOfRust.M IntegerKind U64 constr
+R2823:2825 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2820:2820 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2834:2849 RocqOfRust.M IntegerKind U128 constr
+R2859:2861 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2855:2855 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2870:2886 RocqOfRust.M IntegerKind Usize constr
+R2895:2897 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2892:2892 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2906:2919 RocqOfRust.M IntegerKind I8 constr
+R2927:2929 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2925:2925 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2938:2952 RocqOfRust.M IntegerKind I16 constr
+R2961:2963 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2958:2958 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R2972:2986 RocqOfRust.M IntegerKind I32 constr
+R2995:2997 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R2992:2992 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3006:3020 RocqOfRust.M IntegerKind I64 constr
+R3029:3031 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3026:3026 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3040:3055 RocqOfRust.M IntegerKind I128 constr
+R3065:3067 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3061:3061 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3076:3092 RocqOfRust.M IntegerKind Isize constr
+R3101:3103 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3098:3098 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3136:3138 RocqOfRust.lib.lib Integer max def
+def 3171:3184 Integer normalize_wrap
+R3194:3206 RocqOfRust.M IntegerKind t ind
+binder 3187:3190 <> kind:31
+R3214:3214 Corelib.Numbers.BinNums <> Z ind
+binder 3210:3210 <> z:32
+R3219:3219 Corelib.Numbers.BinNums <> Z ind
+R3234:3237 RocqOfRust.lib.lib <> kind:31 var
+R3250:3263 RocqOfRust.M IntegerKind U8 constr
+R3268:3275 Stdlib.ZArith.BinInt Z modulo def
+R3277:3277 RocqOfRust.lib.lib <> z:32 var
+R3281:3281 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3291:3305 RocqOfRust.M IntegerKind U16 constr
+R3310:3317 Stdlib.ZArith.BinInt Z modulo def
+R3319:3319 RocqOfRust.lib.lib <> z:32 var
+R3323:3323 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3334:3348 RocqOfRust.M IntegerKind U32 constr
+R3353:3360 Stdlib.ZArith.BinInt Z modulo def
+R3362:3362 RocqOfRust.lib.lib <> z:32 var
+R3366:3366 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3377:3391 RocqOfRust.M IntegerKind U64 constr
+R3396:3403 Stdlib.ZArith.BinInt Z modulo def
+R3405:3405 RocqOfRust.lib.lib <> z:32 var
+R3409:3409 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3420:3435 RocqOfRust.M IntegerKind U128 constr
+R3440:3447 Stdlib.ZArith.BinInt Z modulo def
+R3449:3449 RocqOfRust.lib.lib <> z:32 var
+R3453:3453 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3465:3481 RocqOfRust.M IntegerKind Usize constr
+R3486:3493 Stdlib.ZArith.BinInt Z modulo def
+R3495:3495 RocqOfRust.lib.lib <> z:32 var
+R3499:3499 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3510:3523 RocqOfRust.M IntegerKind I8 constr
+R3552:3554 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3528:3535 Stdlib.ZArith.BinInt Z modulo def
+R3539:3541 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3538:3538 RocqOfRust.lib.lib <> z:32 var
+R3543:3543 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3549:3549 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3556:3556 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3565:3579 RocqOfRust.M IntegerKind I16 constr
+R3610:3612 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3584:3591 Stdlib.ZArith.BinInt Z modulo def
+R3595:3597 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3594:3594 RocqOfRust.lib.lib <> z:32 var
+R3599:3599 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3606:3606 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3614:3614 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3624:3638 RocqOfRust.M IntegerKind I32 constr
+R3669:3671 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3643:3650 Stdlib.ZArith.BinInt Z modulo def
+R3654:3656 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3653:3653 RocqOfRust.lib.lib <> z:32 var
+R3658:3658 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3665:3665 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3673:3673 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3683:3697 RocqOfRust.M IntegerKind I64 constr
+R3728:3730 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3702:3709 Stdlib.ZArith.BinInt Z modulo def
+R3713:3715 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3712:3712 RocqOfRust.lib.lib <> z:32 var
+R3717:3717 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3724:3724 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3732:3732 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3742:3757 RocqOfRust.M IntegerKind I128 constr
+R3790:3792 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3762:3769 Stdlib.ZArith.BinInt Z modulo def
+R3773:3775 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3772:3772 RocqOfRust.lib.lib <> z:32 var
+R3777:3777 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3785:3785 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3794:3794 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3805:3821 RocqOfRust.M IntegerKind Isize constr
+R3852:3854 Stdlib.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3826:3833 Stdlib.ZArith.BinInt Z modulo def
+R3837:3839 Stdlib.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R3836:3836 RocqOfRust.lib.lib <> z:32 var
+R3841:3841 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3848:3848 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+R3856:3856 Stdlib.ZArith.BinInt <> ::Z_scope:x_'^'_x not
+def 3883:3898 Integer normalize_option
+R3908:3920 RocqOfRust.M IntegerKind t ind
+binder 3901:3904 <> kind:34
+R3928:3928 Corelib.Numbers.BinNums <> Z ind
+binder 3924:3924 <> z:35
+R3933:3938 Corelib.Init.Datatypes <> option ind
+R3940:3940 Corelib.Numbers.BinNums <> Z ind
+R3953:3956 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R3952:3952 RocqOfRust.lib.lib <> z:35 var
+R3957:3959 RocqOfRust.lib.lib Integer min def
+R3961:3964 RocqOfRust.lib.lib <> kind:34 var
+R4002:4005 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R3994:3996 RocqOfRust.lib.lib Integer max def
+R3998:4001 RocqOfRust.lib.lib <> kind:34 var
+R4006:4006 RocqOfRust.lib.lib <> z:35 var
+R4039:4042 Corelib.Init.Datatypes <> Some constr
+R4044:4044 RocqOfRust.lib.lib <> z:35 var
+R4019:4022 Corelib.Init.Datatypes <> None constr
+R3977:3980 Corelib.Init.Datatypes <> None constr
+def 4061:4080 Integer normalize_saturating
+R4090:4102 RocqOfRust.M IntegerKind t ind
+binder 4083:4086 <> kind:36
+R4110:4110 Corelib.Numbers.BinNums <> Z ind
+binder 4106:4106 <> z:37
+R4115:4115 Corelib.Numbers.BinNums <> Z ind
+R4128:4131 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R4127:4127 RocqOfRust.lib.lib <> z:37 var
+R4132:4134 RocqOfRust.lib.lib Integer min def
+R4136:4139 RocqOfRust.lib.lib <> kind:36 var
+R4181:4184 Stdlib.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R4173:4175 RocqOfRust.lib.lib Integer max def
+R4177:4180 RocqOfRust.lib.lib <> kind:36 var
+R4185:4185 RocqOfRust.lib.lib <> z:37 var
+R4222:4222 RocqOfRust.lib.lib <> z:37 var
+R4198:4200 RocqOfRust.lib.lib Integer max def
+R4202:4205 RocqOfRust.lib.lib <> kind:36 var
+R4152:4154 RocqOfRust.lib.lib Integer min def
+R4156:4159 RocqOfRust.lib.lib <> kind:36 var
+R4229:4235 RocqOfRust.lib.lib Integer <> mod
+mod 4384:4387 <> UnOp
+def 4403:4405 UnOp not
+R4409:4415 RocqOfRust.M Value t ind
+R4424:4432 RocqOfRust.M <> closure def
+binder 4439:4442 <> args:38
+R4459:4462 RocqOfRust.lib.lib <> args:38 var
+R4477:4477 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R4490:4490 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R4478:4487 RocqOfRust.M Value Bool constr
+R4495:4500 RocqOfRust.M <> pure def
+R4503:4512 RocqOfRust.M Value Bool constr
+R4515:4518 Corelib.Init.Datatypes <> negb def
+R4532:4532 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R4553:4553 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R4533:4545 RocqOfRust.M Value Integer constr
+R4566:4571 RocqOfRust.M <> pure def
+R4574:4586 RocqOfRust.M Value Integer constr
+R4594:4615 RocqOfRust.lib.lib Integer normalize_wrap def
+R4623:4628 Stdlib.ZArith.BinInt Z lnot def
+R4648:4659 RocqOfRust.M <> impossible def
+def 4723:4725 UnOp neg
+R4729:4735 RocqOfRust.M Value t ind
+R4744:4752 RocqOfRust.M <> closure def
+binder 4759:4762 <> args:40
+R4779:4782 RocqOfRust.lib.lib <> args:40 var
+R4797:4797 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R4818:4818 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R4798:4810 RocqOfRust.M Value Integer constr
+R4831:4836 RocqOfRust.M <> pure def
+R4839:4851 RocqOfRust.M Value Integer constr
+R4873:4877 Stdlib.ZArith.BinInt Z eqb def
+R4882:4892 RocqOfRust.lib.lib Integer min def
+R4947:4948 Stdlib.ZArith.BinInt <> ::Z_scope:'-'_x not
+R4975:4986 RocqOfRust.M <> impossible def
+R5041:5044 RocqOfRust.lib.lib UnOp <> mod
+mod 5055:5059 <> BinOp
+def 5075:5076 BinOp eq
+R5080:5086 RocqOfRust.M Value t ind
+R5095:5103 RocqOfRust.M <> closure def
+binder 5110:5113 <> args:42
+R5130:5133 RocqOfRust.lib.lib <> args:42 var
+R5148:5148 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5155:5156 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5163:5163 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5212:5221 RocqOfRust.M Value Bool constr
+R5227:5236 RocqOfRust.M Value Bool constr
+R5254:5259 RocqOfRust.M <> pure def
+R5262:5271 RocqOfRust.M Value Bool constr
+R5274:5281 Stdlib.Bool.Bool <> eqb def
+R5301:5313 RocqOfRust.M Value Integer constr
+R5325:5337 RocqOfRust.M Value Integer constr
+R5364:5367 Corelib.Init.Datatypes <> negb def
+R5370:5384 RocqOfRust.M IntegerKind eqb def
+R5493:5498 RocqOfRust.M <> pure def
+R5501:5510 RocqOfRust.M Value Bool constr
+R5513:5517 Stdlib.ZArith.BinInt Z eqb def
+R5416:5427 RocqOfRust.M <> impossible def
+R5545:5556 RocqOfRust.M <> impossible def
+R5612:5623 RocqOfRust.M <> impossible def
+def 5685:5686 BinOp ne
+R5690:5696 RocqOfRust.M Value t ind
+R5705:5713 RocqOfRust.M <> closure def
+binder 5720:5723 <> args:46
+R5740:5743 RocqOfRust.lib.lib <> args:46 var
+R5758:5758 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5765:5766 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5773:5773 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5792:5795 RocqOfRust.lib.lib <> args:46 var
+R5812:5812 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5819:5820 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5827:5827 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R5880:5889 RocqOfRust.M Value Bool constr
+R5895:5904 RocqOfRust.M Value Bool constr
+R5924:5929 RocqOfRust.M <> pure def
+R5932:5941 RocqOfRust.M Value Bool constr
+R5944:5947 Corelib.Init.Datatypes <> negb def
+R5950:5957 Stdlib.Bool.Bool <> eqb def
+R5980:5992 RocqOfRust.M Value Integer constr
+R6004:6016 RocqOfRust.M Value Integer constr
+R6045:6048 Corelib.Init.Datatypes <> negb def
+R6051:6065 RocqOfRust.M IntegerKind eqb def
+R6180:6185 RocqOfRust.M <> pure def
+R6188:6197 RocqOfRust.M Value Bool constr
+R6200:6203 Corelib.Init.Datatypes <> negb def
+R6206:6210 Stdlib.ZArith.BinInt Z eqb def
+R6099:6110 RocqOfRust.M <> impossible def
+R6241:6252 RocqOfRust.M <> impossible def
+R6312:6323 RocqOfRust.M <> impossible def
+R6379:6390 RocqOfRust.M <> impossible def
+def 6451:6467 BinOp make_Z_comparison
+R6477:6480 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6476:6476 Corelib.Numbers.BinNums <> Z ind
+R6482:6485 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R6481:6481 Corelib.Numbers.BinNums <> Z ind
+R6486:6489 Corelib.Init.Datatypes <> bool ind
+binder 6470:6472 <> cmp:51
+R6494:6500 RocqOfRust.M Value t ind
+R6509:6517 RocqOfRust.M <> closure def
+binder 6524:6527 <> args:52
+R6544:6547 RocqOfRust.lib.lib <> args:52 var
+R6562:6562 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R6585:6586 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R6609:6609 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R6563:6575 RocqOfRust.M Value Integer constr
+R6587:6599 RocqOfRust.M Value Integer constr
+R6625:6628 Corelib.Init.Datatypes <> negb def
+R6631:6645 RocqOfRust.M IntegerKind eqb def
+R6748:6753 RocqOfRust.M <> pure def
+R6756:6765 RocqOfRust.M Value Bool constr
+R6768:6770 RocqOfRust.lib.lib <> cmp:51 var
+R6675:6686 RocqOfRust.M <> impossible def
+R6793:6804 RocqOfRust.M <> impossible def
+def 6876:6877 BinOp lt
+R6881:6887 RocqOfRust.M Value t ind
+R6896:6912 RocqOfRust.lib.lib BinOp make_Z_comparison def
+R6914:6918 Stdlib.ZArith.BinInt Z ltb def
+def 6935:6936 BinOp le
+R6940:6946 RocqOfRust.M Value t ind
+R6955:6971 RocqOfRust.lib.lib BinOp make_Z_comparison def
+R6973:6977 Stdlib.ZArith.BinInt Z leb def
+def 6994:6995 BinOp gt
+R6999:7005 RocqOfRust.M Value t ind
+R7014:7030 RocqOfRust.lib.lib BinOp make_Z_comparison def
+R7032:7036 Stdlib.ZArith.BinInt Z gtb def
+def 7053:7054 BinOp ge
+R7058:7064 RocqOfRust.M Value t ind
+R7073:7089 RocqOfRust.lib.lib BinOp make_Z_comparison def
+R7091:7095 Stdlib.ZArith.BinInt Z geb def
+mod 7108:7111 <> BinOp.Wrap
+def 7129:7143 BinOp.Wrap make_arithmetic
+R7164:7167 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R7163:7163 Corelib.Numbers.BinNums <> Z ind
+R7169:7172 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R7168:7168 Corelib.Numbers.BinNums <> Z ind
+R7173:7173 Corelib.Numbers.BinNums <> Z ind
+binder 7154:7159 <> bin_op:54
+R7186:7192 RocqOfRust.M Value t ind
+R7203:7211 RocqOfRust.M <> closure def
+binder 7218:7221 <> args:55
+R7240:7243 RocqOfRust.lib.lib <> args:55 var
+R7260:7260 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R7283:7284 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R7303:7303 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R7261:7273 RocqOfRust.M Value Integer constr
+R7285:7297 RocqOfRust.M Value Integer constr
+R7402:7423 RocqOfRust.lib.lib Integer normalize_wrap def
+R7432:7437 RocqOfRust.lib.lib <> bin_op:54 var
+binder 7397:7397 <> z:57
+R7459:7464 RocqOfRust.M <> pure def
+R7467:7479 RocqOfRust.M Value Integer constr
+R7487:7487 RocqOfRust.lib.lib <> z:57 var
+R7505:7516 RocqOfRust.M <> impossible def
+def 7594:7596 BinOp.Wrap add
+R7600:7606 RocqOfRust.M Value t ind
+R7617:7631 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R7633:7637 Stdlib.ZArith.BinInt Z add def
+def 7656:7658 BinOp.Wrap sub
+R7662:7668 RocqOfRust.M Value t ind
+R7679:7693 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R7695:7699 Stdlib.ZArith.BinInt Z sub def
+def 7718:7720 BinOp.Wrap mul
+R7724:7730 RocqOfRust.M Value t ind
+R7741:7755 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R7757:7761 Stdlib.ZArith.BinInt Z mul def
+def 7780:7782 BinOp.Wrap div
+R7786:7792 RocqOfRust.M Value t ind
+R7803:7817 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R7819:7823 Stdlib.ZArith.BinInt Z div def
+def 7842:7844 BinOp.Wrap rem
+R7848:7854 RocqOfRust.M Value t ind
+R7865:7879 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R7881:7888 Stdlib.ZArith.BinInt Z modulo def
+def 7907:7909 BinOp.Wrap shl
+R7913:7919 RocqOfRust.M Value t ind
+R7930:7944 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R7946:7953 Stdlib.ZArith.BinInt Z shiftl def
+def 7972:7974 BinOp.Wrap shr
+R7978:7984 RocqOfRust.M Value t ind
+R7995:8009 RocqOfRust.lib.lib BinOp.Wrap make_arithmetic def
+R8011:8018 Stdlib.ZArith.BinInt Z shiftr def
+def 8037:8059 BinOp.Wrap make_bool_or_arithmetic
+R8086:8089 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R8082:8085 Corelib.Init.Datatypes <> bool ind
+R8094:8097 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R8090:8093 Corelib.Init.Datatypes <> bool ind
+R8098:8101 Corelib.Init.Datatypes <> bool ind
+binder 8068:8078 <> bin_op_bool:58
+R8123:8126 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R8122:8122 Corelib.Numbers.BinNums <> Z ind
+R8128:8131 Corelib.Init.Logic <> ::type_scope:x_'->'_x not
+R8127:8127 Corelib.Numbers.BinNums <> Z ind
+R8132:8132 Corelib.Numbers.BinNums <> Z ind
+binder 8111:8118 <> bin_op_Z:59
+R8143:8149 RocqOfRust.M Value t ind
+R8160:8168 RocqOfRust.M <> closure def
+binder 8175:8178 <> args:60
+R8197:8200 RocqOfRust.lib.lib <> args:60 var
+R8217:8217 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R8231:8232 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R8246:8246 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R8218:8227 RocqOfRust.M Value Bool constr
+R8233:8242 RocqOfRust.M Value Bool constr
+R8251:8256 RocqOfRust.M <> pure def
+R8259:8268 RocqOfRust.M Value Bool constr
+R8271:8281 RocqOfRust.lib.lib <> bin_op_bool:58 var
+R8301:8301 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R8324:8325 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R8348:8348 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R8302:8314 RocqOfRust.M Value Integer constr
+R8326:8338 RocqOfRust.M Value Integer constr
+R8366:8369 Corelib.Init.Datatypes <> negb def
+R8372:8386 RocqOfRust.M IntegerKind eqb def
+R8504:8511 RocqOfRust.lib.lib <> bin_op_Z:59 var
+binder 8499:8499 <> z:62
+R8534:8539 RocqOfRust.M <> pure def
+R8542:8554 RocqOfRust.M Value Integer constr
+R8563:8584 RocqOfRust.lib.lib Integer normalize_wrap def
+R8592:8592 RocqOfRust.lib.lib <> z:62 var
+R8418:8429 RocqOfRust.M <> impossible def
+R8611:8622 RocqOfRust.M <> impossible def
+def 8706:8712 BinOp.Wrap bit_xor
+R8716:8722 RocqOfRust.M Value t ind
+R8733:8755 RocqOfRust.lib.lib BinOp.Wrap make_bool_or_arithmetic def
+R8757:8760 Corelib.Init.Datatypes <> xorb def
+R8762:8767 Stdlib.ZArith.BinInt Z lxor def
+def 8786:8792 BinOp.Wrap bit_and
+R8796:8802 RocqOfRust.M Value t ind
+R8813:8835 RocqOfRust.lib.lib BinOp.Wrap make_bool_or_arithmetic def
+R8837:8840 Corelib.Init.Datatypes <> andb def
+R8842:8847 Stdlib.ZArith.BinInt Z land def
+def 8866:8871 BinOp.Wrap bit_or
+R8875:8881 RocqOfRust.M Value t ind
+R8892:8914 RocqOfRust.lib.lib BinOp.Wrap make_bool_or_arithmetic def
+R8916:8918 Corelib.Init.Datatypes <> orb def
+R8920:8924 Stdlib.ZArith.BinInt Z lor def
+R8933:8936 RocqOfRust.lib.lib BinOp.Wrap <> mod
+R8943:8947 RocqOfRust.lib.lib BinOp <> mod
+mod 9034:9042 <> LogicalOp
+def 9058:9060 LogicalOp and
+R9069:9075 RocqOfRust.M Value t ind
+binder 9063:9065 <> lhs:63
+R9085:9085 RocqOfRust.M <> M def
+binder 9079:9081 <> rhs:64
+R9090:9090 RocqOfRust.M <> M def
+R9099:9115 RocqOfRust.M <> call_logical_op def
+R9117:9129 RocqOfRust.M LogicalOp And constr
+R9131:9133 RocqOfRust.lib.lib <> lhs:63 var
+R9135:9137 RocqOfRust.lib.lib <> rhs:64 var
+def 9154:9155 LogicalOp or
+R9164:9170 RocqOfRust.M Value t ind
+binder 9158:9160 <> lhs:65
+R9180:9180 RocqOfRust.M <> M def
+binder 9174:9176 <> rhs:66
+R9185:9185 RocqOfRust.M <> M def
+R9194:9210 RocqOfRust.M <> call_logical_op def
+R9212:9223 RocqOfRust.M LogicalOp Or constr
+R9225:9227 RocqOfRust.lib.lib <> lhs:65 var
+R9229:9231 RocqOfRust.lib.lib <> rhs:66 var
+R9238:9246 RocqOfRust.lib.lib LogicalOp <> mod
+def 9259:9268 <> repeat_nat
+binder 9271:9271 <> A:67
+R9289:9291 Corelib.Init.Datatypes <> nat ind
+binder 9281:9285 <> times:68
+R9299:9299 RocqOfRust.lib.lib <> A:67 var
+binder 9295:9295 <> v:69
+R9304:9307 Corelib.Init.Datatypes <> list ind
+R9309:9309 RocqOfRust.lib.lib <> A:67 var
+R9322:9326 RocqOfRust.lib.lib <> times:68 var
+R9337:9347 Corelib.Init.Datatypes <> O constr
+R9352:9353 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R9359:9369 Corelib.Init.Datatypes <> S constr
+R9381:9384 Corelib.Init.Datatypes <> ::list_scope:x_'::'_x not
+R9380:9380 RocqOfRust.lib.lib <> v:69 var
+R9385:9394 RocqOfRust.lib.lib <> repeat_nat:70 def
+R9402:9402 RocqOfRust.lib.lib <> v:69 var
+R9396:9400 RocqOfRust.lib.lib <> times:68 var
+def 9491:9496 <> repeat
+R9509:9515 RocqOfRust.M Value t ind
+binder 9499:9499 <> v:72
+binder 9501:9505 <> times:73
+R9520:9520 RocqOfRust.M <> M def
+R9533:9537 RocqOfRust.lib.lib <> times:73 var
+R9548:9560 RocqOfRust.M Value Integer constr
+R9562:9578 RocqOfRust.M IntegerKind Usize constr
+R9589:9594 RocqOfRust.M <> pure def
+R9597:9607 RocqOfRust.M Value Array constr
+R9610:9619 RocqOfRust.lib.lib <> repeat_nat def
+R9638:9638 RocqOfRust.lib.lib <> v:72 var
+R9622:9629 Stdlib.ZArith.BinInt Z to_nat def
+R9631:9635 RocqOfRust.lib.lib <> times:73 var
+R9651:9662 RocqOfRust.M <> impossible def
+R9737:9742 RocqOfRust.lib.lib <> repeat def
+def 9757:9782 <> is_constant_or_break_match
+R9808:9814 RocqOfRust.M Value t ind
+binder 9785:9789 <> value:75
+binder 9791:9804 <> expected_value:76
+R9819:9819 RocqOfRust.M <> M def
+R9826:9830 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R9840:9843 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R9908:9913 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R9844:9857 RocqOfRust.M <> call_closure def
+R9860:9866 RocqOfRust.M Ty path defax
+R9876:9883 RocqOfRust.lib.lib <> eq def
+R9885:9885 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R9891:9892 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R9907:9907 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R9886:9890 RocqOfRust.lib.lib <> value:75 var
+R9893:9906 RocqOfRust.lib.lib <> expected_value:76 var
+binder 9831:9839 <> are_equal:77
+R9914:9930 RocqOfRust.M <> if_then_else_bool def
+R9933:9940 RocqOfRust.M Ty tuple defax
+R9942:9943 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R9946:9954 RocqOfRust.lib.lib <> are_equal:77 var
+R9957:9960 RocqOfRust.M <> pure def
+R9963:9973 RocqOfRust.M Value Tuple constr
+R9975:9976 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R9980:9990 RocqOfRust.M <> break_match def
+mod 10095:10120 <> FunctionTraitAutomaticImpl
+ax 10131:10150 FunctionTraitAutomaticImpl FunctionImplementsFn
+R10173:10176 Corelib.Init.Datatypes <> list ind
+R10178:10181 RocqOfRust.M Ty t defax
+binder 10166:10169 <> Args:78
+R10194:10197 RocqOfRust.M Ty t defax
+binder 10185:10190 <> Output:79
+R10205:10221 RocqOfRust.M <> IsTraitInstance defax
+R10292:10293 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R10331:10331 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10345:10345 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10332:10339 RocqOfRust.M Ty tuple defax
+R10341:10344 RocqOfRust.lib.lib <> Args:78 var
+R10354:10364 RocqOfRust.M Ty function defax
+R10366:10369 RocqOfRust.lib.lib <> Args:78 var
+R10371:10376 RocqOfRust.lib.lib <> Output:79 var
+R10400:10401 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10687:10688 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10402:10402 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R10409:10410 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R10686:10686 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R10411:10430 RocqOfRust.M InstanceField Method constr
+binder 10437:10438 <> ε:80
+binder 10440:10441 <> τ:81
+binder 10443:10444 <> α:82
+R10471:10472 RocqOfRust.lib.lib <> α:82 var
+R10467:10468 RocqOfRust.lib.lib <> τ:81 var
+R10463:10464 RocqOfRust.lib.lib <> ε:80 var
+R10489:10490 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R10493:10494 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R10497:10497 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R10502:10503 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R10520:10520 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R10504:10514 RocqOfRust.M Value Tuple constr
+R10535:10539 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R10544:10547 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R10559:10572 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R10548:10553 RocqOfRust.M <> read def
+binder 10540:10543 <> self:86
+R10573:10586 RocqOfRust.M <> call_closure def
+R10588:10593 RocqOfRust.lib.lib <> Output:79 var
+R10595:10598 RocqOfRust.lib.lib <> self:86 var
+R10626:10637 RocqOfRust.M <> impossible def
+ax 10700:10722 FunctionTraitAutomaticImpl FunctionImplementsFnMut
+R10745:10748 Corelib.Init.Datatypes <> list ind
+R10750:10753 RocqOfRust.M Ty t defax
+binder 10738:10741 <> Args:89
+R10766:10769 RocqOfRust.M Ty t defax
+binder 10757:10762 <> Output:90
+R10777:10793 RocqOfRust.M <> IsTraitInstance defax
+R10867:10868 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R10906:10906 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10920:10920 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10907:10914 RocqOfRust.M Ty tuple defax
+R10916:10919 RocqOfRust.lib.lib <> Args:89 var
+R10929:10939 RocqOfRust.M Ty function defax
+R10941:10944 RocqOfRust.lib.lib <> Args:89 var
+R10946:10951 RocqOfRust.lib.lib <> Output:90 var
+R10975:10976 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11266:11267 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R10977:10977 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R10988:10989 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R11265:11265 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R10990:11009 RocqOfRust.M InstanceField Method constr
+binder 11016:11017 <> ε:91
+binder 11019:11020 <> τ:92
+binder 11022:11023 <> α:93
+R11050:11051 RocqOfRust.lib.lib <> α:93 var
+R11046:11047 RocqOfRust.lib.lib <> τ:92 var
+R11042:11043 RocqOfRust.lib.lib <> ε:91 var
+R11068:11069 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11072:11073 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11076:11076 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R11081:11082 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R11099:11099 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R11083:11093 RocqOfRust.M Value Tuple constr
+R11114:11118 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R11123:11126 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R11138:11151 RocqOfRust.M Notations :::'let*'_x_':='_x_'in'_x not
+R11127:11132 RocqOfRust.M <> read def
+binder 11119:11122 <> self:97
+R11152:11165 RocqOfRust.M <> call_closure def
+R11167:11172 RocqOfRust.lib.lib <> Output:90 var
+R11174:11177 RocqOfRust.lib.lib <> self:97 var
+R11205:11216 RocqOfRust.M <> impossible def
+ax 11279:11302 FunctionTraitAutomaticImpl FunctionImplementsFnOnce
+R11325:11328 Corelib.Init.Datatypes <> list ind
+R11330:11333 RocqOfRust.M Ty t defax
+binder 11318:11321 <> Args:100
+R11346:11349 RocqOfRust.M Ty t defax
+binder 11337:11342 <> Output:101
+R11357:11373 RocqOfRust.M <> IsTraitInstance defax
+R11448:11449 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11487:11487 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11501:11501 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11488:11495 RocqOfRust.M Ty tuple defax
+R11497:11500 RocqOfRust.lib.lib <> Args:100 var
+R11510:11520 RocqOfRust.M Ty function defax
+R11522:11525 RocqOfRust.lib.lib <> Args:100 var
+R11527:11532 RocqOfRust.lib.lib <> Output:101 var
+R11556:11557 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11810:11811 Stdlib.Lists.List ListNotations ::list_scope:'['_x_']' not
+R11558:11558 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R11570:11571 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R11809:11809 Corelib.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R11572:11591 RocqOfRust.M InstanceField Method constr
+binder 11598:11599 <> ε:102
+binder 11601:11602 <> τ:103
+binder 11604:11605 <> α:104
+R11632:11633 RocqOfRust.lib.lib <> α:104 var
+R11628:11629 RocqOfRust.lib.lib <> τ:103 var
+R11624:11625 RocqOfRust.lib.lib <> ε:102 var
+R11650:11651 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11654:11655 Stdlib.Lists.List ListNotations ::list_scope:'['_']' not
+R11658:11658 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R11663:11664 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R11681:11681 Stdlib.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R11665:11675 RocqOfRust.M Value Tuple constr
+R11696:11709 RocqOfRust.M <> call_closure def
+R11711:11716 RocqOfRust.lib.lib <> Output:101 var
+R11749:11760 RocqOfRust.M <> impossible def
+R11818:11843 RocqOfRust.lib.lib FunctionTraitAutomaticImpl <> mod

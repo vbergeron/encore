@@ -1,0 +1,16 @@
+; Vendored subset of the RocqOfRust support library.
+; Source: https://github.com/formal-land/rocq-of-rust
+;
+; Provides the Rust monad (M.v), value/type representations,
+; and record update tactics needed by the generated .v files.
+;
+; -impredicative-set : required by the RocqOfRust encoding
+; -type-in-type      : works around Rocq 9.1 universe strictness
+;                      (upstream targets Rocq 9.0)
+
+(include_subdirs qualified)
+
+(rocq.theory
+ (name RocqOfRust)
+ (theories Stdlib Ltac2)
+ (flags -impredicative-set -type-in-type))

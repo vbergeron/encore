@@ -1,0 +1,10 @@
+DIGEST f671cfa7358207b9fc69f864a6e2e0cf
+FRocqOfRust.links.RocqOfRust
+R152:172 RocqOfRust.RocqOfRust <> <> lib
+R190:207 RocqOfRust.links.M <> <> lib
+R225:229 Stdlib.ZArith.BinInt Z add def
+R231:235 Stdlib.ZArith.BinInt Z sub def
+R237:241 Stdlib.ZArith.BinInt Z mul def
+R243:247 Stdlib.ZArith.BinInt Z div def
+R249:256 Stdlib.ZArith.BinInt Z modulo def
+R258:262 Stdlib.ZArith.BinInt Z pow def

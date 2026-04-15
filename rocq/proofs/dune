@@ -1,0 +1,4 @@
+(rocq.theory
+ (name proofs)
+ (theories RocqOfRust encore_vm)
+ (flags -impredicative-set))
