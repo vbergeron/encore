@@ -21,6 +21,15 @@ impl HeapAddress {
     pub fn raw(self) -> u16 { self.0 }
 }
 
+#[derive(Clone, Copy)]
+pub struct Reg(u8);
+
+impl Reg {
+    pub const fn new(raw: u8) -> Self { Self(raw) }
+    pub fn idx(self) -> usize { self.0 as usize }
+    pub fn offset(self, n: usize) -> usize { self.0 as usize + n }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct CodeAddress(u16);
 

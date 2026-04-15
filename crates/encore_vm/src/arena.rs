@@ -43,10 +43,10 @@ impl<'a> Arena<'a> {
     }
 
     pub fn heap_read(&self, addr: HeapAddress, off: usize) -> Value {
-        self.mem[addr.offset(off)]
+        unsafe { *self.mem.get_unchecked(addr.offset(off)) }
     }
 
     pub fn heap_write(&mut self, addr: HeapAddress, off: usize, val: Value) {
-        self.mem[addr.offset(off)] = val;
+        unsafe { *self.mem.get_unchecked_mut(addr.offset(off)) = val; }
     }
 }
