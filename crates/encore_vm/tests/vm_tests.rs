@@ -372,3 +372,168 @@ fn test_extern_not_registered() {
     let result = vm.load(&prog);
     assert!(matches!(result, Err(VmError::NotRegistered(7))));
 }
+
+// -- Bytes tests --
+
+#[test]
+fn test_bytes_literal_empty() {
+    let code = [BYTES, X01, 0, FIN, X01];
+    let result = run(&code, &[]).unwrap();
+    assert!(result.is_bytes());
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    assert_eq!(vm.bytes_len(vm.global(0)), 0);
+}
+
+#[test]
+fn test_bytes_literal() {
+    let code = [BYTES, X01, 5, b'h', b'e', b'l', b'l', b'o', FIN, X01];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    let val = vm.global(0);
+    assert!(val.is_bytes());
+    assert_eq!(vm.bytes_len(val), 5);
+    assert_eq!(vm.bytes_read(val, 0), b'h');
+    assert_eq!(vm.bytes_read(val, 1), b'e');
+    assert_eq!(vm.bytes_read(val, 2), b'l');
+    assert_eq!(vm.bytes_read(val, 3), b'l');
+    assert_eq!(vm.bytes_read(val, 4), b'o');
+}
+
+#[test]
+fn test_bytes_len() {
+    let code = [
+        BYTES, X01, 3, 0xAA, 0xBB, 0xCC,
+        BYTES_LEN, X02, X01,
+        FIN, X02,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 3);
+}
+
+#[test]
+fn test_bytes_get() {
+    let code = [
+        BYTES, X01, 4, 10, 20, 30, 40,
+        INT, X02, 2, 0, 0,
+        BYTES_GET, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 30);
+}
+
+#[test]
+fn test_bytes_concat() {
+    let code = [
+        BYTES, X01, 2, b'a', b'b',
+        BYTES, X02, 3, b'c', b'd', b'e',
+        BYTES_CONCAT, X03, X01, X02,
+        FIN, X03,
+    ];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    let val = vm.global(0);
+    assert!(val.is_bytes());
+    assert_eq!(vm.bytes_len(val), 5);
+    assert_eq!(vm.bytes_read(val, 0), b'a');
+    assert_eq!(vm.bytes_read(val, 1), b'b');
+    assert_eq!(vm.bytes_read(val, 2), b'c');
+    assert_eq!(vm.bytes_read(val, 3), b'd');
+    assert_eq!(vm.bytes_read(val, 4), b'e');
+}
+
+#[test]
+fn test_bytes_slice() {
+    let code = [
+        BYTES, X01, 5, b'h', b'e', b'l', b'l', b'o',
+        INT, X02, 1, 0, 0,
+        INT, X03, 3, 0, 0,
+        BYTES_SLICE, X04, X01, X02, X03,
+        FIN, X04,
+    ];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    let val = vm.global(0);
+    assert!(val.is_bytes());
+    assert_eq!(vm.bytes_len(val), 3);
+    assert_eq!(vm.bytes_read(val, 0), b'e');
+    assert_eq!(vm.bytes_read(val, 1), b'l');
+    assert_eq!(vm.bytes_read(val, 2), b'l');
+}
+
+#[test]
+fn test_bytes_eq_true() {
+    let code = [
+        BYTES, X01, 3, 1, 2, 3,
+        BYTES, X02, 3, 1, 2, 3,
+        BYTES_EQ, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 1);
+}
+
+#[test]
+fn test_bytes_eq_false_content() {
+    let code = [
+        BYTES, X01, 3, 1, 2, 3,
+        BYTES, X02, 3, 1, 2, 4,
+        BYTES_EQ, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 0);
+}
+
+#[test]
+fn test_bytes_eq_false_length() {
+    let code = [
+        BYTES, X01, 2, 1, 2,
+        BYTES, X02, 3, 1, 2, 3,
+        BYTES_EQ, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 0);
+}
+
+#[test]
+fn test_bytes_gc_survives() {
+    let code = [
+        // global 0: a function that allocates bytes, triggers GC, returns captured bytes
+        FUNCTION, X01, 6, 0, FIN, X01,
+        // function body at offset 6:
+        BYTES, X01, 4, b't', b'e', b's', b't',
+        BYTES, X02, 4, b'j', b'u', b'n', b'k',
+        INT_0, X02,
+        BYTES, X02, 4, b'j', b'u', b'n', b'k',
+        INT_0, X02,
+        FIN, X01,
+    ];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut mem = [Value::from_u32(0); 12];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    let arg = Value::int(0);
+    let result = vm.call(0, arg).unwrap();
+    assert!(result.is_bytes());
+    assert_eq!(vm.bytes_len(result), 4);
+    assert_eq!(vm.bytes_read(result, 0), b't');
+    assert_eq!(vm.bytes_read(result, 1), b'e');
+    assert_eq!(vm.bytes_read(result, 2), b's');
+    assert_eq!(vm.bytes_read(result, 3), b't');
+}

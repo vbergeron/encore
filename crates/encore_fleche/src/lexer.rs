@@ -22,6 +22,7 @@ pub enum Token {
     Of,
     Builtin,
     Extern,
+    StringLit(Vec<u8>),
     Eof,
 }
 
@@ -94,10 +95,23 @@ impl Lexer {
             '(' => { self.pos += 1; Token::LParen }
             ')' => { self.pos += 1; Token::RParen }
             ',' => { self.pos += 1; Token::Comma }
+            '"' => self.read_string(),
             '0'..='9' => self.read_number(),
             c if c.is_alphabetic() || c == '_' => self.read_ident(),
             c => panic!("unexpected character: {c:?}"),
         }
+    }
+
+    fn read_string(&mut self) -> Token {
+        self.pos += 1; // skip opening "
+        let start = self.pos;
+        while self.pos < self.input.len() && self.input[self.pos] != '"' {
+            self.pos += 1;
+        }
+        let bytes: Vec<u8> = self.input[start..self.pos].iter().map(|&c| c as u8).collect();
+        assert!(self.pos < self.input.len(), "unterminated string literal");
+        self.pos += 1; // skip closing "
+        Token::StringLit(bytes)
     }
 
     fn read_number(&mut self) -> Token {

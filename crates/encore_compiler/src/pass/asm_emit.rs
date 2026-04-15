@@ -1,6 +1,6 @@
 use encore_vm::opcode;
 use crate::ir::asm::{ContLam, Expr, Fun, Module, Reg, Val};
-use crate::ir::prim::PrimOp;
+use crate::ir::prim::{PrimOp, IntOp, BytesOp};
 
 pub struct Metadata {
     pub ctor_names: Vec<(u8, String)>,
@@ -171,13 +171,27 @@ impl<'a> Emitter<'a> {
                     }
                 }
             }
+            Val::Bytes(data) => {
+                self.emit_u8(opcode::BYTES);
+                self.emit_u8(dest);
+                self.emit_u8(data.len() as u8);
+                for &b in data {
+                    self.emit_u8(b);
+                }
+            }
             Val::Prim(op, regs) => {
                 let opc = match op {
-                    PrimOp::Add => opcode::INT_ADD,
-                    PrimOp::Sub => opcode::INT_SUB,
-                    PrimOp::Mul => opcode::INT_MUL,
-                    PrimOp::Eq  => opcode::INT_EQ,
-                    PrimOp::Lt  => opcode::INT_LT,
+                    PrimOp::Int(IntOp::Add) => opcode::INT_ADD,
+                    PrimOp::Int(IntOp::Sub) => opcode::INT_SUB,
+                    PrimOp::Int(IntOp::Mul) => opcode::INT_MUL,
+                    PrimOp::Int(IntOp::Eq)  => opcode::INT_EQ,
+                    PrimOp::Int(IntOp::Lt)   => opcode::INT_LT,
+                    PrimOp::Int(IntOp::Byte) => opcode::INT_BYTE,
+                    PrimOp::Bytes(BytesOp::Len)    => opcode::BYTES_LEN,
+                    PrimOp::Bytes(BytesOp::Get)    => opcode::BYTES_GET,
+                    PrimOp::Bytes(BytesOp::Concat) => opcode::BYTES_CONCAT,
+                    PrimOp::Bytes(BytesOp::Slice)  => opcode::BYTES_SLICE,
+                    PrimOp::Bytes(BytesOp::Eq)     => opcode::BYTES_EQ,
                 };
                 self.emit_u8(opc);
                 self.emit_u8(dest);

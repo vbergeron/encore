@@ -21,8 +21,10 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
         let addr = wl.raw() as usize;
         let gc = arena.mem[addr];
         wl = gc.gc_fwd();
-        for i in 1..gc.gc_size() as usize {
-            enqueue(arena, &mut wl, arena.mem[addr + i]);
+        if !arena.mem[addr + 1].is_bytes_hdr() {
+            for i in 1..gc.gc_size() as usize {
+                enqueue(arena, &mut wl, arena.mem[addr + i]);
+            }
         }
     }
 
@@ -80,7 +82,7 @@ fn update_heap_refs(arena: &mut Arena) {
     while pos < arena.hp {
         let gc = arena.mem[pos];
         let size = gc.gc_size() as usize;
-        if gc.gc_is_marked() {
+        if gc.gc_is_marked() && !arena.mem[pos + 1].is_bytes_hdr() {
             for i in 1..size {
                 arena.mem[pos + i] = update_value(arena.mem, arena.mem[pos + i]);
             }

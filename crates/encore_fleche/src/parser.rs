@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::ds;
-use crate::prim::PrimOp;
+use crate::prim::{PrimOp, IntOp, BytesOp};
 use crate::lexer::{Lexer, Token};
 
 struct CtorInfo {
@@ -246,17 +246,22 @@ impl Parser {
     fn parse_builtin(&mut self) -> ds::Expr {
         self.lexer.expect(&Token::Builtin);
         let op_name = self.expect_lower_ident();
-        let op = match op_name.as_str() {
-            "add" => PrimOp::Add,
-            "sub" => PrimOp::Sub,
-            "mul" => PrimOp::Mul,
-            "eq"  => PrimOp::Eq,
-            "lt"  => PrimOp::Lt,
+        let (op, arity) = match op_name.as_str() {
+            "add"          => (PrimOp::Int(IntOp::Add), 2),
+            "sub"          => (PrimOp::Int(IntOp::Sub), 2),
+            "mul"          => (PrimOp::Int(IntOp::Mul), 2),
+            "eq"           => (PrimOp::Int(IntOp::Eq), 2),
+            "lt"           => (PrimOp::Int(IntOp::Lt), 2),
+            "int_byte"     => (PrimOp::Int(IntOp::Byte), 1),
+            "bytes_len"    => (PrimOp::Bytes(BytesOp::Len), 1),
+            "bytes_get"    => (PrimOp::Bytes(BytesOp::Get), 2),
+            "bytes_concat" => (PrimOp::Bytes(BytesOp::Concat), 2),
+            "bytes_slice"  => (PrimOp::Bytes(BytesOp::Slice), 3),
+            "bytes_eq"     => (PrimOp::Bytes(BytesOp::Eq), 2),
             _ => panic!("unknown builtin operation: {op_name}"),
         };
-        let a = self.parse_atom();
-        let b = self.parse_atom();
-        ds::Expr::Prim(op, vec![a, b])
+        let args: Vec<ds::Expr> = (0..arity).map(|_| self.parse_atom()).collect();
+        ds::Expr::Prim(op, args)
     }
 
     fn parse_app(&mut self) -> ds::Expr {
@@ -279,7 +284,8 @@ impl Parser {
     fn is_atom_start(&mut self) -> bool {
         matches!(
             self.lexer.peek(),
-            Token::LowerIdent(_) | Token::UpperIdent(_) | Token::Number(_) | Token::LParen
+            Token::LowerIdent(_) | Token::UpperIdent(_) | Token::Number(_)
+                | Token::StringLit(_) | Token::LParen
         )
     }
 
@@ -296,6 +302,13 @@ impl Parser {
                     _ => unreachable!(),
                 };
                 ds::Expr::Int(n as i32)
+            }
+            Token::StringLit(_) => {
+                let data = match self.lexer.next() {
+                    Token::StringLit(data) => data,
+                    _ => unreachable!(),
+                };
+                ds::Expr::Bytes(data)
             }
             Token::LParen => {
                 self.lexer.next();

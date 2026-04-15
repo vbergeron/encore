@@ -178,6 +178,15 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             )
         }
 
+        dsi::Expr::Bytes(data) => {
+            let tmp = fg.fresh("bs");
+            cps::Expr::Let(
+                tmp.clone(),
+                cps::Val::Bytes(data),
+                Box::new(k(fg, tmp)),
+            )
+        }
+
         dsi::Expr::Prim(op, fields) => {
             transform_prim_fields(fg, env, fields, vec![], op, k)
         }

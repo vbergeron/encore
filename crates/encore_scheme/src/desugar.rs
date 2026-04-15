@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use encore_compiler::ir::ds;
-use encore_compiler::ir::prim::PrimOp;
+use encore_compiler::ir::prim::{PrimOp, IntOp, BytesOp};
 
 use crate::ir;
 use crate::parser::Sexp;
@@ -101,7 +101,8 @@ fn parse_expr(sexp: &Sexp) -> Result<ir::Expr, String> {
             if let Ok(n) = s.parse::<i32>() {
                 Ok(ir::Expr::Int(n))
             } else if s.starts_with('"') && s.ends_with('"') {
-                Err(format!("byte string literals not supported: {s}"))
+                let inner = &s[1..s.len() - 1];
+                Ok(ir::Expr::Bytes(inner.as_bytes().to_vec()))
             } else {
                 Ok(ir::Expr::Var(s.clone()))
             }
@@ -121,11 +122,17 @@ fn parse_expr(sexp: &Sexp) -> Result<ir::Expr, String> {
                     "quote" => return parse_quote(&items[1]),
                     "quasiquote" => return parse_quasiquote(&items[1]),
                     "error" => return Ok(ir::Expr::Error),
-                    "+" => return parse_binop(PrimOp::Add, items),
-                    "-" => return parse_binop(PrimOp::Sub, items),
-                    "*" => return parse_binop(PrimOp::Mul, items),
-                    "=" => return parse_binop(PrimOp::Eq, items),
-                    "<" => return parse_binop(PrimOp::Lt, items),
+                    "+" => return parse_binop(PrimOp::Int(IntOp::Add), items),
+                    "-" => return parse_binop(PrimOp::Int(IntOp::Sub), items),
+                    "*" => return parse_binop(PrimOp::Int(IntOp::Mul), items),
+                    "=" => return parse_binop(PrimOp::Int(IntOp::Eq), items),
+                    "<" => return parse_binop(PrimOp::Int(IntOp::Lt), items),
+                    "int->byte" => return parse_prim(PrimOp::Int(IntOp::Byte), 1, items),
+                    "bytes-len"    => return parse_prim(PrimOp::Bytes(BytesOp::Len), 1, items),
+                    "bytes-get"    => return parse_prim(PrimOp::Bytes(BytesOp::Get), 2, items),
+                    "bytes-concat" => return parse_prim(PrimOp::Bytes(BytesOp::Concat), 2, items),
+                    "bytes-slice"  => return parse_prim(PrimOp::Bytes(BytesOp::Slice), 3, items),
+                    "bytes-eq"     => return parse_prim(PrimOp::Bytes(BytesOp::Eq), 2, items),
                     _ => {}
                 }
             }
@@ -135,12 +142,18 @@ fn parse_expr(sexp: &Sexp) -> Result<ir::Expr, String> {
 }
 
 fn parse_binop(op: PrimOp, items: &[Sexp]) -> Result<ir::Expr, String> {
-    if items.len() != 3 {
-        return Err(format!("{op:?} expects 2 arguments"));
+    parse_prim(op, 2, items)
+}
+
+fn parse_prim(op: PrimOp, arity: usize, items: &[Sexp]) -> Result<ir::Expr, String> {
+    if items.len() != arity + 1 {
+        return Err(format!("{op:?} expects {arity} arguments"));
     }
-    let a = parse_expr(&items[1])?;
-    let b = parse_expr(&items[2])?;
-    Ok(ir::Expr::Prim(op, vec![a, b]))
+    let args: Vec<ir::Expr> = items[1..]
+        .iter()
+        .map(parse_expr)
+        .collect::<Result<_, _>>()?;
+    Ok(ir::Expr::Prim(op, args))
 }
 
 fn parse_lambda(items: &[Sexp]) -> Result<ir::Expr, String> {
@@ -442,6 +455,7 @@ impl Lowering {
         match expr {
             ir::Expr::Var(name) => ds::Expr::Var(name),
             ir::Expr::Int(n) => ds::Expr::Int(n),
+            ir::Expr::Bytes(data) => ds::Expr::Bytes(data),
 
             ir::Expr::Lambda(param, body) => {
                 ds::Expr::Lam(param, Box::new(self.lower_expr(*body)))

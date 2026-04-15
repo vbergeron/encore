@@ -144,6 +144,10 @@ fn resolve_val(env: &Env, val: &cps::Val, globals: &HashMap<String, u8>) -> asm:
             asm::Val::Int(*n)
         }
 
+        cps::Val::Bytes(data) => {
+            asm::Val::Bytes(data.clone())
+        }
+
         cps::Val::Prim(op, names) => {
             asm::Val::Prim(*op, names.iter().map(|n| env.lookup(n)).collect())
         }
@@ -328,7 +332,7 @@ fn free_vars_val(val: &cps::Val, bound: &mut HashSet<String>, free: &mut HashSet
             }
         }
         cps::Val::Field(name, _) => use_name(name, bound, free),
-        cps::Val::Int(_) | cps::Val::NullCont => {}
+        cps::Val::Int(_) | cps::Val::Bytes(_) | cps::Val::NullCont => {}
         cps::Val::Prim(_, names) => {
             for name in names {
                 use_name(name, bound, free);

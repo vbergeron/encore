@@ -83,7 +83,7 @@ fn alpha_rename_val(val: &mut Val, renames: &mut HashMap<String, String>) {
                 rename_name(a, renames);
             }
         }
-        Val::Int(_) | Val::NullCont | Val::Extern(_) => {}
+        Val::Int(_) | Val::Bytes(_) | Val::NullCont | Val::Extern(_) => {}
     }
 }
 

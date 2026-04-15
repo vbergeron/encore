@@ -16,6 +16,7 @@ pub enum Expr {
     Field(Box<Expr>, u8),
     Match(Box<Expr>, Tag, Vec<Case>),
     Int(i32),
+    Bytes(Vec<u8>),
     Prim(PrimOp, Vec<Expr>),
     Extern(u16),
 }

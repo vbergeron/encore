@@ -4,6 +4,8 @@ const TYP_HDR: u32 = 2;
 const TYP_GC: u32 = 3;
 const TYP_INT: u32 = 4;
 const TYP_FUNC: u32 = 5;
+const TYP_BYTES: u32 = 6;
+const TYP_BYTES_HDR: u32 = 7;
 
 const GC_MARK_BIT: u32 = 0x80 << 8;
 
@@ -61,6 +63,15 @@ impl Value {
         Self(TYP_INT | ((n as u32 & 0x00FF_FFFF) << 8))
     }
 
+    pub fn bytes(addr: HeapAddress) -> Self {
+        Self(TYP_BYTES | (addr.raw() as u32) << 16)
+    }
+
+    /// Bytes header on heap: [TYP_BYTES_HDR:8 | byte_len:24]
+    pub fn bytes_header(byte_len: usize) -> Self {
+        Self(TYP_BYTES_HDR | (byte_len as u32) << 8)
+    }
+
     // -- Type discrimination --
 
     pub fn is_function(self) -> bool { self.0 & 0xFF == TYP_FUNC }
@@ -68,6 +79,8 @@ impl Value {
     pub fn is_ctor(self) -> bool { self.0 & 0xFF == TYP_CTOR }
     pub fn is_header(self) -> bool { self.0 & 0xFF == TYP_HDR }
     pub fn is_int(self) -> bool { self.0 & 0xFF == TYP_INT }
+    pub fn is_bytes(self) -> bool { self.0 & 0xFF == TYP_BYTES }
+    pub fn is_bytes_hdr(self) -> bool { self.0 & 0xFF == TYP_BYTES_HDR }
 
     // -- Function / closure accessors --
 
@@ -78,6 +91,11 @@ impl Value {
 
     pub fn ctor_tag(self) -> u8 { (self.0 >> 8) as u8 }
     pub fn ctor_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
+
+    // -- Bytes accessors --
+
+    pub fn bytes_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
+    pub fn bytes_hdr_len(self) -> usize { (self.0 >> 8) as usize }
 
     // -- Integer accessors --
 
@@ -120,6 +138,7 @@ impl Value {
     pub fn has_heap_addr(self) -> bool {
         self.is_closure()
             || (self.is_ctor() && !self.heap_addr().is_null())
+            || self.is_bytes()
     }
 
     pub fn heap_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }

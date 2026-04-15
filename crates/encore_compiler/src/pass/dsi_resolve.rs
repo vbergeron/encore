@@ -93,6 +93,7 @@ fn resolve(env: &[String], expr: ds::Expr) -> dsi::Expr {
         }
 
         ds::Expr::Int(n) => dsi::Expr::Int(n),
+        ds::Expr::Bytes(data) => dsi::Expr::Bytes(data),
 
         ds::Expr::Prim(op, args) => {
             dsi::Expr::Prim(op, args.into_iter().map(|a| resolve(env, a)).collect())

@@ -20,7 +20,7 @@ pub fn subst_val(from: &str, to: &str, val: &mut Val) {
             }
         }
         Val::Field(n, _) => subst_name(from, to, n),
-        Val::Int(_) | Val::NullCont => {}
+        Val::Int(_) | Val::Bytes(_) | Val::NullCont => {}
         Val::Prim(_, args) => {
             for a in args {
                 subst_name(from, to, a);

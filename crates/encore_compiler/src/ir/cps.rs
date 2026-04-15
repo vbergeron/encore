@@ -30,6 +30,7 @@ pub enum Val {
     Ctor(Tag, Vec<Name>),
     Field(Name, u8),
     Int(i32),
+    Bytes(Vec<u8>),
     Prim(PrimOp, Vec<Name>),
     Extern(u16),
 }

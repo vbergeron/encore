@@ -4,6 +4,7 @@ use encore_compiler::ir::prim::PrimOp;
 pub enum Expr {
     Var(String),
     Int(i32),
+    Bytes(Vec<u8>),
     Lambda(String, Box<Expr>),
     Lambdas(Vec<String>, Box<Expr>),
     App(Box<Expr>, Box<Expr>),

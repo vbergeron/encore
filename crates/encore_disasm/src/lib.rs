@@ -41,7 +41,14 @@ pub enum Op {
     IntMul { rd: u8, ra: u8, rb: u8 },
     IntEq { rd: u8, ra: u8, rb: u8 },
     IntLt { rd: u8, ra: u8, rb: u8 },
+    IntByte { rd: u8, rs: u8 },
     Extern { rd: u8, slot: u16, ra: u8 },
+    Bytes { rd: u8, data: Vec<u8> },
+    BytesLen { rd: u8, rs: u8 },
+    BytesGet { rd: u8, rs: u8, ri: u8 },
+    BytesConcat { rd: u8, ra: u8, rb: u8 },
+    BytesSlice { rd: u8, rs: u8, ri: u8, rn: u8 },
+    BytesEq { rd: u8, ra: u8, rb: u8 },
     Unknown(u8),
 }
 
@@ -231,7 +238,25 @@ impl fmt::Display for Op {
             Op::IntMul { rd, ra, rb } => write!(f, "MUL {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
             Op::IntEq { rd, ra, rb } => write!(f, "EQ {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
             Op::IntLt { rd, ra, rb } => write!(f, "LT {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
+            Op::IntByte { rd, rs } => write!(f, "INT_BYTE {}, {}", reg_name(*rd), reg_name(*rs)),
             Op::Extern { rd, slot, ra } => write!(f, "EXTERN {}, {slot}, {}", reg_name(*rd), reg_name(*ra)),
+            Op::Bytes { rd, data } => {
+                write!(f, "BYTES {}, {}", reg_name(*rd), data.len())?;
+                if !data.is_empty() {
+                    write!(f, ", [")?;
+                    for (i, b) in data.iter().enumerate() {
+                        if i > 0 { write!(f, " ")?; }
+                        write!(f, "{b:02x}")?;
+                    }
+                    write!(f, "]")?;
+                }
+                Ok(())
+            }
+            Op::BytesLen { rd, rs } => write!(f, "BYTES_LEN {}, {}", reg_name(*rd), reg_name(*rs)),
+            Op::BytesGet { rd, rs, ri } => write!(f, "BYTES_GET {}, {}, {}", reg_name(*rd), reg_name(*rs), reg_name(*ri)),
+            Op::BytesConcat { rd, ra, rb } => write!(f, "BYTES_CONCAT {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
+            Op::BytesSlice { rd, rs, ri, rn } => write!(f, "BYTES_SLICE {}, {}, {}, {}", reg_name(*rd), reg_name(*rs), reg_name(*ri), reg_name(*rn)),
+            Op::BytesEq { rd, ra, rb } => write!(f, "BYTES_EQ {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
             Op::Unknown(op) => write!(f, "??? (0x{op:02x})"),
         }
     }
@@ -325,7 +350,18 @@ fn collect_fn_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16> {
             opcode::INT_0 | opcode::INT_1 | opcode::INT_2 => { pc += 1; }
             opcode::INT_ADD | opcode::INT_SUB | opcode::INT_MUL
             | opcode::INT_EQ | opcode::INT_LT => { pc += 3; }
+            opcode::INT_BYTE => { pc += 2; }
             opcode::EXTERN => { pc += 4; }
+            opcode::BYTES => {
+                pc += 1;
+                let len = code[pc] as usize; pc += 1;
+                pc += len;
+            }
+            opcode::BYTES_LEN => { pc += 2; }
+            opcode::BYTES_GET => { pc += 3; }
+            opcode::BYTES_CONCAT => { pc += 3; }
+            opcode::BYTES_SLICE => { pc += 4; }
+            opcode::BYTES_EQ => { pc += 3; }
             _ => {}
         }
     }
@@ -373,7 +409,18 @@ fn collect_match_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16>
             opcode::INT_0 | opcode::INT_1 | opcode::INT_2 => { pc += 1; }
             opcode::INT_ADD | opcode::INT_SUB | opcode::INT_MUL
             | opcode::INT_EQ | opcode::INT_LT => { pc += 3; }
+            opcode::INT_BYTE => { pc += 2; }
             opcode::EXTERN => { pc += 4; }
+            opcode::BYTES => {
+                pc += 1;
+                let len = code[pc] as usize; pc += 1;
+                pc += len;
+            }
+            opcode::BYTES_LEN => { pc += 2; }
+            opcode::BYTES_GET => { pc += 3; }
+            opcode::BYTES_CONCAT => { pc += 3; }
+            opcode::BYTES_SLICE => { pc += 4; }
+            opcode::BYTES_EQ => { pc += 3; }
             _ => {}
         }
     }
@@ -510,11 +557,55 @@ fn decode_instructions(code: &[u8], arity_table: &[(u8, u8)]) -> Vec<Instr> {
                 let rb = read_u8(&mut pc);
                 Op::IntLt { rd, ra, rb }
             }
+            opcode::INT_BYTE => {
+                let rd = read_u8(&mut pc);
+                let rs = read_u8(&mut pc);
+                Op::IntByte { rd, rs }
+            }
             opcode::EXTERN => {
                 let rd = read_u8(&mut pc);
                 let slot = read_u16(&mut pc);
                 let ra = read_u8(&mut pc);
                 Op::Extern { rd, slot, ra }
+            }
+            opcode::BYTES => {
+                let rd = read_u8(&mut pc);
+                let len = read_u8(&mut pc) as usize;
+                let mut data = Vec::with_capacity(len);
+                for _ in 0..len {
+                    data.push(read_u8(&mut pc));
+                }
+                Op::Bytes { rd, data }
+            }
+            opcode::BYTES_LEN => {
+                let rd = read_u8(&mut pc);
+                let rs = read_u8(&mut pc);
+                Op::BytesLen { rd, rs }
+            }
+            opcode::BYTES_GET => {
+                let rd = read_u8(&mut pc);
+                let rs = read_u8(&mut pc);
+                let ri = read_u8(&mut pc);
+                Op::BytesGet { rd, rs, ri }
+            }
+            opcode::BYTES_CONCAT => {
+                let rd = read_u8(&mut pc);
+                let ra = read_u8(&mut pc);
+                let rb = read_u8(&mut pc);
+                Op::BytesConcat { rd, ra, rb }
+            }
+            opcode::BYTES_SLICE => {
+                let rd = read_u8(&mut pc);
+                let rs = read_u8(&mut pc);
+                let ri = read_u8(&mut pc);
+                let rn = read_u8(&mut pc);
+                Op::BytesSlice { rd, rs, ri, rn }
+            }
+            opcode::BYTES_EQ => {
+                let rd = read_u8(&mut pc);
+                let ra = read_u8(&mut pc);
+                let rb = read_u8(&mut pc);
+                Op::BytesEq { rd, ra, rb }
             }
             _ => Op::Unknown(op_byte),
         };

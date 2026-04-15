@@ -24,7 +24,7 @@ fn val_mentions(val: &Val, name: &str) -> bool {
         Val::Cont(_) => false,
         Val::Ctor(_, fields) => fields.iter().any(|f| f == name),
         Val::Field(n, _) => n == name,
-        Val::Int(_) | Val::NullCont => false,
+        Val::Int(_) | Val::Bytes(_) | Val::NullCont => false,
         Val::Prim(_, args) => args.iter().any(|a| a == name),
         Val::Extern(_) => false,
     }

@@ -1,5 +1,5 @@
 use encore_compiler::ir::cps::*;
-use encore_compiler::ir::prim::PrimOp;
+use encore_compiler::ir::prim::{PrimOp, IntOp};
 use encore_compiler::pass::cps_rewrite;
 use encore_compiler::pass::cps_simplify::*;
 
@@ -169,7 +169,7 @@ fn test_const_fold_add() {
     // let a = 3 in let b = 4 in let c = add(a, b) in fin c
     let expr = let_("a", int(3),
         let_("b", int(4),
-            let_("c", prim(PrimOp::Add, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
                 fin("c"))));
     let result = constant_fold(expr);
     let expected = let_("a", int(3),
@@ -183,7 +183,7 @@ fn test_const_fold_add() {
 fn test_const_fold_sub() {
     let expr = let_("a", int(10),
         let_("b", int(3),
-            let_("c", prim(PrimOp::Sub, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Sub), &["a", "b"]),
                 fin("c"))));
     let result = constant_fold(expr);
     let expected = let_("a", int(10),
@@ -197,7 +197,7 @@ fn test_const_fold_sub() {
 fn test_const_fold_mul() {
     let expr = let_("a", int(6),
         let_("b", int(7),
-            let_("c", prim(PrimOp::Mul, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Mul), &["a", "b"]),
                 fin("c"))));
     let result = constant_fold(expr);
     let expected = let_("a", int(6),
@@ -212,8 +212,8 @@ fn test_const_fold_chained() {
     // let a = 2 in let b = 3 in let c = add(a, b) in let d = mul(c, a) in fin d
     let expr = let_("a", int(2),
         let_("b", int(3),
-            let_("c", prim(PrimOp::Add, &["a", "b"]),
-                let_("d", prim(PrimOp::Mul, &["c", "a"]),
+            let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
+                let_("d", prim(PrimOp::Int(IntOp::Mul), &["c", "a"]),
                     fin("d")))));
     let result = constant_fold(expr);
     let expected = let_("a", int(2),
@@ -227,7 +227,7 @@ fn test_const_fold_chained() {
 #[test]
 fn test_const_fold_unknown_operand() {
     // let c = add(a, b) in fin c  ──►  unchanged (a, b not known)
-    let expr = let_("c", prim(PrimOp::Add, &["a", "b"]), fin("c"));
+    let expr = let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]), fin("c"));
     assert_eq!(constant_fold(expr.clone()), expr);
 }
 
@@ -236,7 +236,7 @@ fn test_const_fold_eq_true() {
     // eq(3, 3) → Ctor(1, []) (True)
     let expr = let_("a", int(3),
         let_("b", int(3),
-            let_("c", prim(PrimOp::Eq, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Eq), &["a", "b"]),
                 fin("c"))));
     let expected = let_("a", int(3),
         let_("b", int(3),
@@ -250,7 +250,7 @@ fn test_const_fold_eq_false() {
     // eq(3, 4) → Ctor(0, []) (False)
     let expr = let_("a", int(3),
         let_("b", int(4),
-            let_("c", prim(PrimOp::Eq, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Eq), &["a", "b"]),
                 fin("c"))));
     let expected = let_("a", int(3),
         let_("b", int(4),
@@ -264,7 +264,7 @@ fn test_const_fold_lt_true() {
     // lt(1, 2) → Ctor(1, []) (True)
     let expr = let_("a", int(1),
         let_("b", int(2),
-            let_("c", prim(PrimOp::Lt, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Lt), &["a", "b"]),
                 fin("c"))));
     let expected = let_("a", int(1),
         let_("b", int(2),
@@ -278,7 +278,7 @@ fn test_const_fold_lt_false() {
     // lt(5, 3) → Ctor(0, []) (False)
     let expr = let_("a", int(5),
         let_("b", int(3),
-            let_("c", prim(PrimOp::Lt, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Lt), &["a", "b"]),
                 fin("c"))));
     let expected = let_("a", int(5),
         let_("b", int(3),
@@ -333,7 +333,7 @@ fn test_fold_comparison_then_match() {
     // eq folds to Ctor(1,[]), match selects branch 1 → fin yes
     let expr = let_("a", int(3),
         let_("b", int(3),
-            let_("r", prim(PrimOp::Eq, &["a", "b"]),
+            let_("r", prim(PrimOp::Int(IntOp::Eq), &["a", "b"]),
                 match_("r", 0, vec![
                     case(&[], fin("no")),
                     case(&[], fin("yes")),
@@ -515,7 +515,7 @@ fn test_const_fold_then_dead_code() {
     // dead: let c = 7 in fin c  (a, b unused)
     let expr = let_("a", int(3),
         let_("b", int(4),
-            let_("c", prim(PrimOp::Add, &["a", "b"]),
+            let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
                 fin("c"))));
     let after_fold = constant_fold(expr);
     let after_dead = dead_code(after_fold);
@@ -648,13 +648,13 @@ fn test_hoist_chain() {
         fun_("n", "k",
             let_("a", int(1),
                 let_("b", int(2),
-                    let_("c", prim(PrimOp::Add, &["a", "b"]),
+                    let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
                         return_("k", "c"))))),
         fin("f"));
     let expected =
         let_("a", int(1),
             let_("b", int(2),
-                let_("c", prim(PrimOp::Add, &["a", "b"]),
+                let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
                     let_("_nc", Val::NullCont,
                         letrec("f",
                             fun_("n", "k", encore("k", "c", "_nc")),
@@ -692,14 +692,14 @@ fn test_hoist_transitive_variant() {
     let expr = letrec("f",
         fun_("n", "k",
             let_("a", var("n"),
-                let_("b", prim(PrimOp::Add, &["a", "x"]),
+                let_("b", prim(PrimOp::Int(IntOp::Add), &["a", "x"]),
                     return_("k", "b")))),
         fin("f"));
     let expected = let_("_nc", Val::NullCont,
         letrec("f",
             fun_("n", "k",
                 let_("a", var("n"),
-                    let_("b", prim(PrimOp::Add, &["a", "x"]),
+                    let_("b", prim(PrimOp::Int(IntOp::Add), &["a", "x"]),
                         encore("k", "b", "_nc")))),
             fin("f")));
     assert_eq!(cps_rewrite::hoisting(expr), expected);
@@ -760,10 +760,10 @@ fn test_cse_field() {
 fn test_cse_prim() {
     // let a = add(x,y) in let b = add(x,y) in fin b
     // ──►  let a = add(x,y) in fin a
-    let expr = let_("a", prim(PrimOp::Add, &["x", "y"]),
-        let_("b", prim(PrimOp::Add, &["x", "y"]),
+    let expr = let_("a", prim(PrimOp::Int(IntOp::Add), &["x", "y"]),
+        let_("b", prim(PrimOp::Int(IntOp::Add), &["x", "y"]),
             fin("b")));
-    let expected = let_("a", prim(PrimOp::Add, &["x", "y"]), fin("a"));
+    let expected = let_("a", prim(PrimOp::Int(IntOp::Add), &["x", "y"]), fin("a"));
     assert_eq!(cps_rewrite::cse(expr), expected);
 }
 

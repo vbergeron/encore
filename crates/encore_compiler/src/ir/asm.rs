@@ -44,6 +44,7 @@ pub enum Val {
     Ctor(Tag, Vec<Reg>),
     Field(Reg, u8),
     Int(i32),
+    Bytes(Vec<u8>),
     Prim(PrimOp, Vec<Reg>),
     Extern(u16),
 }
