@@ -14,6 +14,17 @@ fn run(source: &str) -> Value {
     vm.global(0)
 }
 
+fn run_multi(source: &str) -> Value {
+    let module = encore_fleche::parse(source);
+    let binary = pipeline::compile_module(module, None, None);
+    let prog = Program::parse(&binary).unwrap();
+    let last = prog.n_globals() - 1;
+    let mut mem = [Value::from_u32(0); 4096];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    vm.global(last)
+}
+
 // -- Nullary ctor --
 
 #[test]
@@ -355,6 +366,76 @@ fn test_multi_arg_lambda_partial_apply() {
           in
           let g = f A in
           g 42
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
+#[test]
+fn test_exact_multi_arg_call() {
+    let result = run("
+        define main as
+          let f = x -> y -> builtin add x y in
+          f 3 4
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 7);
+}
+
+#[test]
+fn test_partial_apply_define() {
+    let result = run_multi("
+        define add as x -> y -> builtin add x y
+        define main as
+          let inc = add 1 in
+          inc 41
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
+#[test]
+fn test_over_application() {
+    let result = run("
+        define main as
+          let f = x -> y -> z -> builtin add y z in
+          f 0 3 4
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 7);
+}
+
+#[test]
+fn test_chained_partial_application() {
+    let result = run("
+        define main as
+          let f = x -> y -> z -> builtin add (builtin add x y) z in
+          let g = f 1 in
+          let h = g 2 in
+          h 3
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 6);
+}
+
+#[test]
+fn test_higher_order_unknown_callee() {
+    let result = run("
+        define main as
+          let apply = f -> x -> f x in
+          apply (y -> builtin add y 1) 41
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
+#[test]
+fn test_letrec_as_value() {
+    let result = run("
+        define main as
+          let rec f x = builtin add x 1 in
+          let g = f in
+          g 41
     ");
     assert!(result.is_int());
     assert_eq!(result.int_value(), 42);

@@ -1,13 +1,14 @@
 use std::path::Path;
 
 use crate::ir::ds;
-use crate::pass::{asm_emit::{Emitter, Metadata}, asm_resolve, cps_optimize::{self, OptimizeConfig}, cps_transform, dsi_resolve};
+use crate::pass::{asm_emit::{Emitter, Metadata}, asm_resolve, cps_optimize::{self, OptimizeConfig}, cps_transform, ds_arity_resolve, dsi_resolve};
 
 pub fn compile_module(
     module: ds::Module,
     config: Option<OptimizeConfig>,
     metadata: Option<&Metadata>,
 ) -> Vec<u8> {
+    let module = ds_arity_resolve::resolve_module(module);
     let dsi_module = dsi_resolve::resolve_module(module);
     let cps_module = cps_transform::transform_module(dsi_module);
     let cps_module = match config {
