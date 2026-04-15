@@ -30,7 +30,7 @@ pub struct Vm<'a> {
 
 impl<'a> Vm<'a> {
     pub fn init(mem: &'a mut [Value]) -> Self {
-        let mut regs = [Value::from_u32(0); N_REGS];
+        let mut regs = [Value::int(0); N_REGS];
         regs[0xFF] = NULL_SENTINEL;
         Self {
             code: Code::new(&[]),
