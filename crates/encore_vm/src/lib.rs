@@ -6,6 +6,7 @@ pub mod error;
 pub mod gc;
 pub mod opcode;
 pub mod program;
+mod registers;
 #[cfg(feature = "stats")]
 pub mod stats;
 pub mod value;

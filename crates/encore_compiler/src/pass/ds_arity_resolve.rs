@@ -121,6 +121,7 @@ fn rewrite_apply(fg: &mut FreshGen, env: &[(String, Option<usize>)], head: ds::E
 
     let known_arity = match &head {
         ds::Expr::Var(name) => lookup_arity(env, name),
+        ds::Expr::Lambda(params, _) => Some(params.len()),
         _ => None,
     };
 

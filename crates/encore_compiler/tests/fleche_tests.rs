@@ -506,3 +506,59 @@ fn test_extern_with_wrapper() {
     assert_eq!(result.int_value(), 100);
 }
 
+// -- ds_arity_resolve: immediate multi-arg lambda application --
+
+#[test]
+fn test_immediate_multi_arg_lambda() {
+    let result = run("
+        define main as (x -> y -> builtin add x y) 3 4
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 7);
+}
+
+#[test]
+fn test_immediate_two_arg_lambda_with_ctor() {
+    let result = run("
+        data Pair(a, b)
+        define main as
+          let p = (x -> y -> Pair(x, y)) 10 20 in
+          field 0 of p
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 10);
+}
+
+#[test]
+fn test_over_applied_known_function() {
+    let result = run_multi("
+        define const as x -> y -> x
+        define main as const 42 99
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
+#[test]
+fn test_immediate_lambda_in_let() {
+    let result = run("
+        define main as
+          let r = (x -> y -> x) 10 20 in
+          r
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 10);
+}
+
+#[test]
+fn test_partial_apply_known_multi_arg() {
+    let result = run_multi("
+        define f as x -> y -> builtin add x y
+        define main as
+          let g = f 10 in
+          g 20
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 30);
+}
+
