@@ -6,10 +6,8 @@ pub type Tag = u8;
 #[derive(Clone)]
 pub enum Expr {
     Var(Name),
-    Lam(Name, Box<Expr>),
-    LamN(Vec<Name>, Box<Expr>),
-    App(Box<Expr>, Box<Expr>),
-    AppN(Box<Expr>, Vec<Expr>),
+    Lambda(Vec<Name>, Box<Expr>),
+    Apply(Box<Expr>, Vec<Expr>),
     Let(Name, Box<Expr>, Box<Expr>),
     Letrec(Name, Name, Box<Expr>, Box<Expr>),
     Ctor(Tag, Vec<Expr>),

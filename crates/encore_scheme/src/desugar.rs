@@ -466,31 +466,22 @@ impl Lowering {
             ir::Expr::Bytes(data) => ds::Expr::Bytes(data),
 
             ir::Expr::Lambda(param, body) => {
-                ds::Expr::Lam(param, Box::new(self.lower_expr(*body)))
+                ds::Expr::Lambda(vec![param], Box::new(self.lower_expr(*body)))
             }
 
             ir::Expr::Lambdas(params, body) => {
-                let body = self.lower_expr(*body);
-                if params.len() == 1 {
-                    ds::Expr::Lam(params.into_iter().next().unwrap(), Box::new(body))
-                } else {
-                    ds::Expr::LamN(params, Box::new(body))
-                }
+                ds::Expr::Lambda(params, Box::new(self.lower_expr(*body)))
             }
 
-            ir::Expr::App(f, arg) => ds::Expr::App(
+            ir::Expr::App(f, arg) => ds::Expr::Apply(
                 Box::new(self.lower_expr(*f)),
-                Box::new(self.lower_expr(*arg)),
+                vec![self.lower_expr(*arg)],
             ),
 
             ir::Expr::AppN(f, args) => {
                 let f = self.lower_expr(*f);
                 let args: Vec<ds::Expr> = args.into_iter().map(|a| self.lower_expr(a)).collect();
-                if args.len() == 1 {
-                    ds::Expr::App(Box::new(f), Box::new(args.into_iter().next().unwrap()))
-                } else {
-                    ds::Expr::AppN(Box::new(f), args)
-                }
+                ds::Expr::Apply(Box::new(f), args)
             }
 
             ir::Expr::If(cond, then_br, else_br) => {
@@ -517,16 +508,15 @@ impl Lowering {
                 let val = self.lower_expr(*val);
                 let body = self.lower_expr(*body);
                 match val {
-                    ds::Expr::Lam(param, fun_body) => {
+                    ds::Expr::Lambda(mut params, fun_body) if params.len() == 1 => {
+                        let param = params.pop().unwrap();
                         ds::Expr::Letrec(name, param, fun_body, Box::new(body))
                     }
                     other => {
-                        // Eta-expand: letrec name = val in body
-                        // becomes:    letrec name __eta = (val __eta) in body
                         let eta = "__eta".to_string();
-                        let fun_body = Box::new(ds::Expr::App(
+                        let fun_body = Box::new(ds::Expr::Apply(
                             Box::new(other),
-                            Box::new(ds::Expr::Var(eta.clone())),
+                            vec![ds::Expr::Var(eta.clone())],
                         ));
                         ds::Expr::Letrec(name, eta, fun_body, Box::new(body))
                     }
@@ -557,13 +547,13 @@ impl Lowering {
                     binds: vec![],
                     body: ds::Expr::Let(
                         "__err".to_string(),
-                        Box::new(ds::Expr::Lam(
-                            "x".to_string(),
+                        Box::new(ds::Expr::Lambda(
+                            vec!["x".to_string()],
                             Box::new(ds::Expr::Var("x".to_string())),
                         )),
-                        Box::new(ds::Expr::App(
+                        Box::new(ds::Expr::Apply(
                             Box::new(ds::Expr::Var("__err".to_string())),
-                            Box::new(ds::Expr::Var("__err".to_string())),
+                            vec![ds::Expr::Var("__err".to_string())],
                         )),
                     ),
                 };
@@ -584,16 +574,15 @@ impl Lowering {
             }
 
             ir::Expr::Error => {
-                // Divergent term: let __err = (x -> x) in __err __err
                 ds::Expr::Let(
                     "__err".to_string(),
-                    Box::new(ds::Expr::Lam(
-                        "x".to_string(),
+                    Box::new(ds::Expr::Lambda(
+                        vec!["x".to_string()],
                         Box::new(ds::Expr::Var("x".to_string())),
                     )),
-                    Box::new(ds::Expr::App(
+                    Box::new(ds::Expr::Apply(
                         Box::new(ds::Expr::Var("__err".to_string())),
-                        Box::new(ds::Expr::Var("__err".to_string())),
+                        vec![ds::Expr::Var("__err".to_string())],
                     )),
                 )
             }
@@ -668,24 +657,24 @@ mod tests {
     }
 
     #[test]
-    fn lower_preserves_lamn() {
+    fn lower_preserves_lambda() {
         let m = parse_and_lower("(define f (lambdas (a b c) a))");
         match &m.defines[0].body {
-            ds::Expr::LamN(params, _) => {
+            ds::Expr::Lambda(params, _) => {
                 assert_eq!(params, &["a", "b", "c"]);
             }
-            _ => panic!("expected LamN"),
+            _ => panic!("expected Lambda"),
         }
     }
 
     #[test]
-    fn lower_preserves_appn() {
+    fn lower_preserves_apply() {
         let m = parse_and_lower("(define r (@ f a b))");
         match &m.defines[0].body {
-            ds::Expr::AppN(_, args) => {
+            ds::Expr::Apply(_, args) => {
                 assert_eq!(args.len(), 2);
             }
-            _ => panic!("expected AppN"),
+            _ => panic!("expected Apply"),
         }
     }
 

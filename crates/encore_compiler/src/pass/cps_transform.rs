@@ -46,29 +46,7 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             k(fg, name)
         }
 
-        dsi::Expr::Lam(body) => {
-            let f = fg.fresh("f");
-            let x = fg.fresh("x");
-            let kv = fg.fresh("k");
-            let kv2 = kv.clone();
-            let mut env_body = env.to_vec();
-            env_body.push(x.clone());
-            cps::Expr::Letrec(
-                f.clone(),
-                cps::Fun {
-                    args: vec![x],
-                    cont: kv,
-                    body: Box::new(transform(fg, &env_body, *body, Box::new(move |fg, r| {
-                        let nc = fg.fresh("nc");
-                        cps::Expr::Let(nc.clone(), cps::Val::NullCont,
-                            Box::new(cps::Expr::Encore(kv2, vec![r], nc)))
-                    }))),
-                },
-                Box::new(k(fg, f)),
-            )
-        }
-
-        dsi::Expr::LamN(n, body) => {
+        dsi::Expr::Lambda(n, body) => {
             let f = fg.fresh("f");
             let kv = fg.fresh("k");
             let kv2 = kv.clone();
@@ -94,26 +72,7 @@ fn transform(fg: &mut FreshGen, env: &[String], expr: dsi::Expr, k: Cont) -> cps
             )
         }
 
-        dsi::Expr::App(e1, e2) => {
-            let env2 = env.to_vec();
-            transform(fg, env, *e1, Box::new(move |fg, f| {
-                transform(fg, &env2, *e2, Box::new(move |fg, x| {
-                    let kn = fg.fresh("k");
-                    let r = fg.fresh("r");
-                    let r2 = r.clone();
-                    cps::Expr::Let(
-                        kn.clone(),
-                        cps::Val::Cont(cps::Cont {
-                            params: vec![r],
-                            body: Box::new(k(fg, r2)),
-                        }),
-                        Box::new(cps::Expr::Encore(f, vec![x], kn)),
-                    )
-                }))
-            }))
-        }
-
-        dsi::Expr::AppN(ef, eargs) => {
+        dsi::Expr::Apply(ef, eargs) => {
             let env2 = env.to_vec();
             transform(fg, env, *ef, Box::new(move |fg, f| {
                 transform_appn_args(fg, &env2, eargs, vec![], f, k)

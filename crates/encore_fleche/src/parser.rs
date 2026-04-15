@@ -134,19 +134,11 @@ impl Parser {
                         } else {
                             let body_head = ds::Expr::Var(next);
                             let body = self.parse_app_rest(body_head);
-                            if params.len() == 1 {
-                                return ds::Expr::Lam(params.pop().unwrap(), Box::new(body));
-                            } else {
-                                return ds::Expr::LamN(params, Box::new(body));
-                            }
+                            return ds::Expr::Lambda(params, Box::new(body));
                         }
                     }
                     let body = self.parse_expr();
-                    if params.len() == 1 {
-                        ds::Expr::Lam(params.pop().unwrap(), Box::new(body))
-                    } else {
-                        ds::Expr::LamN(params, Box::new(body))
-                    }
+                    ds::Expr::Lambda(params, Box::new(body))
                 } else {
                     self.parse_app_rest(ds::Expr::Var(name))
                 }
@@ -274,10 +266,10 @@ impl Parser {
         while self.is_atom_start() {
             args.push(self.parse_atom());
         }
-        match args.len() {
-            0 => head,
-            1 => ds::Expr::App(Box::new(head), Box::new(args.pop().unwrap())),
-            _ => ds::Expr::AppN(Box::new(head), args),
+        if args.is_empty() {
+            head
+        } else {
+            ds::Expr::Apply(Box::new(head), args)
         }
     }
 

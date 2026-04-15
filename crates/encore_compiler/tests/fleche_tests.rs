@@ -341,6 +341,25 @@ fn test_arithmetic_let() {
     assert_eq!(result.int_value(), 30);
 }
 
+// -- Multi-arg lambda partial application --
+
+#[test]
+fn test_multi_arg_lambda_partial_apply() {
+    let result = run("
+        data A | B
+        define main as
+          let f = x -> y -> match x
+            case A -> y
+            case B -> y
+          end
+          in
+          let g = f A in
+          g 42
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value(), 42);
+}
+
 // -- Extern / FFI --
 
 fn run_with_externs(source: &str, externs: &[(u16, encore_vm::vm::ExternFn)]) -> Value {

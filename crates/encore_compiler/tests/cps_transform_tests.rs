@@ -27,11 +27,11 @@ fn var(x: &str) -> ds::Expr {
 }
 
 fn lam(x: &str, body: ds::Expr) -> ds::Expr {
-    ds::Expr::Lam(x.into(), Box::new(body))
+    ds::Expr::Lambda(vec![x.into()], Box::new(body))
 }
 
 fn app(f: ds::Expr, x: ds::Expr) -> ds::Expr {
-    ds::Expr::App(Box::new(f), Box::new(x))
+    ds::Expr::Apply(Box::new(f), vec![x])
 }
 
 fn ds_let(x: &str, e1: ds::Expr, e2: ds::Expr) -> ds::Expr {
