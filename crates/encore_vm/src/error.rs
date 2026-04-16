@@ -1,4 +1,7 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExternError(pub &'static str);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VmError {
     HeapOverflow,
     InvalidOpcode(u8),
@@ -7,4 +10,5 @@ pub enum VmError {
     BadMagic,
     Truncated,
     UnregisteredExtern,
+    Extern(ExternError),
 }

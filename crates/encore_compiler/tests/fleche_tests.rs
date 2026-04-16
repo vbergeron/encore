@@ -1,6 +1,6 @@
 use encore_compiler::pipeline;
 use encore_fleche;
-use encore_vm::error::VmError;
+use encore_vm::error::ExternError;
 use encore_vm::program::Program;
 use encore_vm::value::Value;
 use encore_vm::vm::Vm;
@@ -460,7 +460,7 @@ fn run_with_externs(source: &str, externs: &[(u16, encore_vm::vm::ExternFn)]) ->
 
 #[test]
 fn test_extern_basic() {
-    fn triple(_vm: &mut Vm, v: &Value) -> Result<Value, VmError> {
+    fn triple(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
         Ok(Value::int(v.int_value() * 3))
     }
 
@@ -475,10 +475,10 @@ fn test_extern_basic() {
 
 #[test]
 fn test_extern_composed() {
-    fn double(_vm: &mut Vm, v: &Value) -> Result<Value, VmError> {
+    fn double(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
         Ok(Value::int(v.int_value() * 2))
     }
-    fn negate(_vm: &mut Vm, v: &Value) -> Result<Value, VmError> {
+    fn negate(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
         Ok(Value::int(-v.int_value()))
     }
 
@@ -494,7 +494,7 @@ fn test_extern_composed() {
 
 #[test]
 fn test_extern_with_wrapper() {
-    fn raw_add(_vm: &mut Vm, v: &Value) -> Result<Value, VmError> {
+    fn raw_add(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
         let a = v.ctor_tag();
         Ok(Value::int(a as i32 * 100))
     }

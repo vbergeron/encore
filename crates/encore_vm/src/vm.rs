@@ -1,6 +1,6 @@
 use crate::arena::Arena;
 use crate::code::Code;
-use crate::error::VmError;
+use crate::error::{ExternError, VmError};
 use crate::gc;
 use crate::opcode;
 use crate::program::Program;
@@ -13,10 +13,10 @@ const SELF: Reg = Reg::new(0);
 const CONT: Reg = Reg::new(1);
 const A1: Reg = Reg::new(2);
 
-pub type ExternFn = fn(&mut Vm, &Value) -> Result<Value, VmError>;
+pub type ExternFn = fn(&mut Vm, Value) -> Result<Value, ExternError>;
 const MAX_EXTERN: usize = 32;
 
-fn unregistered(_: &mut Vm, _: &Value) -> Result<Value, VmError> { Err(VmError::UnregisteredExtern) }
+fn unregistered(_: &mut Vm, _: Value) -> Result<Value, ExternError> { Err(ExternError("unregistered extern")) }
 
 pub struct Vm<'a> {
     code: Code<'a>,
@@ -145,11 +145,17 @@ impl<'a> Vm<'a> {
     const RETURN_CONT: Value = Value::function_const(0);
 
     pub fn call(&mut self, global_idx: usize, arg: Value) -> Result<Value, VmError> {
+        self.calln(global_idx, &[arg])
+    }
+
+    pub fn calln(&mut self, global_idx: usize, args: &[Value]) -> Result<Value, VmError> {
         let func = self.globals[global_idx];
         let code_ptr = self.resolve_code_ptr(func);
         self.registers[SELF] = func;
         self.registers[CONT] = Self::RETURN_CONT;
-        self.registers[A1] = arg;
+        for (i, arg) in args.iter().enumerate() {
+            self.registers[Reg::new(2 + i as u8)] = *arg;
+        }
         self.code.jump(code_ptr);
         self.run()
     }
@@ -387,7 +393,7 @@ impl<'a> Vm<'a> {
                     let idx = self.code.read_u16();
                     let arg = self.registers[ra];
                     let f = self.extern_fns[idx as usize];
-                    let result = f(self, &arg)?;
+                    let result = f(self, arg).map_err(VmError::Extern)?;
                     self.registers[rd] = result;
                 }
 

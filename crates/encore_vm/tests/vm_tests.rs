@@ -1,4 +1,4 @@
-use encore_vm::error::VmError;
+use encore_vm::error::{ExternError, VmError};
 use encore_vm::opcode::*;
 use encore_vm::program::Program;
 use encore_vm::value::{CodeAddress, HeapAddress, Value};
@@ -340,7 +340,7 @@ fn test_call() {
 
 #[test]
 fn test_extern_dispatch() {
-    fn double_it(_vm: &mut Vm, v: &Value) -> Result<Value, VmError> {
+    fn double_it(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
         Ok(Value::int(v.int_value() * 2))
     }
 
@@ -369,7 +369,7 @@ fn test_extern_not_registered() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
 
-    assert!(matches!(vm.load(&prog), Err(VmError::UnregisteredExtern)));
+    assert!(matches!(vm.load(&prog), Err(VmError::Extern(_))));
 }
 
 // -- Bytes tests --
