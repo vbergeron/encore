@@ -340,7 +340,7 @@ fn test_call() {
 
 #[test]
 fn test_extern_dispatch() {
-    fn double_it(v: Value) -> Result<Value, VmError> {
+    fn double_it(_vm: &mut Vm, v: &Value) -> Result<Value, VmError> {
         Ok(Value::int(v.int_value() * 2))
     }
 
@@ -359,7 +359,6 @@ fn test_extern_dispatch() {
 }
 
 #[test]
-#[should_panic(expected = "unregistered extern")]
 fn test_extern_not_registered() {
     let code = [
         INT, X01, 1, 0, 0,
@@ -370,7 +369,7 @@ fn test_extern_not_registered() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
 
-    vm.load(&prog).unwrap();
+    assert!(matches!(vm.load(&prog), Err(VmError::UnregisteredExtern)));
 }
 
 // -- Bytes tests --

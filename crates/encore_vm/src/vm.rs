@@ -13,10 +13,10 @@ const SELF: Reg = Reg::new(0);
 const CONT: Reg = Reg::new(1);
 const A1: Reg = Reg::new(2);
 
-pub type ExternFn = fn(Value) -> Result<Value, VmError>;
+pub type ExternFn = fn(&mut Vm, &Value) -> Result<Value, VmError>;
 const MAX_EXTERN: usize = 32;
 
-fn unregistered(_: Value) -> Result<Value, VmError> { Err(VmError::UnregisteredExtern) }
+fn unregistered(_: &mut Vm, _: &Value) -> Result<Value, VmError> { Err(VmError::UnregisteredExtern) }
 
 pub struct Vm<'a> {
     code: Code<'a>,
@@ -111,11 +111,11 @@ impl<'a> Vm<'a> {
         (word >> (byte_off * 8)) as u8
     }
 
-    pub fn bytes_slice<'b>(&self, val: Value, buf: &'b mut [u8]) -> &'b [u8] {
-        let len = self.bytes_len(val);
+    pub fn bytes_slice<'b>(&self, val: &Value, buf: &'b mut [u8]) -> &'b [u8] {
+        let len = self.bytes_len(*val);
         let n = if len < buf.len() { len } else { buf.len() };
         for i in 0..n {
-            buf[i] = self.bytes_read(val, i);
+            buf[i] = self.bytes_read(*val, i);
         }
         &buf[..n]
     }
@@ -386,7 +386,8 @@ impl<'a> Vm<'a> {
                     let ra = self.code.read_reg();
                     let idx = self.code.read_u16();
                     let arg = self.registers[ra];
-                    let result = self.extern_fns[idx as usize](arg)?;
+                    let f = self.extern_fns[idx as usize];
+                    let result = f(self, &arg)?;
                     self.registers[rd] = result;
                 }
 
