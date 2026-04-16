@@ -49,7 +49,7 @@ impl<'a> Vm<'a> {
         self.extern_fns[slot as usize] = f;
     }
 
-    pub fn load(&mut self, prog: &'a Program) -> Result<(), VmError> {
+    pub fn load(&mut self, prog: &Program<'a>) -> Result<(), VmError> {
         self.code = Code::new(prog.code);
         self.arity_table = prog.arity_table;
         self.n_globals = prog.n_globals() as u8;
