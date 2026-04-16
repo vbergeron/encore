@@ -111,6 +111,15 @@ impl<'a> Vm<'a> {
         (word >> (byte_off * 8)) as u8
     }
 
+    pub fn bytes_slice<'b>(&self, val: Value, buf: &'b mut [u8]) -> &'b [u8] {
+        let len = self.bytes_len(val);
+        let n = if len < buf.len() { len } else { buf.len() };
+        for i in 0..n {
+            buf[i] = self.bytes_read(val, i);
+        }
+        &buf[..n]
+    }
+
     #[inline(always)]
     fn alloc(&mut self, n: usize) -> Result<HeapAddress, VmError> {
         self.arena.try_alloc(n).or_else(|_| self.alloc_slow(n))
