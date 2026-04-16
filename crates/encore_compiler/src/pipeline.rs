@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::ir::ds;
-use crate::pass::{asm_emit::{Emitter, Metadata}, asm_resolve, cps_optimize::{self, OptimizeConfig}, cps_transform, ds_arity_resolve, dsi_resolve};
+use crate::pass::{asm_emit::{Emitter, Metadata}, asm_peephole, asm_resolve, cps_optimize::{self, OptimizeConfig}, cps_transform, ds_arity_resolve, dsi_resolve};
 
 pub fn compile_module(
     module: ds::Module,
@@ -16,6 +16,7 @@ pub fn compile_module(
         None => cps_module,
     };
     let asm_module = asm_resolve::resolve_module(&cps_module);
+    let asm_module = asm_peephole::optimize_module(asm_module);
     Emitter::emit_module(&asm_module, metadata)
 }
 

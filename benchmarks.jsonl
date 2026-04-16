@@ -1,0 +1,14 @@
+{"name":"before-pack-refactor","timestamp":"2026-04-15T13:42:40+02:00","git":"eab4e4e","insn_count":8059566,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"after-pack-refactor","timestamp":"2026-04-15T13:42:54+02:00","git":"eab4e4e","insn_count":6926218,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"reg-newtype","timestamp":"2026-04-15T13:56:20+02:00","git":"95b06b4","insn_count":6165655,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"reg-newtype-inlined","timestamp":"2026-04-15T13:59:47+02:00","git":"95b06b4","insn_count":6165655,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"unchecked-access","timestamp":"2026-04-15T14:11:02+02:00","git":"95b06b4","insn_count":3584203,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"gc-safe-init","timestamp":"2026-04-15T14:17:20+02:00","git":"05ace21","insn_count":3582607,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"arity-fix","timestamp":"2026-04-16T00:18:51+02:00","git":"0804d86","insn_count":3541684,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"vm-refactor","timestamp":"2026-04-16T00:37:02+02:00","git":"c75079b","insn_count":3600473,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"vm-refactor-no-plus0","timestamp":"2026-04-16T00:38:48+02:00","git":"c75079b","insn_count":3600473,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"alloc-fastpath-bitmask","timestamp":"2026-04-16T00:50:16+02:00","git":"c75079b","insn_count":3003074,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"try-alloc-result","timestamp":"2026-04-16T00:51:43+02:00","git":"c75079b","insn_count":3003074,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"branch-opcode","timestamp":"2026-04-16T01:05:00+02:00","git":"34819f8","insn_count":2961589,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"branch-generalized","timestamp":"2026-04-16T01:09:15+02:00","git":"34819f8","insn_count":2943651,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"peephole-sink","timestamp":"2026-04-16T01:19:56+02:00","git":"34819f8","insn_count":2904487,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}

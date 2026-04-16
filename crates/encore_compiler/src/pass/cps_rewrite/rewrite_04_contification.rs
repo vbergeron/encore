@@ -41,6 +41,10 @@ fn contify_expr(expr: Expr) -> Expr {
                 return Expr::Letrec(name, fun, Box::new(body));
             }
 
+            if !calls_match_arity(&name, fun.args.len(), &body) {
+                return Expr::Letrec(name, fun, Box::new(body));
+            }
+
             if calls == 1 {
                 return inline_call(&name, &fun, body);
             }
@@ -171,6 +175,37 @@ fn classify_val(name: &str, val: &Val, calls: &mut usize, escapes: &mut bool) {
             }
         }
         _ => {}
+    }
+}
+
+fn calls_match_arity(name: &str, arity: usize, expr: &Expr) -> bool {
+    match expr {
+        Expr::Encore(f, args, _) if f == name => args.len() == arity,
+        Expr::Let(binder, val, body) => {
+            calls_match_arity_val(name, arity, val)
+                && (binder == name || calls_match_arity(name, arity, body))
+        }
+        Expr::Letrec(binder, fun, body) => {
+            if binder == name { return true; }
+            let fun_ok = fun.args.iter().any(|a| a == name)
+                || fun.cont == name
+                || calls_match_arity(name, arity, &fun.body);
+            fun_ok && calls_match_arity(name, arity, body)
+        }
+        Expr::Match(_, _, cases) => cases.iter().all(|c| {
+            c.binds.contains(&name.to_string()) || calls_match_arity(name, arity, &c.body)
+        }),
+        _ => true,
+    }
+}
+
+fn calls_match_arity_val(name: &str, arity: usize, val: &Val) -> bool {
+    match val {
+        Val::Cont(cont) => {
+            cont.params.iter().any(|p| p == name)
+                || calls_match_arity(name, arity, &cont.body)
+        }
+        _ => true,
     }
 }
 

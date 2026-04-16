@@ -7,6 +7,7 @@ pub const PACK: u8 = 0x07;
 pub const FIELD: u8 = 0x08;
 pub const MATCH: u8 = 0x09;
 pub const ENCORE: u8 = 0x0A;
+pub const BRANCH: u8 = 0x0B;
 pub const FUNCTION: u8 = 0x0D;
 pub const UNPACK: u8 = 0x0E;
 

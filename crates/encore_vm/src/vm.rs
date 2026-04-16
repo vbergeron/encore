@@ -256,6 +256,15 @@ impl<'a> Vm<'a> {
                     self.code.jump(off);
                 }
 
+                opcode::BRANCH => {
+                    let rs = self.code.read_reg();
+                    let base = self.code.read_u8();
+                    let addr0 = self.code.read_address();
+                    let addr1 = self.code.read_address();
+                    let tag = self.registers[rs].ctor_tag();
+                    self.code.jump(if tag == base { addr0 } else { addr1 });
+                }
+
                 opcode::ENCORE => {
                     let rf = self.code.read_reg();
                     let rk = self.code.read_reg();

@@ -51,16 +51,15 @@ fn test_match_two_branches() {
     emitter.emit_toplevel(&expr);
     let code = emitter.into_bytes();
 
-    assert_eq!(code[0], opcode::MATCH);
+    assert_eq!(code[0], opcode::BRANCH);
     assert_eq!(code[1], X01);  // scrutinee
     assert_eq!(code[2], 0);    // base tag
-    assert_eq!(code[3], 2);    // n branches
-    let off0 = u16::from_le_bytes([code[4], code[5]]);
-    let off1 = u16::from_le_bytes([code[6], code[7]]);
-    assert_eq!(code[off0 as usize], opcode::FIN);
-    assert_eq!(code[off0 as usize + 1], A1);
-    assert_eq!(code[off1 as usize], opcode::FIN);
-    assert_eq!(code[off1 as usize + 1], CONT);
+    let addr0 = u16::from_le_bytes([code[3], code[4]]);
+    let addr1 = u16::from_le_bytes([code[5], code[6]]);
+    assert_eq!(code[addr0 as usize], opcode::FIN);
+    assert_eq!(code[addr0 as usize + 1], A1);
+    assert_eq!(code[addr1 as usize], opcode::FIN);
+    assert_eq!(code[addr1 as usize + 1], CONT);
 }
 
 #[test]

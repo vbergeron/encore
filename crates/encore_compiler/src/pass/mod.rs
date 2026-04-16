@@ -1,4 +1,5 @@
 pub mod asm_emit;
+pub mod asm_peephole;
 pub mod asm_resolve;
 pub mod cps_census;
 pub mod cps_optimize;

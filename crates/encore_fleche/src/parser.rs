@@ -134,11 +134,15 @@ impl Parser {
                         } else {
                             let body_head = ds::Expr::Var(next);
                             let body = self.parse_app_rest(body_head);
-                            return ds::Expr::Lambda(params, Box::new(body));
+                            return params.into_iter().rev().fold(body, |b, p| {
+                                ds::Expr::Lambda(vec![p], Box::new(b))
+                            });
                         }
                     }
                     let body = self.parse_expr();
-                    ds::Expr::Lambda(params, Box::new(body))
+                    params.into_iter().rev().fold(body, |b, p| {
+                        ds::Expr::Lambda(vec![p], Box::new(b))
+                    })
                 } else {
                     self.parse_app_rest(ds::Expr::Var(name))
                 }

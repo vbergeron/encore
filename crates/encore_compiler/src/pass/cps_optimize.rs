@@ -9,6 +9,7 @@ use super::cps_simplify;
 pub struct OptimizeConfig {
     pub fuel: usize,
     pub inline_threshold: usize,
+    pub verbose: bool,
 
     pub simplify_dead_code: bool,
     pub simplify_copy_propagation: bool,
@@ -27,6 +28,7 @@ impl Default for OptimizeConfig {
         Self {
             fuel: 100,
             inline_threshold: 8,
+            verbose: false,
 
             simplify_dead_code: true,
             simplify_copy_propagation: true,
@@ -82,40 +84,56 @@ fn optimize_expr(
     config: &OptimizeConfig,
     fuel: &mut usize,
     globals: &GlobalFuns,
+    define_name: &str,
 ) -> Expr {
+    let trace = |label: &str, e: &Expr| {
+        if config.verbose {
+            eprintln!("--- {define_name}: after {label} ---\n{e}\n");
+        }
+    };
+
     // One-shot global inlining before the fixpoint loop
     let mut expr = if config.rewrite_inlining && !globals.is_empty() {
         let e = cps_rewrite::inlining(expr, config.inline_threshold, globals);
-        run_simplify(e, config, fuel)
+        trace("global_inlining", &e);
+        let e = run_simplify(e, config, fuel);
+        trace("initial_simplify", &e);
+        e
     } else {
         expr
     };
 
+    let mut iteration = 0;
     loop {
         if *fuel == 0 {
             break;
         }
         let before = expr.clone();
+        iteration += 1;
 
         expr = run_simplify(expr, config, fuel);
 
         if config.rewrite_inlining {
             expr = cps_rewrite::inlining(expr, config.inline_threshold, &Default::default());
+            trace(&format!("inlining (iter {iteration})"), &expr);
             expr = run_simplify(expr, config, fuel);
         }
 
         if config.rewrite_hoisting {
             expr = cps_rewrite::hoisting(expr);
+            trace(&format!("hoisting (iter {iteration})"), &expr);
             expr = run_simplify(expr, config, fuel);
         }
 
         if config.rewrite_cse {
             expr = cps_rewrite::cse(expr);
+            trace(&format!("cse (iter {iteration})"), &expr);
             expr = run_simplify(expr, config, fuel);
         }
 
         if config.rewrite_contification {
             expr = cps_rewrite::contification(expr);
+            trace(&format!("contification (iter {iteration})"), &expr);
             expr = run_simplify(expr, config, fuel);
         }
 
@@ -183,11 +201,15 @@ fn optimize_define(
     config: &OptimizeConfig,
     globals: &GlobalFuns,
 ) -> cps::Define {
-    let mut fuel = config.fuel;
-    cps::Define {
-        name: define.name,
-        body: optimize_expr(define.body, config, &mut fuel, globals),
+    if config.verbose {
+        eprintln!("=== optimizing: {} ===\n{}\n", define.name, define.body);
     }
+    let mut fuel = config.fuel;
+    let body = optimize_expr(define.body, config, &mut fuel, globals, &define.name);
+    if config.verbose {
+        eprintln!("=== result: {} ===\n{}\n", define.name, body);
+    }
+    cps::Define { name: define.name, body }
 }
 
 pub fn optimize_module(module: cps::Module, config: OptimizeConfig) -> cps::Module {

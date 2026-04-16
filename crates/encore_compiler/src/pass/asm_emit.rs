@@ -235,6 +235,30 @@ impl<'a> Emitter<'a> {
                 self.emit_u8(*cont);
             }
 
+            Expr::Match(reg, base, cases) if cases.len() == 2 => {
+                self.emit_u8(opcode::BRANCH);
+                self.emit_u8(*reg);
+                self.emit_u8(*base);
+                let hole0 = self.emit_u16_placeholder();
+                let hole1 = self.emit_u16_placeholder();
+                self.patch_u16(hole0, self.pos() as u16);
+                if cases[0].arity > 0 {
+                    self.emit_u8(opcode::UNPACK);
+                    self.emit_u8(cases[0].unpack_base);
+                    self.emit_u8(*base);
+                    self.emit_u8(*reg);
+                }
+                self.emit_expr(&cases[0].body);
+                self.patch_u16(hole1, self.pos() as u16);
+                if cases[1].arity > 0 {
+                    self.emit_u8(opcode::UNPACK);
+                    self.emit_u8(cases[1].unpack_base);
+                    self.emit_u8(*base + 1);
+                    self.emit_u8(*reg);
+                }
+                self.emit_expr(&cases[1].body);
+            }
+
             Expr::Match(reg, base, cases) => {
                 self.emit_u8(opcode::MATCH);
                 self.emit_u8(*reg);

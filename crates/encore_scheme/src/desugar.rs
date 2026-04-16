@@ -470,7 +470,10 @@ impl Lowering {
             }
 
             ir::Expr::Lambdas(params, body) => {
-                ds::Expr::Lambda(params, Box::new(self.lower_expr(*body)))
+                let body = self.lower_expr(*body);
+                params.into_iter().rev().fold(body, |b, p| {
+                    ds::Expr::Lambda(vec![p], Box::new(b))
+                })
             }
 
             ir::Expr::App(f, arg) => ds::Expr::Apply(
@@ -657,11 +660,21 @@ mod tests {
     }
 
     #[test]
-    fn lower_preserves_lambda() {
+    fn lower_curries_lambdas() {
         let m = parse_and_lower("(define f (lambdas (a b c) a))");
         match &m.defines[0].body {
-            ds::Expr::Lambda(params, _) => {
-                assert_eq!(params, &["a", "b", "c"]);
+            ds::Expr::Lambda(p1, b1) => {
+                assert_eq!(p1, &["a"]);
+                match b1.as_ref() {
+                    ds::Expr::Lambda(p2, b2) => {
+                        assert_eq!(p2, &["b"]);
+                        match b2.as_ref() {
+                            ds::Expr::Lambda(p3, _) => assert_eq!(p3, &["c"]),
+                            _ => panic!("expected inner Lambda"),
+                        }
+                    }
+                    _ => panic!("expected middle Lambda"),
+                }
             }
             _ => panic!("expected Lambda"),
         }

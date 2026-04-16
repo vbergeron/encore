@@ -1,0 +1,9 @@
+{
+  "vsrocq.path": "/home/vbergeron/.opam/rocqducers/bin/vsrocqtop",
+  "vsrocq.args": [
+    "-R", "/home/vbergeron/perso/encore/rocq/_build/default/proofs", "proofs",
+    "-Q", "/home/vbergeron/perso/encore/rocq/_build/default/encore_vm", "encore_vm",
+    "-Q", "/home/vbergeron/perso/encore/rocq/_build/default/RocqOfRust", "RocqOfRust"
+  ],
+  "vsrocq.proof.mode": 1
+}

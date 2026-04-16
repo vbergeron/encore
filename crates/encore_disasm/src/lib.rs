@@ -31,6 +31,7 @@ pub enum Op {
     Field { rd: u8, rs: u8, idx: u8 },
     Unpack { rd: u8, tag: u8, rs: u8 },
     Match { rs: u8, table: Vec<(u8, u16)> },
+    Branch { rs: u8, base: u8, addr0: u16, addr1: u16 },
     Encore { rf: u8, rk: u8 },
     Int { rd: u8, val: i32 },
     Int0 { rd: u8 },
@@ -180,6 +181,15 @@ pub fn decode_program(prog: &Program) -> Disasm {
                     instr.comment = Some(branches.join(" | "));
                 }
             }
+            Op::Branch { base, addr0, addr1, .. } => {
+                let l0 = labels.get(addr0).cloned().unwrap_or_else(|| format!("{addr0:04x}"));
+                let l1 = labels.get(addr1).cloned().unwrap_or_else(|| format!("{addr1:04x}"));
+                let tag0 = *base;
+                let tag1 = *base + 1;
+                let n0 = ctor_names.get(&tag0).cloned().unwrap_or_else(|| format!("{tag0}"));
+                let n1 = ctor_names.get(&tag1).cloned().unwrap_or_else(|| format!("{tag1}"));
+                instr.comment = Some(format!("{n0} -> {l0} | {n1} -> {l1}"));
+            }
             _ => {}
         }
     }
@@ -228,6 +238,7 @@ impl fmt::Display for Op {
                 }
                 write!(f, "]")
             }
+            Op::Branch { rs, addr0, addr1, .. } => write!(f, "BRANCH {}, @{addr0:04x}, @{addr1:04x}", reg_name(*rs)),
             Op::Encore { rf, rk } => write!(f, "ENCORE {}, {}", reg_name(*rf), reg_name(*rk)),
             Op::Int { rd, val } => write!(f, "INT {}, {val}", reg_name(*rd)),
             Op::Int0 { rd } => write!(f, "INT_0 {}", reg_name(*rd)),
@@ -345,6 +356,7 @@ fn collect_fn_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16> {
                 let n = code[pc] as usize; pc += 1;
                 pc += n * 2;
             }
+            opcode::BRANCH => { pc += 6; }
             opcode::ENCORE => { pc += 2; }
             opcode::INT => { pc += 4; }
             opcode::INT_0 | opcode::INT_1 | opcode::INT_2 => { pc += 1; }
@@ -398,6 +410,15 @@ fn collect_match_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16>
                 let _base = code[pc]; pc += 1;
                 let n = code[pc] as usize; pc += 1;
                 for _ in 0..n {
+                    let lo = code[pc] as u16;
+                    let hi = code[pc + 1] as u16;
+                    targets.insert(lo | (hi << 8));
+                    pc += 2;
+                }
+            }
+            opcode::BRANCH => {
+                pc += 2; // rs + base
+                for _ in 0..2 {
                     let lo = code[pc] as u16;
                     let hi = code[pc + 1] as u16;
                     targets.insert(lo | (hi << 8));
@@ -510,6 +531,13 @@ fn decode_instructions(code: &[u8], arity_table: &[(u8, u8)]) -> Vec<Instr> {
                     table.push((base + j, read_u16(&mut pc)));
                 }
                 Op::Match { rs, table }
+            }
+            opcode::BRANCH => {
+                let rs = read_u8(&mut pc);
+                let base = read_u8(&mut pc);
+                let addr0 = read_u16(&mut pc);
+                let addr1 = read_u16(&mut pc);
+                Op::Branch { rs, base, addr0, addr1 }
             }
             opcode::ENCORE => {
                 let rf = read_u8(&mut pc);

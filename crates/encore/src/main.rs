@@ -46,9 +46,9 @@ enum Command {
     Run {
         /// Path to the compiled binary
         file: String,
-        /// Entrypoint: define name or index (0-based)
-        #[arg(short, long, default_value = "0")]
-        entry: String,
+        /// Entrypoint: define name or index (0-based). Defaults to the last define.
+        #[arg(short, long)]
+        entry: Option<String>,
         /// Heap size in 32-bit words
         #[arg(long, default_value_t = DEFAULT_HEAP_SIZE)]
         heap_size: usize,
@@ -118,6 +118,10 @@ struct OptimizeFlags {
     #[arg(long, default_value_t = 20)]
     cps_optimize_inline_threshold: usize,
 
+    /// Print CPS IR before and after each optimization pass
+    #[arg(long)]
+    cps_optimize_verbose: bool,
+
     #[arg(long, default_value = "on")]
     cps_optimize_simplify_dead_code: Flag,
 
@@ -154,6 +158,7 @@ impl From<OptimizeFlags> for Option<OptimizeConfig> {
         Some(OptimizeConfig {
             fuel: f.cps_optimize_fuel,
             inline_threshold: f.cps_optimize_inline_threshold,
+            verbose: f.cps_optimize_verbose,
             simplify_dead_code: f.cps_optimize_simplify_dead_code.into(),
             simplify_copy_propagation: f.cps_optimize_simplify_copy_propagation.into(),
             simplify_constant_fold: f.cps_optimize_simplify_constant_fold.into(),
@@ -171,7 +176,7 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Run { file, entry, heap_size } => cmd_run(&file, &entry, heap_size),
+        Command::Run { file, entry, heap_size } => cmd_run(&file, entry.as_deref(), heap_size),
         Command::Compile { frontend } => match frontend {
             Frontend::Fleche { file, out, include_metadata, include_bindings, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
@@ -186,7 +191,7 @@ fn main() {
     }
 }
 
-fn cmd_run(path: &str, entry: &str, heap_size: usize) {
+fn cmd_run(path: &str, entry: Option<&str>, heap_size: usize) {
     let bin_path = if std::path::Path::new(path).is_dir() {
         std::path::Path::new(path).join("bytecode.bin").to_string_lossy().into_owned()
     } else {
@@ -202,7 +207,10 @@ fn cmd_run(path: &str, entry: &str, heap_size: usize) {
         process::exit(1);
     });
 
-    let entry_idx = resolve_entry(entry, &prog);
+    let entry_idx = match entry {
+        Some(e) => resolve_entry(e, &prog),
+        None => prog.n_globals() - 1,
+    };
 
     let mut heap = vec![Value::from_u32(0); heap_size];
     let mut vm = Vm::init(&mut heap);
