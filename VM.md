@@ -1,6 +1,6 @@
 # Encore VM
 
-A `#![no_std]` bytecode virtual machine for a functional language. Function calls use a single `ENCORE` opcode (enter a closure with an argument and continuation). Continuation resumption is an `ENCORE` with a `NULLADDR` sentinel as the dead continuation. Both are tail operations that reset the stack — there is no `CALL`/`RET` pair.
+A `#![no_std]` bytecode virtual machine for a functional language. Function calls use a single `ENCORE` opcode that sets `SELF`, `CONT`, resolves the code pointer, and jumps — it never returns. Continuation resumption is an `ENCORE` where the continuation register holds the `NULL` sentinel. There is no `CALL`/`RET` pair and no call stack.
 
 ## Value representation
 
@@ -12,32 +12,32 @@ Every runtime value is a **packed 32-bit word**:
 
 | Type | `typ` byte | Meta | Payload (high 16 bits) |
 |------|-----------|------|------------------------|
-| Closure | `0` | `stack_delta` | `HeapAddress` |
+| Closure | `0` | — | `HeapAddress` |
 | Constructor | `1` | `tag` | `HeapAddress` (or `NULL` if nullary) |
 | Closure header | `2` | `env_len` (capture count) | `CodeAddress` |
 | GC header | `3` | mark bit + 7-bit size | forwarding `HeapAddress` |
 | Integer | `4` | upper 24 bits encode a signed integer | (part of the 24-bit value) |
-| Function | `5` | `stack_delta` | `CodeAddress` |
+| Function | `5` | — | `CodeAddress` |
+| Bytes | `6` | — | `HeapAddress` |
+| Bytes header | `7` | byte length (24-bit, upper 24 bits) | (part of the 24-bit length) |
 
-**Functions** (`TYP_FUNC`) are bare function values with no captures. The code pointer is stored inline — no heap allocation needed. **Closures** (`TYP_CLOS`) always point to a heap object whose header carries `env_len` (capture count) and `code_ptr`. Both carry a `stack_delta` field encoding the maximum stack depth the function body will use; this is computed at compile time and used at function entry for a single upfront stack reservation.
+**Functions** (`TYP_FUNC`) are bare function values with no captures. The code pointer is stored inline — no heap allocation needed. **Closures** (`TYP_CLOS`) always point to a heap object whose header carries `env_len` (capture count) and `code_ptr`.
 
-**Integers** use the upper 24 bits as a signed value (approx. \(\pm 8\text{M}\) range). `int_value()` recovers the `i32` via arithmetic right shift.
+**Integers** use the upper 24 bits as a signed value (approx. ±8M range). `int_value()` recovers the `i32` via arithmetic right shift.
 
 **`HeapAddress::NULL`** (`0xFFFF`) marks nullary constructors that have no heap allocation.
 
 ## Memory model
 
-The VM operates on a single `&mut [Value]` buffer split into two regions:
+The VM operates on a single `&mut [Value]` buffer used as a **heap arena**:
 
 ```
-[ heap ──────────── hp >  ... free ...  < sp ──────────── stack ]
-  grows →                                                 ← grows
+[ heap ──────────── hp >  ... free ... ]
+  grows →
 ```
 
-- **Heap** (`0..hp`): objects allocated by `CLOSURE` and `PACK`, growing upward.
-- **Stack** (`sp..len`): evaluation stack, growing downward.
-- **Stack floor** (`stack_floor`): lowest address the stack may reach, set by `stack_reserve(sd)` at function entry. Heap allocations check against `stack_floor` instead of `sp`, ensuring reserved stack space is never consumed by the heap.
-- Allocation fails if `hp + n > stack_floor` after a GC attempt.
+- **Heap** (`0..hp`): objects allocated by `CLOSURE`, `PACK`, and byte-string opcodes, growing upward via bump allocation.
+- Allocation fails with `HeapOverflow` if `hp + n > mem.len()` after a GC attempt.
 
 ### Heap objects
 
@@ -58,74 +58,110 @@ The VM operates on a single `&mut [Value]` buffer split into two regions:
 
 Nullary constructors (`k = 0`) are not heap-allocated.
 
+**Byte string** (size `2 + ceil(len/4)`):
+
+| Slot | Content |
+|------|---------|
+| 0 | `gc_header(2 + n_data_words)` |
+| 1 | `bytes_header(byte_len)` |
+| 2.. | packed byte data (4 bytes per word, little-endian) |
+
 ## Registers
 
-| Register | Description |
-|----------|-------------|
-| `arg` | Current function/continuation argument, accessible via `ARG` |
-| `cont` | Current continuation value, accessible via `CONT` |
-| `self_ref` | Current closure value, accessible via `SELF` |
-| `pc` | Program counter into the bytecode stream |
+The VM has a **256-register file** indexed by `Reg(u8)`. Registers are accessed with unchecked indexing since `u8` is always in bounds for a 256-element array.
 
-There are no call frames. `ENCORE` resets the stack and overwrites `arg`, `cont`, `self_ref`, and `pc`.
+| Register | Index | Description |
+|----------|-------|-------------|
+| `SELF` | `0` | Current function/closure value |
+| `CONT` | `1` | Current continuation value |
+| `A1`–`A8` | `2`–`9` | Argument passing |
+| `X01`+ | `10`+ | Local variables |
+| `NULL` | `0xFF` | Sentinel — initialized to `Value::function(0xFFFF)` |
+
+There are no call frames. `ENCORE` overwrites `SELF` and `CONT`, then jumps to the callee's code pointer. Arguments are staged into `A1`–`A8` by `MOV` instructions before `ENCORE`.
 
 ## Opcodes
 
-### Data access
+All opcodes use a **register-based** format. Operands are register indices (`u8`), not stack slots.
+
+### Data movement
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `ARG` | `04` | — | Push `arg` register |
-| `SELF` | `05` | — | Push `self_ref` register |
-| `CONT` | `0B` | — | Push `cont` register |
-| `LOCAL i` | `03 i` | `i: u8` | Push local variable at index `i` |
-| `CAPTURE i` | `02 i` | `i: u8` | Push capture slot `i` of current closure |
-| `GLOBAL i` | `01 i` | `i: u8` | Push global at index `i` |
+| `MOV` | `01` | `rd: Reg`, `rs: Reg` | `regs[rd] = regs[rs]` |
+| `CAPTURE` | `02` | `rd: Reg`, `idx: u8` | `regs[rd] = heap[SELF.closure_addr() + 2 + idx]` |
+| `GLOBAL` | `03` | `rd: Reg`, `idx: u8` | `regs[rd] = globals[idx]` |
 
 ### Allocation
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `CLOSURE` | `06` | `addr: u16 LE`, `ncap: u8`, `sd: u8` | Pop `ncap` values as captures, allocate closure on heap, push closure value with `stack_delta=sd` |
-| `FUNCTION` | `0D` | `addr: u16 LE`, `sd: u8` | Push a `TYP_FUNC` value with code pointer and `stack_delta=sd` packed directly in the value (no heap allocation) |
-| `PACK tag` | `07 tag` | `tag: u8` | Look up arity from arity table. Pop `arity` values as fields (0 = nullary, no heap alloc), push constructor value |
+| `CLOSURE` | `06` | `rd: Reg`, `addr: u16 LE`, `ncap: u8`, `cap₁..capₙ: Reg...` | Allocate closure on heap with `ncap` captured values read from registers, store closure value in `rd` |
+| `FUNCTION` | `0D` | `rd: Reg`, `addr: u16 LE` | Store `TYP_FUNC` value with code pointer directly in `rd` (no heap allocation) |
+| `PACK` | `07` | `rd: Reg`, `tag: u8`, `f₁..fₙ: Reg...` | Look up arity from arity table. Read `arity` field values from registers (0 = nullary, no heap alloc), store constructor value in `rd` |
 
 ### Destructuring
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `FIELD i` | `08 i` | `i: u8` | Pop constructor, push its field at index `i` |
-| `MATCH` | `09` | `base: u8`, `n: u8`, then `n × u16 LE` jump table | Pop constructor, compute `tag - base`, jump to the corresponding code address |
+| `FIELD` | `08` | `rd: Reg`, `rs: Reg`, `idx: u8` | `regs[rd] = heap[regs[rs].ctor_addr() + 1 + idx]` |
+| `UNPACK` | `0E` | `rd: Reg`, `tag: u8`, `rs: Reg` | For `i in 0..arity_table[tag]`: `regs[rd + i] = heap[regs[rs].ctor_addr() + 1 + i]` |
+| `MATCH` | `09` | `rs: Reg`, `base: u8`, `n: u8`, then `n × u16 LE` jump table | Compute `regs[rs].ctor_tag() - base`, jump to the corresponding code address |
+| `BRANCH` | `0B` | `rs: Reg`, `base: u8`, `addr₀: u16 LE`, `addr₁: u16 LE` | Two-way match: jump to `addr₀` if tag equals `base`, otherwise jump to `addr₁` |
 
 ### Control flow
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `ENCORE` | `0A` | — | Pop closure, pop argument, pop continuation. Set `self_ref`, `arg`, `cont`, reset stack, reserve `stack_delta` slots, jump to closure's code pointer. For `TYP_FUNC` values the code pointer is read inline; for `TYP_CLOS` values it is read from the heap closure header |
-| `NULLADDR` | `0C` | — | Push a sentinel value (`0xFFFF`). Used as a dead continuation argument when invoking a continuation via `ENCORE` |
-| `FIN` | `00` | — | Halt, return top of stack |
+| `ENCORE` | `0A` | `rf: Reg`, `rk: Reg` | Set `SELF = regs[rf]`, `CONT = regs[rk]`, resolve code pointer from `rf` (inline for `TYP_FUNC`, from heap header for `TYP_CLOS`), jump |
+| `FIN` | `00` | `rs: Reg` | Halt, return `regs[rs]` |
 
-### Integer arithmetic
+Arguments `A1`–`A8` are staged by the compiler via `MOV` instructions before `ENCORE`. The `NULL` register (`0xFF`) serves as a dead continuation when resuming a continuation via `ENCORE`.
+
+### Integer operations
 
 | Opcode | Hex | Operands | Effect |
 |--------|-----|----------|--------|
-| `INT` | `10` | 3 bytes LE | Push 24-bit signed integer |
-| `INT_ADD` | `11` | — | Pop `b`, pop `a`, push `a + b` |
-| `INT_SUB` | `12` | — | Pop `b`, pop `a`, push `a - b` |
-| `INT_MUL` | `13` | — | Pop `b`, pop `a`, push `a * b` |
-| `INT_EQ` | `14` | — | Pop `b`, pop `a`, push `ctor(1, NULL)` if equal, `ctor(0, NULL)` otherwise |
-| `INT_LT` | `15` | — | Pop `b`, pop `a`, push `ctor(1, NULL)` if `a < b`, `ctor(0, NULL)` otherwise |
+| `INT` | `10` | `rd: Reg`, `3 bytes LE` | `regs[rd] = Value::int(sign_extend_24(bytes))` |
+| `INT_0` | `18` | `rd: Reg` | `regs[rd] = Value::int(0)` |
+| `INT_1` | `19` | `rd: Reg` | `regs[rd] = Value::int(1)` |
+| `INT_2` | `1A` | `rd: Reg` | `regs[rd] = Value::int(2)` |
+| `INT_ADD` | `11` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] + regs[rb])` (wrapping) |
+| `INT_SUB` | `12` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] - regs[rb])` (wrapping) |
+| `INT_MUL` | `13` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] * regs[rb])` (wrapping) |
+| `INT_EQ` | `14` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if equal, `ctor(0, NULL)` otherwise |
+| `INT_LT` | `15` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if `a < b`, `ctor(0, NULL)` otherwise |
+| `INT_BYTE` | `16` | `rd: Reg`, `rs: Reg` | Convert integer 0–255 to a single-byte `Bytes` value; error if out of range |
 
 Comparisons return nullary constructors: tag `1` = true, tag `0` = false.
+
+### Byte string operations
+
+| Opcode | Hex | Operands | Effect |
+|--------|-----|----------|--------|
+| `BYTES` | `30` | `rd: Reg`, `len: u8`, `data: len bytes` | Allocate byte string from inline data |
+| `BYTES_LEN` | `31` | `rd: Reg`, `rs: Reg` | `regs[rd] = int(byte_length(regs[rs]))` |
+| `BYTES_GET` | `32` | `rd: Reg`, `rs: Reg`, `ri: Reg` | `regs[rd] = int(byte_at(regs[rs], regs[ri]))` |
+| `BYTES_CONCAT` | `33` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = concat(regs[ra], regs[rb])` |
+| `BYTES_SLICE` | `34` | `rd: Reg`, `rs: Reg`, `ri: Reg`, `rn: Reg` | `regs[rd] = slice(regs[rs], start=regs[ri], len=regs[rn])` |
+| `BYTES_EQ` | `35` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if equal, `ctor(0, NULL)` otherwise |
+
+### Foreign functions
+
+| Opcode | Hex | Operands | Effect |
+|--------|-----|----------|--------|
+| `EXTERN` | `20` | `rd: Reg`, `ra: Reg`, `slot: u16 LE` | `regs[rd] = extern_fns[slot](regs[ra])` |
+
+Up to 32 extern slots are available. Extern functions have signature `fn(Value) -> Value`.
 
 ## Garbage collector
 
 A **mark-compact** (Lisp-2 style) collector runs in-place when the heap cannot satisfy an allocation:
 
-1. **Mark** — trace roots (`arg`, `cont`, `self_ref`, all stack slots) and recursively mark reachable heap objects via `gc_header` mark bits.
+1. **Mark** — trace roots (the full 256-register file and all globals) and iteratively mark reachable heap objects via `gc_header` mark bits. Byte-string payloads are not traced as pointers.
 2. **Forward** — linear scan computes new addresses for marked objects, stored in the GC header's forwarding field.
-3. **Update** — rewrite all pointers (roots, stack, and interior heap pointers) to forwarding addresses.
-4. **Compact** — copy marked objects to their new positions and reset `hp`.
+3. **Update** — rewrite all pointers (roots and interior heap pointers) to forwarding addresses.
+4. **Compact** — slide marked objects to their new positions and reset `hp`.
 
 ## Program binary format
 
@@ -136,12 +172,26 @@ Offset  Content
 6..8    n_globals: u16 LE
 8..10   code_len: u16 LE
 10..    Arity table (n_arities bytes)
-        Global slots (n_globals × 3 bytes: u16 LE code offset + u8 stack_delta)
+        Global slots (n_globals × 2 bytes: u16 LE code offset)
         Bytecode (code_len bytes)
+```
+
+Optional metadata may be appended after the bytecode:
+
+```
+Section 1 — constructor names:
+  n_ctors: u16 LE
+  For each: tag: u8, name_len: u8, name: name_len bytes (UTF-8)
+
+Section 2 — global/define names:
+  n_globals: u16 LE
+  For each: idx: u8, name_len: u8, name: name_len bytes (UTF-8)
 ```
 
 ## Entry points
 
-- **`Vm::new(code, arity_table, globals, mem)`** — create a VM instance.
-- **`vm.run()`** — execute from current `pc` until `FIN`.
-- **`vm.call(entry, arg)`** — build a thunk closure at `entry`, set `arg`, and run. Supports repeated calls on the same VM instance (GC preserves state between calls).
+- **`Vm::init(mem)`** — create a VM instance with a heap arena.
+- **`vm.load(&prog)`** — parse a program binary, initialize globals by running each define's thunk.
+- **`vm.call(global_idx, arg)`** — call a global function with an argument, return the result.
+- **`vm.call_value(func, arg)`** — call an arbitrary function value with an argument.
+- **`vm.register_extern(slot, f)`** — register a host function at a given extern slot.

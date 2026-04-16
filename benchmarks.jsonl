@@ -14,3 +14,26 @@
 {"name":"peephole-sink","timestamp":"2026-04-16T01:19:56+02:00","git":"34819f8","insn_count":2904487,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
 {"name":"curry-fix","timestamp":"2026-04-16T10:01:14+02:00","git":"2b011db","insn_count":5058522,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
 {"name":"curry-fix-escape-analysis","timestamp":"2026-04-16T10:08:53+02:00","git":"2b011db","insn_count":2904487,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"full-suite-test","example":"ackermann","frontend":"fleche","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":1044681,"output":"Timer with period zero, disabling 61 "}
+{"name":"full-suite-test","example":"ackermann","frontend":"scheme","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":1100647,"output":"Timer with period zero, disabling 61 "}
+{"name":"full-suite-test","example":"church","frontend":"fleche","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":55954,"output":"Timer with period zero, disabling 8 "}
+{"name":"full-suite-test","example":"church","frontend":"scheme","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":55954,"output":"Timer with period zero, disabling 8 "}
+{"name":"full-suite-test","example":"eval","frontend":"scheme","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":4526851,"output":"Timer with period zero, disabling church 1 + 1 (fuel=500) = timeout VM error: HeapOverflow "}
+{"name":"full-suite-test","example":"fibonacci","frontend":"fleche","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":834151,"output":"Timer with period zero, disabling 610 "}
+{"name":"full-suite-test","example":"fibonacci","frontend":"scheme","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":834142,"output":"Timer with period zero, disabling 610 "}
+{"name":"full-suite-test","example":"map_filter","frontend":"fleche","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":165208,"output":"Timer with period zero, disabling 2544 "}
+{"name":"full-suite-test","example":"map_filter","frontend":"scheme","timestamp":"2026-04-16T10:42:18+02:00","git":"cdeb32b","insn_count":165208,"output":"Timer with period zero, disabling 2544 "}
+{"name":"full-suite-test","example":"ackermann","frontend":"fleche","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":1044681,"output":"Timer with period zero, disabling 61 "}
+{"name":"full-suite-test","example":"ackermann","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":1100647,"output":"Timer with period zero, disabling 61 "}
+{"name":"full-suite-test","example":"church","frontend":"fleche","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":55954,"output":"Timer with period zero, disabling 8 "}
+{"name":"full-suite-test","example":"church","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":55954,"output":"Timer with period zero, disabling 8 "}
+{"name":"full-suite-test","example":"eval","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":4526851,"output":"Timer with period zero, disabling church 1 + 1 (fuel=500) = timeout VM error: HeapOverflow "}
+{"name":"full-suite-test","example":"fibonacci","frontend":"fleche","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":834151,"output":"Timer with period zero, disabling 610 "}
+{"name":"full-suite-test","example":"fibonacci","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":834142,"output":"Timer with period zero, disabling 610 "}
+{"name":"full-suite-test","example":"map_filter","frontend":"fleche","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":165208,"output":"Timer with period zero, disabling 2544 "}
+{"name":"full-suite-test","example":"map_filter","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":165208,"output":"Timer with period zero, disabling 2544 "}
+{"name":"full-suite-test","example":"reverse","frontend":"fleche","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":152559,"output":"Timer with period zero, disabling 100 "}
+{"name":"full-suite-test","example":"reverse","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":158783,"output":"Timer with period zero, disabling 100 "}
+{"name":"full-suite-test","example":"sort","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":2904487,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"full-suite-test","example":"sum","frontend":"fleche","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":339460,"output":"Timer with period zero, disabling 500500 "}
+{"name":"full-suite-test","example":"sum","frontend":"scheme","timestamp":"2026-04-16T10:43:03+02:00","git":"cdeb32b","insn_count":354439,"output":"Timer with period zero, disabling 500500 "}

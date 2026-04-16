@@ -1,6 +1,6 @@
 # Encore!
 
-Encore is a lightweight bytecode virtual machine where every function call is a tail call. There is no call stack — continuations are first-class values and control flow is expressed entirely through the `ENCORE` opcode, which enters a closure, resets the evaluation stack, and never returns. A CPS-transforming compiler targeting the VM is included, along with [Fleche](FLECHE.md), a small functional language that serves as its frontend.
+Encore is a lightweight bytecode virtual machine where every function call is a tail call. There is no call stack — continuations are first-class values and control flow is expressed entirely through the `ENCORE` opcode, which sets the callee and continuation registers, jumps, and never returns. A CPS-transforming compiler targeting the VM is included, along with [Fleche](FLECHE.md), a small functional language that serves as its frontend.
 
 ## Architecture
 
@@ -9,18 +9,21 @@ Fleche source
     │  encore_fleche::parse
     ▼
  ds::Module        direct-style AST (nested expressions, named binders)
+    │  ds_uncurry
+    ▼
+ ds::Module        uncurried (multi-arg lambdas and saturated applications)
     │  dsi_resolve
     ▼
 dsi::Module        de Bruijn-indexed AST (nameless, capture-safe)
     │  cps_transform
     ▼
-cps::Module        continuation-passing style (ANF, explicit continuations)
+cps::Module        continuation-passing style (explicit continuations)
     │  cps_optimize
     ▼
 cps::Module        optimized CPS
     │  asm_resolve
     ▼
-asm::Module        resolved locations (locals, captures, globals — no names)
+asm::Module        resolved locations (registers, captures, globals — no names)
     │  asm_emit
     ▼
   bytecode         binary format consumed by encore_vm
@@ -33,10 +36,11 @@ asm::Module        resolved locations (locals, captures, globals — no names)
 
 ### `encore`
 
-Command-line interface that ties the frontend and backend together. Provides three subcommands:
+Command-line interface that ties the frontend and backend together. Provides subcommands:
 
 - **`encore run`** — load and execute a compiled `.bin` program
 - **`encore compile fleche`** — parse Fleche source and compile to bytecode
+- **`encore compile scheme`** — parse Rocq-extracted Scheme and compile to bytecode
 - **`encore disasm`** — disassemble a compiled `.bin` program (plain or interactive TUI)
 
 See [CLI usage](#cli-usage) below.
@@ -51,10 +55,12 @@ See [FLECHE.md](FLECHE.md) for the language reference.
 
 The compiler backend. Owns all IR types (`ds`, `dsi`, `prim`, `cps`, `asm`) and all transformation passes:
 
+- **DS uncurry** — flattens curried lambdas into multi-argument functions, resolves application arities
 - **DSI resolve** — converts named binders to de Bruijn indices for capture-safe CPS transform
 - **CPS transform** — converts the indexed AST into continuation-passing style
 - **CPS optimizer** — shrinking reductions and growth-enabling passes (inlining, hoisting, CSE, contification)
-- **ASM resolve** — closure conversion and name resolution to machine locations
+- **ASM resolve** — closure conversion and name resolution to machine registers
+- **ASM peephole** — register sinking to reduce unnecessary `MOV` instructions
 - **ASM emit** — generates VM bytecode and serializes the program binary
 
 See [FLECHE.md](FLECHE.md) for the compiler pipeline and [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
@@ -63,12 +69,16 @@ See [FLECHE.md](FLECHE.md) for the compiler pipeline and [OPTIMIZER.md](OPTIMIZE
 
 A `#![no_std]` bytecode interpreter with:
 
-- Packed 32-bit values (closures, constructors, integers)
-- Unified heap + stack arena
+- Packed 32-bit values (closures, constructors, integers, byte strings)
+- 256-register file and heap arena with bump allocation
 - Mark-compact garbage collector
-- Single-opcode calling convention: `ENCORE` (enter closure with argument and continuation). Continuation resumption uses `ENCORE` with a `NULLADDR` sentinel as the dead continuation
+- Single-opcode calling convention: `ENCORE` (set callee and continuation registers, jump). Continuation resumption uses `ENCORE` with the `NULL` register as the dead continuation
 
 See [VM.md](VM.md) for details.
+
+### `encore_scheme`
+
+Scheme/S-expression frontend for Rocq-extracted `.scm` files. Parses S-expressions, desugars special forms (`lambda`, `match`, `if`, `letrec`, etc.), and lowers to the same `ds::Module` as Fleche. Used by `encore compile scheme` and by bare-metal example build scripts.
 
 ### `encore_disasm`
 
@@ -78,8 +88,9 @@ Bytecode disassembler and inspector. Decodes ENCR binaries into a human-readable
 
 ```
 encore ──► encore_fleche ──► encore_compiler ──► encore_vm
-  │            │
-  ├────────────┘
+  │
+  ├──► encore_scheme ──► encore_compiler
+  │
   ├──► encore_disasm ──► encore_vm
   └──► encore_compiler
 ```
@@ -147,7 +158,7 @@ Available flags:
 |------|---------|-------------|
 | `--cps-optimize` | `on` | Enable/disable the optimizer entirely |
 | `--cps-optimize-fuel` | `100` | Max optimizer iterations |
-| `--cps-optimize-inline-threshold` | `20` | Max body size for inlining |
+| `--cps-optimize-inline-threshold` | `8` | Max body size for inlining |
 | `--cps-optimize-simplify-dead-code` | `on` | Dead code elimination |
 | `--cps-optimize-simplify-copy-propagation` | `on` | Copy propagation |
 | `--cps-optimize-simplify-constant-fold` | `on` | Constant folding |

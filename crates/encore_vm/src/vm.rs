@@ -68,6 +68,19 @@ impl<'a> Vm<'a> {
         self.arena[val.ctor_addr() + 1 + idx]
     }
 
+    pub fn alloc_ctor(&mut self, tag: u8, fields: &[Value]) -> Result<Value, VmError> {
+        if fields.is_empty() {
+            return Ok(Value::ctor(tag, HeapAddress::NULL));
+        }
+        let size = 1 + fields.len();
+        let addr = self.alloc(size)?;
+        self.arena[addr] = Value::gc_header(size as u8);
+        for (i, &f) in fields.iter().enumerate() {
+            self.arena[addr + 1 + i] = f;
+        }
+        Ok(Value::ctor(tag, addr))
+    }
+
     pub fn alloc_bytes(&mut self, data: &[u8]) -> Result<Value, VmError> {
         let n_data_words = (data.len() + 3) / 4;
         let total = 2 + n_data_words;

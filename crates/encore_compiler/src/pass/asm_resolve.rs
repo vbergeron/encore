@@ -21,7 +21,8 @@ impl Env {
     }
 
     fn bind_local(&mut self, name: String) -> asm::Reg {
-        assert!(self.local_count < 22, "register overflow: more than 22 locals needed");
+        assert!((self.local_count as u16) < (asm::NULL as u16) - (asm::X01 as u16),
+                "register overflow: more than {} locals needed", asm::NULL - asm::X01);
         let reg = asm::X01 + self.local_count;
         self.local_count += 1;
         self.bindings.insert(name, reg);

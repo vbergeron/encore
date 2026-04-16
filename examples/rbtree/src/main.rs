@@ -26,7 +26,7 @@ fn main() -> ! {
     let mut vm = Vm::init(buf);
     vm.load(&prog).unwrap_or_else(|e| vm_exit_err(e));
 
-    let n = 50;
+    let n = 30;
 
     let tree = vm.call(funcs::BUILD_TREE, Value::int(n)).unwrap_or_else(|e| vm_exit_err(e));
 

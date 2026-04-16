@@ -3,6 +3,11 @@ name = "encore-baremetal-eval"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = ["scheme"]
+fleche = ["dep:encore_fleche"]
+scheme = ["dep:encore_scheme"]
+
 [dependencies]
 encore_vm = { path = "../../crates/encore_vm", features = ["stats"] }
 cortex-m = "0.7"
@@ -11,7 +16,8 @@ cortex-m-semihosting = "0.5"
 panic-halt = "1.0"
 
 [build-dependencies]
-encore_scheme = { path = "../../crates/encore_scheme" }
+encore_fleche = { path = "../../crates/encore_fleche", optional = true }
+encore_scheme = { path = "../../crates/encore_scheme", optional = true }
 encore_compiler = { path = "../../crates/encore_compiler" }
 
 [profile.dev]

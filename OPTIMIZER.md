@@ -74,9 +74,9 @@ Each of these may increase code size. The simplify loop runs after each one to c
 let double = x -> builtin add x x in double 3
 ```
 
-Duplicates small function bodies at call sites. Uses an Appel-style heuristic: a function is inlined only if its body size (measured by AST node count) is below `inline_threshold` (default 20). Recursive functions (`Letrec`) are never inlined to avoid unbounded expansion.
+Duplicates small function bodies at call sites. Uses an Appel-style heuristic: a function is inlined only if its body size (measured by AST node count) is below `inline_threshold` (default 8). Recursive functions (`Letrec`) are never inlined to avoid unbounded expansion.
 
-### Hoisting (`rewrite_02_hoisting`) — stub
+### Hoisting (`rewrite_02_hoisting`)
 
 ```
 # let rec loop n =              let one = 1 in
@@ -86,7 +86,7 @@ Duplicates small function bodies at call sites. Uses an Appel-style heuristic: a
 
 Loop-invariant code motion. Moves closure allocations and computations out of self-recursive functions when they only depend on variables that don't change between iterations.
 
-### Common subexpression elimination (`rewrite_03_cse`) — stub
+### Common subexpression elimination (`rewrite_03_cse`)
 
 ```
 # let a = field 0 of x in       let a = field 0 of x in
@@ -112,7 +112,7 @@ Turns escaping functions into local continuations when escape analysis shows the
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `fuel` | `usize` | `100` | Max outer-loop iterations |
-| `inline_threshold` | `usize` | `20` | Max body size for inlining |
+| `inline_threshold` | `usize` | `8` | Max body size for inlining |
 | `simplify_dead_code` | `bool` | `true` | Toggle dead code elimination |
 | `simplify_copy_propagation` | `bool` | `true` | Toggle copy propagation |
 | `simplify_constant_fold` | `bool` | `true` | Toggle constant folding |
@@ -149,11 +149,11 @@ Applied once after the optimization loop, before bytecode emission.
 
 ### Closure conversion
 
-Implemented in `pass/asm_resolve.rs`. Computes free variables of each function and continuation lambda, determines captures vs. globals, and assigns `Local`/`Capture`/`Global`/`Arg`/`Cont`/`SelfRef` locations. Should come after all optimizations so it sees the smallest possible free variable sets.
+Implemented in `pass/asm_resolve.rs`. Computes free variables of each function and continuation lambda, determines captures vs. globals, and assigns register locations (`SELF`, `CONT`, `A1`–`A8`, `X01`+, `Capture`, `Global`). Should come after all optimizations so it sees the smallest possible free variable sets.
 
 ### Zero-env closure detection
 
-After closure conversion, closures with no captures use a cheaper representation. The `FUNCTION` opcode packs the code address directly into the 32-bit value (in the addr field, with `ncap=0`), skipping both the heap allocation and the heap indirection at call time. `ENCORE` branches on `ncap` to decide whether to read the code pointer from the value or from the heap. This pairs naturally with hoisting, which is likely to produce zero-capture closures by moving bindings to outer scopes.
+After closure conversion, closures with no captures use a cheaper representation. The `FUNCTION` opcode packs the code address directly into the 32-bit value, skipping both the heap allocation and the heap indirection at call time. `ENCORE` checks the type tag (`TYP_FUNC` vs `TYP_CLOS`) to decide whether to read the code pointer from the value or from the heap closure header. This pairs naturally with hoisting, which is likely to produce zero-capture closures by moving bindings to outer scopes.
 
 ## References
 

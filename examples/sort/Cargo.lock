@@ -76,6 +76,7 @@ dependencies = [
  "cortex-m-rt",
  "cortex-m-semihosting",
  "encore_compiler",
+ "encore_fleche",
  "encore_scheme",
  "encore_vm",
  "panic-halt",
@@ -86,6 +87,13 @@ name = "encore_compiler"
 version = "0.1.0"
 dependencies = [
  "encore_vm",
+]
+
+[[package]]
+name = "encore_fleche"
+version = "0.1.0"
+dependencies = [
+ "encore_compiler",
 ]
 
 [[package]]

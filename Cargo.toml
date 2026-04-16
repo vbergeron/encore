@@ -5,4 +5,11 @@ exclude = [
     "examples/sort",
     "examples/rbtree",
     "examples/eval",
+    "examples/church",
+    "examples/fibonacci",
+    "examples/sum",
+    "examples/ackermann",
+    "examples/reverse",
+    "examples/map_filter",
+    "examples/tree",
 ]
