@@ -253,7 +253,7 @@ fn test_heap_overflow() {
 fn test_invalid_opcode() {
     let code = [0xF0];
     let result = run(&code, &[]);
-    assert!(matches!(result, Err(VmError::InvalidOpcode(0xF0))));
+    assert!(matches!(result, Err(VmError::InvalidOpcode { opcode: 0xF0, .. })));
 }
 
 // -- GC tests --
@@ -369,7 +369,7 @@ fn test_extern_not_registered() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
 
-    assert!(matches!(vm.load(&prog), Err(VmError::Extern(_))));
+    assert!(matches!(vm.load(&prog), Err(VmError::Extern { .. })));
 }
 
 // -- Bytes tests --

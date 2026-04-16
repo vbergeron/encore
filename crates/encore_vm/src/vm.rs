@@ -205,6 +205,7 @@ impl<'a> Vm<'a> {
         loop {
             #[cfg(feature = "stats")]
             { self.stats.op_count += 1; }
+            let pc = self.code.pc() as u16;
             let op = self.code.read_u8();
             match op {
                 opcode::MOV => {
@@ -292,9 +293,10 @@ impl<'a> Vm<'a> {
                     let table = self.code.pc();
                     self.code.skip(n as usize * 2);
                     let ctor = self.registers[rs];
-                    let branch = ctor.ctor_tag().wrapping_sub(base) as usize;
+                    let tag = ctor.ctor_tag();
+                    let branch = tag.wrapping_sub(base) as usize;
                     if branch >= n as usize {
-                        return Err(VmError::MatchFail);
+                        return Err(VmError::MatchFail { tag, pc });
                     }
                     let off = self.code.read_address_at(table + branch * 2);
                     self.code.jump(off);
@@ -394,7 +396,7 @@ impl<'a> Vm<'a> {
                     let rs = self.code.read_reg();
                     let n = self.registers[rs].int_value();
                     if n < 0 || n > 255 {
-                        return Err(VmError::ByteRange(n));
+                        return Err(VmError::ByteRange { value: n, pc });
                     }
                     let addr = self.alloc(3)?;
                     self.arena[addr + 0] = Value::gc_header(3);
@@ -412,7 +414,7 @@ impl<'a> Vm<'a> {
                     self.executing_extern = true;
                     let result = f(self, arg);
                     self.executing_extern = false;
-                    let result = result.map_err(VmError::Extern)?;
+                    let result = result.map_err(|error| VmError::Extern { error, slot: idx, pc })?;
                     self.registers[rd] = result;
                 }
 
@@ -561,7 +563,7 @@ impl<'a> Vm<'a> {
                 }
 
                 _ => {
-                    return Err(VmError::InvalidOpcode(op));
+                    return Err(VmError::InvalidOpcode { opcode: op, pc });
                 }
             }
         }
