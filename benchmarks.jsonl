@@ -12,3 +12,5 @@
 {"name":"branch-opcode","timestamp":"2026-04-16T01:05:00+02:00","git":"34819f8","insn_count":2961589,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
 {"name":"branch-generalized","timestamp":"2026-04-16T01:09:15+02:00","git":"34819f8","insn_count":2943651,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
 {"name":"peephole-sink","timestamp":"2026-04-16T01:19:56+02:00","git":"34819f8","insn_count":2904487,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"curry-fix","timestamp":"2026-04-16T10:01:14+02:00","git":"2b011db","insn_count":5058522,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}
+{"name":"curry-fix-escape-analysis","timestamp":"2026-04-16T10:08:53+02:00","git":"2b011db","insn_count":2904487,"output":"Timer with period zero, disabling merge_sort(rev_range(256)) -> 256 elements "}

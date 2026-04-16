@@ -7,5 +7,5 @@ pub mod cps_rewrite;
 pub mod cps_simplify;
 pub mod cps_subst;
 pub mod cps_transform;
-pub mod ds_arity_resolve;
+pub mod ds_uncurry;
 pub mod dsi_resolve;

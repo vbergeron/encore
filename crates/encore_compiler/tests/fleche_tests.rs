@@ -506,7 +506,7 @@ fn test_extern_with_wrapper() {
     assert_eq!(result.int_value(), 100);
 }
 
-// -- ds_arity_resolve: immediate multi-arg lambda application --
+// -- ds_uncurry: immediate multi-arg lambda application --
 
 #[test]
 fn test_immediate_multi_arg_lambda() {
