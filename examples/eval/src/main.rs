@@ -21,7 +21,7 @@ fn vm_exit_err(e: VmError) -> ! {
 
 fn read_option_nat(vm: &Vm, v: Value) -> Option<i32> {
     if v.is_ctor() && v.ctor_tag() == ctors::SOME {
-        Some(vm.ctor_field(v, 0).int_value())
+        Some(vm.ctor_field(v, 0).int_value().unwrap())
     } else {
         None
     }

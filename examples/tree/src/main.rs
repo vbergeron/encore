@@ -52,7 +52,7 @@ fn main() -> ! {
     let tree = node(&mut vm, left, right);
 
     let n = vm.call(funcs::COUNT, tree).unwrap_or_else(|e| vm_exit_err(e));
-    let _ = hprintln!("{}", n.int_value());
+    let _ = hprintln!("{}", n.int_value().unwrap());
 
     debug::exit(debug::EXIT_SUCCESS);
     loop {}

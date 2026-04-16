@@ -153,7 +153,7 @@ fn test_int_const() {
     let code = [INT, X01, 42, 0, 0, FIN, X01];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
@@ -161,7 +161,7 @@ fn test_int_const_negative() {
     let code = [INT, X01, 0xFF, 0xFF, 0xFF, FIN, X01];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), -1);
+    assert_eq!(result.int_value().unwrap(), -1);
 }
 
 #[test]
@@ -174,7 +174,7 @@ fn test_int_add() {
     ];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 #[test]
@@ -187,7 +187,7 @@ fn test_int_sub() {
     ];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 #[test]
@@ -200,7 +200,7 @@ fn test_int_mul() {
     ];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
@@ -341,7 +341,7 @@ fn test_call() {
 #[test]
 fn test_extern_dispatch() {
     fn double_it(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
-        Ok(Value::int(v.int_value() * 2))
+        Ok(Value::int(v.int_value().unwrap() * 2))
     }
 
     let code = [
@@ -355,7 +355,7 @@ fn test_extern_dispatch() {
     vm.register_extern(0, double_it);
     vm.load(&prog).unwrap();
 
-    assert_eq!(vm.global(0).int_value(), 42);
+    assert_eq!(vm.global(0).int_value().unwrap(), 42);
 }
 
 #[test]
@@ -412,7 +412,7 @@ fn test_bytes_len() {
     ];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 3);
+    assert_eq!(result.int_value().unwrap(), 3);
 }
 
 #[test]
@@ -425,7 +425,7 @@ fn test_bytes_get() {
     ];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 30);
+    assert_eq!(result.int_value().unwrap(), 30);
 }
 
 #[test]

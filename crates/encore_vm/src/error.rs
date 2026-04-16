@@ -19,6 +19,7 @@ pub enum VmError {
     Truncated,
     UnregisteredExtern,
     Extern { error: ExternError, slot: u16, pc: u16 },
+    TypeError { expected: &'static str, got: &'static str },
 }
 
 impl fmt::Display for VmError {
@@ -36,6 +37,8 @@ impl fmt::Display for VmError {
             VmError::UnregisteredExtern => write!(f, "unregistered extern"),
             VmError::Extern { error, slot, pc } =>
                 write!(f, "extern {slot} failed at pc=0x{pc:04x}: {error}"),
+            VmError::TypeError { expected, got } =>
+                write!(f, "type error: expected {expected}, got {got}"),
         }
     }
 }

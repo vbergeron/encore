@@ -1,3 +1,5 @@
+use crate::error::VmError;
+
 const TYP_CLOS: u32 = 0;
 const TYP_CTOR: u32 = 1;
 const TYP_HDR: u32 = 2;
@@ -117,10 +119,30 @@ impl Value {
     pub fn bytes_addr(self) -> HeapAddress { HeapAddress((self.0 >> 16) as u16) }
     pub fn bytes_hdr_len(self) -> usize { (self.0 >> 8) as usize }
 
+    // -- Type name --
+
+    pub fn type_name(self) -> &'static str {
+        match self.0 & 0xFF {
+            TYP_CLOS => "closure",
+            TYP_CTOR => "constructor",
+            TYP_HDR => "header",
+            TYP_GC => "gc",
+            TYP_INT => "int",
+            TYP_FUNC => "function",
+            TYP_BYTES => "bytes",
+            TYP_BYTES_HDR => "bytes_header",
+            _ => "unknown",
+        }
+    }
+
     // -- Integer accessors --
 
-    pub fn int_value(self) -> i32 {
-        (self.0 as i32) >> 8
+    pub fn int_value(self) -> Result<i32, VmError> {
+        if self.is_int() {
+            Ok((self.0 as i32) >> 8)
+        } else {
+            Err(VmError::TypeError { expected: "int", got: self.type_name() })
+        }
     }
 
     // -- Header accessors --

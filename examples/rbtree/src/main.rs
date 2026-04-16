@@ -31,10 +31,10 @@ fn main() -> ! {
     let tree = vm.call(funcs::BUILD_TREE, Value::int(n)).unwrap_or_else(|e| vm_exit_err(e));
 
     let d = vm.call(funcs::DEPTH, tree).unwrap_or_else(|e| vm_exit_err(e));
-    let _ = hprintln!("build_tree({}) depth = {}", n, d.int_value());
+    let _ = hprintln!("build_tree({}) depth = {}", n, d.int_value().unwrap());
 
     let s = vm.call(funcs::SIZE, tree).unwrap_or_else(|e| vm_exit_err(e));
-    let _ = hprintln!("build_tree({}) size  = {}", n, s.int_value());
+    let _ = hprintln!("build_tree({}) size  = {}", n, s.int_value().unwrap());
 
     let ok = vm.call(funcs::BUILD_AND_CHECK, Value::int(n)).unwrap_or_else(|e| vm_exit_err(e));
     let _ = hprintln!(

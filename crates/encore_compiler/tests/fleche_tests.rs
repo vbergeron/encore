@@ -245,7 +245,7 @@ fn test_fix_map() {
 fn test_int_literal() {
     let result = run("define main as 42");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 // -- Builtin add --
@@ -254,7 +254,7 @@ fn test_int_literal() {
 fn test_builtin_add() {
     let result = run("define main as builtin add 3 4");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 // -- Builtin sub --
@@ -263,7 +263,7 @@ fn test_builtin_add() {
 fn test_builtin_sub() {
     let result = run("define main as builtin sub 10 3");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 // -- Builtin mul --
@@ -272,7 +272,7 @@ fn test_builtin_sub() {
 fn test_builtin_mul() {
     let result = run("define main as builtin mul 6 7");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 // -- Builtin eq true --
@@ -320,7 +320,7 @@ fn test_int_in_ctor_field() {
         define main as field 0 of Pair(42, 0)
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 // -- Builtin lt with match --
@@ -336,7 +336,7 @@ fn test_builtin_lt_with_match() {
           end
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 1);
+    assert_eq!(result.int_value().unwrap(), 1);
 }
 
 // -- Arithmetic with let bindings --
@@ -350,7 +350,7 @@ fn test_arithmetic_let() {
           builtin add x y
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 30);
+    assert_eq!(result.int_value().unwrap(), 30);
 }
 
 // -- Multi-arg lambda partial application --
@@ -369,7 +369,7 @@ fn test_multi_arg_lambda_partial_apply() {
           g 42
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
@@ -380,7 +380,7 @@ fn test_exact_multi_arg_call() {
           f 3 4
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 #[test]
@@ -392,7 +392,7 @@ fn test_partial_apply_define() {
           inc 41
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
@@ -403,7 +403,7 @@ fn test_over_application() {
           f 0 3 4
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 #[test]
@@ -416,7 +416,7 @@ fn test_chained_partial_application() {
           h 3
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 6);
+    assert_eq!(result.int_value().unwrap(), 6);
 }
 
 #[test]
@@ -427,7 +427,7 @@ fn test_higher_order_unknown_callee() {
           apply (y -> builtin add y 1) 41
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
@@ -439,7 +439,7 @@ fn test_letrec_as_value() {
           g 41
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 // -- Extern / FFI --
@@ -461,7 +461,7 @@ fn run_with_externs(source: &str, externs: &[(u16, encore_vm::vm::ExternFn)]) ->
 #[test]
 fn test_extern_basic() {
     fn triple(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
-        Ok(Value::int(v.int_value() * 3))
+        Ok(Value::int(v.int_value().unwrap() * 3))
     }
 
     let result = run_with_externs("
@@ -470,16 +470,16 @@ fn test_extern_basic() {
         define main as triple_it 7
     ", &[(0, triple)]);
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 21);
+    assert_eq!(result.int_value().unwrap(), 21);
 }
 
 #[test]
 fn test_extern_composed() {
     fn double(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
-        Ok(Value::int(v.int_value() * 2))
+        Ok(Value::int(v.int_value().unwrap() * 2))
     }
     fn negate(_vm: &mut Vm, v: Value) -> Result<Value, ExternError> {
-        Ok(Value::int(-v.int_value()))
+        Ok(Value::int(-v.int_value().unwrap()))
     }
 
     let result = run_with_externs("
@@ -489,7 +489,7 @@ fn test_extern_composed() {
         define main as neg (dbl 5)
     ", &[(0, double), (1, negate)]);
     assert!(result.is_int());
-    assert_eq!(result.int_value(), -10);
+    assert_eq!(result.int_value().unwrap(), -10);
 }
 
 #[test]
@@ -504,7 +504,7 @@ fn test_extern_with_wrapper() {
         define main as raw_add True
     ", &[(0, raw_add)]);
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 100);
+    assert_eq!(result.int_value().unwrap(), 100);
 }
 
 // -- ds_uncurry: immediate multi-arg lambda application --
@@ -515,7 +515,7 @@ fn test_immediate_multi_arg_lambda() {
         define main as (x -> y -> builtin add x y) 3 4
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 7);
+    assert_eq!(result.int_value().unwrap(), 7);
 }
 
 #[test]
@@ -527,7 +527,7 @@ fn test_immediate_two_arg_lambda_with_ctor() {
           field 0 of p
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 10);
+    assert_eq!(result.int_value().unwrap(), 10);
 }
 
 #[test]
@@ -537,7 +537,7 @@ fn test_over_applied_known_function() {
         define main as const 42 99
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 42);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
@@ -548,7 +548,7 @@ fn test_immediate_lambda_in_let() {
           r
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 10);
+    assert_eq!(result.int_value().unwrap(), 10);
 }
 
 #[test]
@@ -560,7 +560,117 @@ fn test_partial_apply_known_multi_arg() {
           g 20
     ");
     assert!(result.is_int());
-    assert_eq!(result.int_value(), 30);
+    assert_eq!(result.int_value().unwrap(), 30);
+}
+
+// -- Bytes parsing: list_nat_of_bytes --
+
+fn collect_int_list(vm: &Vm, nil_tag: u8, cons_tag: u8, mut val: Value) -> Vec<i32> {
+    let mut out = Vec::new();
+    while val.is_ctor() && val.ctor_tag() == cons_tag {
+        let head = vm.ctor_field(val, 0);
+        out.push(head.int_value().unwrap());
+        val = vm.ctor_field(val, 1);
+    }
+    assert!(val.is_ctor() && val.ctor_tag() == nil_tag, "list not terminated by Nil");
+    out
+}
+
+#[test]
+fn test_list_nat_of_bytes_empty() {
+    let result = run_multi("
+        data Nil | Cons(h, t)
+
+        define list_nat_of_bytes as buf ->
+          let len = builtin bytes_len buf in
+          let rec go i =
+            let done = builtin eq i len in
+            match done
+              case True -> Nil
+              case False ->
+                let b = builtin bytes_get buf i in
+                let next = builtin add i 1 in
+                Cons(b, go next)
+            end
+          in go 0
+
+        define main as list_nat_of_bytes \"\"
+    ");
+    assert!(result.is_ctor());
+    assert_eq!(result.ctor_tag(), 2); // Nil
+}
+
+#[test]
+fn test_list_nat_of_bytes_hello() {
+    let source = "
+        data Nil | Cons(h, t)
+
+        define list_nat_of_bytes as buf ->
+          let len = builtin bytes_len buf in
+          let rec go i =
+            let done = builtin eq i len in
+            match done
+              case True -> Nil
+              case False ->
+                let b = builtin bytes_get buf i in
+                let next = builtin add i 1 in
+                Cons(b, go next)
+            end
+          in go 0
+
+        define main as list_nat_of_bytes \"hello\"
+    ";
+    let module = encore_fleche::parse(source);
+    let binary = pipeline::compile_module(module, None, None);
+    let prog = Program::parse(&binary).unwrap();
+    let last = prog.n_globals() - 1;
+    let mut mem = [Value::from_u32(0); 4096];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    let result = vm.global(last);
+    // Nil=2, Cons=3 (after False=0, True=1)
+    let bytes = collect_int_list(&vm, 2, 3, result);
+    assert_eq!(bytes, vec![104, 101, 108, 108, 111]); // h e l l o
+}
+
+#[test]
+fn test_list_nat_of_bytes_with_extern() {
+    fn provide_bytes(vm: &mut Vm, _arg: Value) -> Result<Value, ExternError> {
+        vm.alloc_bytes(b"AB").map_err(|_| ExternError("alloc failed"))
+    }
+
+    let source = "
+        data Nil | Cons(h, t)
+
+        define extern get_buf 0
+
+        define list_nat_of_bytes as buf ->
+          let len = builtin bytes_len buf in
+          let rec go i =
+            let done = builtin eq i len in
+            match done
+              case True -> Nil
+              case False ->
+                let b = builtin bytes_get buf i in
+                let next = builtin add i 1 in
+                Cons(b, go next)
+            end
+          in go 0
+
+        define main as list_nat_of_bytes (get_buf 0)
+    ";
+    let module = encore_fleche::parse(source);
+    let binary = pipeline::compile_module(module, None, None);
+    let prog = Program::parse(&binary).unwrap();
+    let last = prog.n_globals() - 1;
+    let mut mem = [Value::from_u32(0); 4096];
+    let mut vm = Vm::init(&mut mem);
+    vm.register_extern(0, provide_bytes);
+    vm.load(&prog).unwrap();
+    let result = vm.global(last);
+    // Nil=2, Cons=3 (after False=0, True=1)
+    let bytes = collect_int_list(&vm, 2, 3, result);
+    assert_eq!(bytes, vec![65, 66]); // A B
 }
 
 #[test]

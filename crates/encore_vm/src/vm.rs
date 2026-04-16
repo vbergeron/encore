@@ -348,8 +348,8 @@ impl<'a> Vm<'a> {
                     let rd = self.code.read_reg();
                     let ra = self.code.read_reg();
                     let rb = self.code.read_reg();
-                    let a = self.registers[ra].int_value();
-                    let b = self.registers[rb].int_value();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
                     self.registers[rd] = Value::int(a.wrapping_add(b));
                 }
 
@@ -357,8 +357,8 @@ impl<'a> Vm<'a> {
                     let rd = self.code.read_reg();
                     let ra = self.code.read_reg();
                     let rb = self.code.read_reg();
-                    let a = self.registers[ra].int_value();
-                    let b = self.registers[rb].int_value();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
                     self.registers[rd] = Value::int(a.wrapping_sub(b));
                 }
 
@@ -366,8 +366,8 @@ impl<'a> Vm<'a> {
                     let rd = self.code.read_reg();
                     let ra = self.code.read_reg();
                     let rb = self.code.read_reg();
-                    let a = self.registers[ra].int_value();
-                    let b = self.registers[rb].int_value();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
                     self.registers[rd] = Value::int(a.wrapping_mul(b));
                 }
 
@@ -375,8 +375,8 @@ impl<'a> Vm<'a> {
                     let rd = self.code.read_reg();
                     let ra = self.code.read_reg();
                     let rb = self.code.read_reg();
-                    let a = self.registers[ra].int_value();
-                    let b = self.registers[rb].int_value();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
                     let tag = if a == b { 1 } else { 0 };
                     self.registers[rd] = Value::ctor(tag, HeapAddress::NULL);
                 }
@@ -385,8 +385,8 @@ impl<'a> Vm<'a> {
                     let rd = self.code.read_reg();
                     let ra = self.code.read_reg();
                     let rb = self.code.read_reg();
-                    let a = self.registers[ra].int_value();
-                    let b = self.registers[rb].int_value();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
                     let tag = if a < b { 1 } else { 0 };
                     self.registers[rd] = Value::ctor(tag, HeapAddress::NULL);
                 }
@@ -394,7 +394,7 @@ impl<'a> Vm<'a> {
                 opcode::INT_BYTE => {
                     let rd = self.code.read_reg();
                     let rs = self.code.read_reg();
-                    let n = self.registers[rs].int_value();
+                    let n = self.registers[rs].int_value()?;
                     if n < 0 || n > 255 {
                         return Err(VmError::ByteRange { value: n, pc });
                     }
@@ -452,7 +452,7 @@ impl<'a> Vm<'a> {
                     let rs = self.code.read_reg();
                     let ri = self.code.read_reg();
                     let val = self.registers[rs];
-                    let idx = self.registers[ri].int_value() as usize;
+                    let idx = self.registers[ri].int_value()? as usize;
                     let word_idx = idx / 4;
                     let byte_off = idx % 4;
                     let word = self.arena[val.bytes_addr() + 2 + word_idx].to_u32();
@@ -504,8 +504,8 @@ impl<'a> Vm<'a> {
                     let rs = self.code.read_reg();
                     let ri = self.code.read_reg();
                     let rn = self.code.read_reg();
-                    let start = self.registers[ri].int_value() as usize;
-                    let slice_len = self.registers[rn].int_value() as usize;
+                    let start = self.registers[ri].int_value()? as usize;
+                    let slice_len = self.registers[rn].int_value()? as usize;
                     let n_data_words = (slice_len + 3) / 4;
                     let total = 2 + n_data_words;
                     let addr = self.alloc(total)?;

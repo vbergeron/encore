@@ -336,7 +336,7 @@ fn cmd_compile_scheme(path: &str, out: &str, config: Option<OptimizeConfig>, inc
 
 fn print_value(val: Value) {
     if val.is_int() {
-        println!("{}", val.int_value());
+        println!("{}", val.int_value().unwrap());
     } else if val.is_ctor() {
         println!("ctor(tag={})", val.ctor_tag());
     } else if val.is_function() {

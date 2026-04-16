@@ -25,7 +25,7 @@ fn main() -> ! {
     let mut vm = Vm::init(buf);
     vm.load(&prog).unwrap_or_else(|e| vm_exit_err(e));
 
-    let _ = hprintln!("{}", vm.global(funcs::MAIN).int_value());
+    let _ = hprintln!("{}", vm.global(funcs::MAIN).int_value().unwrap());
 
     debug::exit(debug::EXIT_SUCCESS);
     loop {}
