@@ -563,3 +563,33 @@ fn test_partial_apply_known_multi_arg() {
     assert_eq!(result.int_value(), 30);
 }
 
+#[test]
+fn test_compilation_deterministic() {
+    let source = "
+        data Red | Green | Blue
+        data None | Some(x)
+        define classify as color ->
+          match color
+            case Red -> Some(Red)
+            case Green -> None
+            case Blue -> Some(Blue)
+          end
+        define main as classify Green
+    ";
+    let compile = || {
+        let (module, ctor_names) = encore_fleche::parse_with_metadata(source);
+        let metadata = encore_compiler::pass::asm_emit::Metadata {
+            ctor_names,
+            global_names: module.defines.iter()
+                .enumerate()
+                .map(|(i, d)| (i as u8, d.name.clone()))
+                .collect(),
+        };
+        pipeline::compile_module(module, None, Some(&metadata))
+    };
+    let reference = compile();
+    for _ in 0..20 {
+        assert_eq!(compile(), reference, "compilation produced different bytecode across runs");
+    }
+}
+

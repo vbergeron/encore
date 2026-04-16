@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use encore_compiler::ir::ds;
 use encore_compiler::ir::prim::{PrimOp, IntOp, BytesOp};
@@ -414,13 +414,13 @@ struct CtorInfo {
 }
 
 struct Lowering {
-    ctors: HashMap<String, CtorInfo>,
+    ctors: BTreeMap<String, CtorInfo>,
     next_tag: u8,
 }
 
 impl Lowering {
     fn new() -> Self {
-        let mut ctors = HashMap::new();
+        let mut ctors = BTreeMap::new();
         ctors.insert("False".into(), CtorInfo { tag: 0, arity: 0 });
         ctors.insert("True".into(), CtorInfo { tag: 1, arity: 0 });
         Self {

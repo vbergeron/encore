@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::ds;
 use crate::prim::{PrimOp, IntOp, BytesOp};
@@ -11,13 +11,13 @@ struct CtorInfo {
 
 pub struct Parser {
     lexer: Lexer,
-    ctors: HashMap<String, CtorInfo>,
+    ctors: BTreeMap<String, CtorInfo>,
     next_tag: u8,
 }
 
 impl Parser {
     pub fn new(input: &str) -> Self {
-        let mut ctors = HashMap::new();
+        let mut ctors = BTreeMap::new();
         ctors.insert("False".into(), CtorInfo { tag: 0, arity: 0 });
         ctors.insert("True".into(), CtorInfo { tag: 1, arity: 0 });
         Self {
