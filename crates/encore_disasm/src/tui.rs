@@ -35,11 +35,15 @@ impl App {
 
         if !disasm.arity_table.is_empty() {
             left_lines.push(format!(
-                "── Arity table ({} entries) ──",
+                "── Constructors ({} entries) ──",
                 disasm.arity_table.len()
             ));
             for &(tag, arity) in &disasm.arity_table {
-                left_lines.push(format!("  tag {tag}: arity {arity}"));
+                if let Some(name) = disasm.ctor_names.get(&tag) {
+                    left_lines.push(format!("  {name} (tag={tag}, arity={arity})"));
+                } else {
+                    left_lines.push(format!("  tag {tag}: arity {arity}"));
+                }
             }
             left_lines.push(String::new());
         }
