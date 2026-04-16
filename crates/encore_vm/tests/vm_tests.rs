@@ -340,8 +340,8 @@ fn test_call() {
 
 #[test]
 fn test_extern_dispatch() {
-    fn double_it(v: Value) -> Value {
-        Value::int(v.int_value() * 2)
+    fn double_it(v: Value) -> Result<Value, VmError> {
+        Ok(Value::int(v.int_value() * 2))
     }
 
     let code = [

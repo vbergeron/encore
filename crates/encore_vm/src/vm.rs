@@ -13,10 +13,10 @@ const SELF: Reg = Reg::new(0);
 const CONT: Reg = Reg::new(1);
 const A1: Reg = Reg::new(2);
 
-pub type ExternFn = fn(Value) -> Value;
+pub type ExternFn = fn(Value) -> Result<Value, VmError>;
 const MAX_EXTERN: usize = 32;
 
-fn unregistered(_: Value) -> Value { panic!("unregistered extern") }
+fn unregistered(_: Value) -> Result<Value, VmError> { Err(VmError::UnregisteredExtern) }
 
 pub struct Vm<'a> {
     code: Code<'a>,
@@ -377,7 +377,8 @@ impl<'a> Vm<'a> {
                     let ra = self.code.read_reg();
                     let idx = self.code.read_u16();
                     let arg = self.registers[ra];
-                    self.registers[rd] = self.extern_fns[idx as usize](arg);
+                    let result = self.extern_fns[idx as usize](arg)?;
+                    self.registers[rd] = result;
                 }
 
                 opcode::BYTES => {

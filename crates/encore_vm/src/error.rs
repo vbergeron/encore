@@ -6,4 +6,5 @@ pub enum VmError {
     ByteRange(i32),
     BadMagic,
     Truncated,
+    UnregisteredExtern,
 }
