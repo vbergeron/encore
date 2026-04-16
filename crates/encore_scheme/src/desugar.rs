@@ -534,11 +534,17 @@ impl Lowering {
 
             ir::Expr::Match(scrutinee, cases) => {
                 let scrutinee = self.lower_expr(*scrutinee);
-                let tagged_cases: Vec<(u8, ds::Case)> = cases
+                let pre_tagged: Vec<(u8, ir::MatchCase)> = cases
                     .into_iter()
                     .map(|c| {
                         let arity = c.bindings.len() as u8;
                         let tag = self.resolve_tag(&c.tag, arity);
+                        (tag, c)
+                    })
+                    .collect();
+                let tagged_cases: Vec<(u8, ds::Case)> = pre_tagged
+                    .into_iter()
+                    .map(|(tag, c)| {
                         let body = self.lower_expr(c.body);
                         (tag, ds::Case { binds: c.bindings, body })
                     })
