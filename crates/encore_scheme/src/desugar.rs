@@ -12,16 +12,22 @@ use crate::parser::Sexp;
 
 pub fn parse_program(sexps: &[Sexp]) -> Result<ir::Module, String> {
     let mut defs = Vec::new();
-    let mut n_foreign: u16 = 0;
+    let mut n_extern: u16 = 0;
     for sexp in sexps {
         match sexp {
             Sexp::List(items) => {
                 if let Some(Sexp::Atom(head)) = items.first() {
                     match head.as_str() {
                         "load" => continue,
-                        "define" => defs.push(parse_define(items)?),
-                        "define-foreign" => {
-                            let def = parse_define_foreign(items, &mut n_foreign)?;
+                        "define" => {
+                            if let Some(result) = parse_extern_define(items) {
+                                defs.push(result?);
+                            } else {
+                                defs.push(parse_define(items)?);
+                            }
+                        }
+                        "define-extern" => {
+                            let def = parse_define_extern(items, &mut n_extern)?;
                             defs.push(def);
                         }
                         _ => return Err(format!("unexpected top-level form: {head}")),
@@ -32,6 +38,62 @@ pub fn parse_program(sexps: &[Sexp]) -> Result<ir::Module, String> {
         }
     }
     Ok(ir::Module { defines: defs })
+}
+
+/// Recognize `(define name (extern (slot N) arg1 arg2 ...))`.
+fn parse_extern_define(items: &[Sexp]) -> Option<Result<ir::Define, String>> {
+    if items.len() != 3 {
+        return None;
+    }
+    let body_items = items[2].as_list()?;
+    if body_items.first()?.as_atom()? != "extern" {
+        return None;
+    }
+    Some(parse_extern_define_inner(items, body_items))
+}
+
+fn parse_extern_define_inner(items: &[Sexp], body_items: &[Sexp]) -> Result<ir::Define, String> {
+    let name = items[1]
+        .as_atom()
+        .ok_or("define name must be an atom")?
+        .to_string();
+    if body_items.len() < 2 {
+        return Err("(extern (slot N) ...) expected".to_string());
+    }
+    let slot_form = body_items[1]
+        .as_list()
+        .ok_or("extern slot must be (slot N)")?;
+    if slot_form.len() != 2 || slot_form[0].as_atom() != Some("slot") {
+        return Err("extern slot must be (slot N)".to_string());
+    }
+    let slot_str = slot_form[1]
+        .as_atom()
+        .ok_or("slot index must be a number")?;
+    let idx: u16 = slot_str
+        .parse()
+        .map_err(|_| format!("slot index must be a u16, got {slot_str}"))?;
+    if body_items.len() == 2 {
+        return Ok(ir::Define {
+            name,
+            body: ir::Expr::Extern(idx),
+        });
+    }
+    let param_names: Vec<String> = body_items[2..]
+        .iter()
+        .map(|p| {
+            p.as_atom()
+                .ok_or("extern param must be an atom".to_string())
+                .map(|s| s.to_string())
+        })
+        .collect::<Result<_, _>>()?;
+    let pack_tag = format!("__ffi{idx}");
+    let ctor_fields: Vec<ir::Expr> = param_names.iter().map(|p| ir::Expr::Var(p.clone())).collect();
+    let body = ir::Expr::App(
+        Box::new(ir::Expr::Extern(idx)),
+        Box::new(ir::Expr::Ctor(pack_tag, ctor_fields)),
+    );
+    let body = ir::Expr::Lambdas(param_names, Box::new(body));
+    Ok(ir::Define { name, body })
 }
 
 fn parse_define(items: &[Sexp]) -> Result<ir::Define, String> {
@@ -46,52 +108,52 @@ fn parse_define(items: &[Sexp]) -> Result<ir::Define, String> {
     Ok(ir::Define { name, body })
 }
 
-fn parse_define_foreign(items: &[Sexp], n_foreign: &mut u16) -> Result<ir::Define, String> {
+fn parse_define_extern(items: &[Sexp], n_extern: &mut u16) -> Result<ir::Define, String> {
     match items.len() {
         2 => {
             let name = items[1]
                 .as_atom()
-                .ok_or("define-foreign name must be an atom")?
+                .ok_or("define-extern name must be an atom")?
                 .to_string();
-            let idx = *n_foreign;
-            *n_foreign += 1;
+            let idx = *n_extern;
+            *n_extern += 1;
             Ok(ir::Define {
                 name,
-                body: ir::Expr::Foreign(idx),
+                body: ir::Expr::Extern(idx),
             })
         }
         3 => {
             let name = items[1]
                 .as_atom()
-                .ok_or("define-foreign name must be an atom")?
+                .ok_or("define-extern name must be an atom")?
                 .to_string();
             let params = items[2]
                 .as_list()
-                .ok_or("define-foreign params must be a list")?;
+                .ok_or("define-extern params must be a list")?;
             if params.is_empty() {
-                return Err("define-foreign params list must not be empty".to_string());
+                return Err("define-extern params list must not be empty".to_string());
             }
             let param_names: Vec<String> = params
                 .iter()
                 .map(|p| {
                     p.as_atom()
-                        .ok_or("define-foreign param must be an atom".to_string())
+                        .ok_or("define-extern param must be an atom".to_string())
                         .map(|s| s.to_string())
                 })
                 .collect::<Result<_, _>>()?;
-            let idx = *n_foreign;
-            *n_foreign += 1;
+            let idx = *n_extern;
+            *n_extern += 1;
             let pack_tag = format!("__ffi{idx}");
             let ctor_fields: Vec<ir::Expr> =
                 param_names.iter().map(|p| ir::Expr::Var(p.clone())).collect();
             let body = ir::Expr::App(
-                Box::new(ir::Expr::Foreign(idx)),
+                Box::new(ir::Expr::Extern(idx)),
                 Box::new(ir::Expr::Ctor(pack_tag, ctor_fields)),
             );
             let body = ir::Expr::Lambdas(param_names, Box::new(body));
             Ok(ir::Define { name, body })
         }
-        _ => Err("define-foreign expects a name or a name and a params list".to_string()),
+        _ => Err("define-extern expects a name or a name and a params list".to_string()),
     }
 }
 
@@ -596,7 +658,7 @@ impl Lowering {
                 )
             }
 
-            ir::Expr::Foreign(idx) => ds::Expr::Extern(idx),
+            ir::Expr::Extern(idx) => ds::Expr::Extern(idx),
         }
     }
 }
@@ -740,6 +802,73 @@ mod tests {
         let m = parse_scheme(r#"(load "macros.scm") (define x (lambda (a) a))"#);
         assert_eq!(m.defines.len(), 1);
         assert_eq!(m.defines[0].name, "x");
+    }
+
+    #[test]
+    fn define_extern_inline_no_params() {
+        let m = parse_and_lower("(define f (extern (slot 0)))");
+        assert_eq!(m.defines.len(), 1);
+        assert_eq!(m.defines[0].name, "f");
+        assert!(matches!(&m.defines[0].body, ds::Expr::Extern(0)));
+    }
+
+    #[test]
+    fn define_extern_inline_with_params() {
+        let m = parse_and_lower("(define sign (extern (slot 3) bytes))");
+        assert_eq!(m.defines.len(), 1);
+        assert_eq!(m.defines[0].name, "sign");
+        match &m.defines[0].body {
+            ds::Expr::Lambda(params, body) => {
+                assert_eq!(params, &["bytes"]);
+                match body.as_ref() {
+                    ds::Expr::Apply(f, _) => {
+                        assert!(matches!(f.as_ref(), ds::Expr::Extern(3)));
+                    }
+                    _ => panic!("expected Apply"),
+                }
+            }
+            _ => panic!("expected Lambda"),
+        }
+    }
+
+    #[test]
+    fn define_extern_inline_multi_params() {
+        let m = parse_and_lower("(define f (extern (slot 1) a b c))");
+        assert_eq!(m.defines.len(), 1);
+        assert_eq!(m.defines[0].name, "f");
+        match &m.defines[0].body {
+            ds::Expr::Lambda(p1, inner) => {
+                assert_eq!(p1, &["a"]);
+                match inner.as_ref() {
+                    ds::Expr::Lambda(p2, inner2) => {
+                        assert_eq!(p2, &["b"]);
+                        match inner2.as_ref() {
+                            ds::Expr::Lambda(p3, _) => assert_eq!(p3, &["c"]),
+                            _ => panic!("expected inner Lambda"),
+                        }
+                    }
+                    _ => panic!("expected middle Lambda"),
+                }
+            }
+            _ => panic!("expected Lambda"),
+        }
+    }
+
+    #[test]
+    fn define_extern_inline_explicit_slots() {
+        let m = parse_and_lower(
+            "(define a (extern (slot 5))) (define b (extern (slot 2) x)) (define-extern c)",
+        );
+        assert_eq!(m.defines.len(), 3);
+        assert!(matches!(&m.defines[0].body, ds::Expr::Extern(5)));
+        match &m.defines[1].body {
+            ds::Expr::Lambda(_, body) => match body.as_ref() {
+                ds::Expr::Apply(f, _) => assert!(matches!(f.as_ref(), ds::Expr::Extern(2))),
+                _ => panic!("expected Apply"),
+            },
+            _ => panic!("expected Lambda"),
+        }
+        assert!(matches!(&m.defines[2].body, ds::Expr::Extern(0)));
     }
 
     #[test]

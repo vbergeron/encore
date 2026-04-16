@@ -16,7 +16,7 @@ pub enum Expr {
     Match(Box<Expr>, Vec<MatchCase>),
     Prim(PrimOp, Vec<Expr>),
     Error,
-    Foreign(u16),
+    Extern(u16),
 }
 
 #[derive(Debug, Clone, PartialEq)]
