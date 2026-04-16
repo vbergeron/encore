@@ -243,6 +243,7 @@ impl<'a> Emitter<'a> {
                 let hole1 = self.emit_u16_placeholder();
                 self.patch_u16(hole0, self.pos() as u16);
                 if cases[0].arity > 0 {
+                    self.record_arity(*base, cases[0].arity);
                     self.emit_u8(opcode::UNPACK);
                     self.emit_u8(cases[0].unpack_base);
                     self.emit_u8(*base);
@@ -251,6 +252,7 @@ impl<'a> Emitter<'a> {
                 self.emit_expr(&cases[0].body);
                 self.patch_u16(hole1, self.pos() as u16);
                 if cases[1].arity > 0 {
+                    self.record_arity(*base + 1, cases[1].arity);
                     self.emit_u8(opcode::UNPACK);
                     self.emit_u8(cases[1].unpack_base);
                     self.emit_u8(*base + 1);
@@ -270,6 +272,7 @@ impl<'a> Emitter<'a> {
                 for (i, case) in cases.iter().enumerate() {
                     self.patch_u16(holes[i], self.pos() as u16);
                     if case.arity > 0 {
+                        self.record_arity(base + i as u8, case.arity);
                         self.emit_u8(opcode::UNPACK);
                         self.emit_u8(case.unpack_base);
                         self.emit_u8(base + i as u8);
