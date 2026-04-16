@@ -26,6 +26,7 @@ pub struct Vm<'a> {
     extern_fns: [ExternFn; MAX_EXTERN],
     arena: Arena<'a>,
     registers: Registers,
+    executing_extern: bool,
     #[cfg(feature = "stats")]
     stats: VmStats,
 }
@@ -40,6 +41,7 @@ impl<'a> Vm<'a> {
             extern_fns: [unregistered; MAX_EXTERN],
             arena: Arena::new(mem),
             registers: Registers::new(),
+            executing_extern: false,
             #[cfg(feature = "stats")]
             stats: VmStats::default(),
         }
@@ -128,6 +130,9 @@ impl<'a> Vm<'a> {
     #[cold]
     #[inline(never)]
     fn alloc_slow(&mut self, n: usize) -> Result<HeapAddress, VmError> {
+        if self.executing_extern {
+            return Err(VmError::HeapOverflow);
+        }
         let roots = self.registers.as_mut_slice();
         let globals = &mut self.globals[..self.n_globals as usize];
         gc::collect(&mut self.arena, roots, globals);
@@ -165,6 +170,17 @@ impl<'a> Vm<'a> {
         self.registers[SELF] = func;
         self.registers[CONT] = Self::RETURN_CONT;
         self.registers[A1] = arg;
+        self.code.jump(code_ptr);
+        self.run()
+    }
+
+    pub fn calln_value(&mut self, func: Value, args: &[Value]) -> Result<Value, VmError> {
+        let code_ptr = self.resolve_code_ptr(func);
+        self.registers[SELF] = func;
+        self.registers[CONT] = Self::RETURN_CONT;
+        for (i, arg) in args.iter().enumerate() {
+            self.registers[Reg::new(2 + i as u8)] = *arg;
+        }
         self.code.jump(code_ptr);
         self.run()
     }
@@ -393,7 +409,10 @@ impl<'a> Vm<'a> {
                     let idx = self.code.read_u16();
                     let arg = self.registers[ra];
                     let f = self.extern_fns[idx as usize];
-                    let result = f(self, arg).map_err(VmError::Extern)?;
+                    self.executing_extern = true;
+                    let result = f(self, arg);
+                    self.executing_extern = false;
+                    let result = result.map_err(VmError::Extern)?;
                     self.registers[rd] = result;
                 }
 
