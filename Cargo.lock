@@ -227,6 +227,7 @@ name = "encore_compiler"
 version = "0.1.0"
 dependencies = [
  "encore_fleche",
+ "encore_scheme",
  "encore_vm",
 ]
 

@@ -121,12 +121,21 @@ fn val_size(val: &Val) -> usize {
 fn inline_global(fun: &Fun, args: &[String], k: &str) -> Expr {
     let mut body = *fun.body.clone();
     let mut renames = HashMap::new();
+    // Alpha-rename function params and cont to globally fresh names
+    // BEFORE calling alpha_rename_expr.  This avoids sequential-
+    // substitution capture: without it, `subst(p1→a1)` can introduce
+    // a name that a later `subst(p2→a2)` silently rewrites.
+    let renamed_params: Vec<String> = fun.args.iter().map(|p| {
+        let fresh = format!("{}{}", p, fresh_suffix());
+        renames.insert(p.clone(), fresh.clone());
+        fresh
+    }).collect();
+    let renamed_cont = format!("{}{}", fun.cont, fresh_suffix());
+    renames.insert(fun.cont.clone(), renamed_cont.clone());
     alpha_rename_expr(&mut body, &mut renames);
-    for (param, arg) in fun.args.iter().zip(args.iter()) {
-        let renamed_param = renames.get(param).cloned().unwrap_or_else(|| param.clone());
-        subst_expr(&renamed_param, arg, &mut body);
+    for (renamed_param, arg) in renamed_params.iter().zip(args.iter()) {
+        subst_expr(renamed_param, arg, &mut body);
     }
-    let renamed_cont = renames.get(&fun.cont).cloned().unwrap_or_else(|| fun.cont.clone());
     subst_expr(&renamed_cont, k, &mut body);
     body
 }

@@ -8,3 +8,4 @@ encore_vm = { path = "../encore_vm" }
 
 [dev-dependencies]
 encore_fleche = { path = "../encore_fleche" }
+encore_scheme = { path = "../encore_scheme" }
