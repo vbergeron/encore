@@ -1,0 +1,26 @@
+# if pattern binding
+#
+# if Ctor1(a) = e1,
+#    Ctor2(b) = e2
+#   then body
+#   else alt
+#
+# desugars into nested match expressions; every sibling constructor's arm
+# routes to `alt`, so failure is handled without a separate match.
+
+data Ok(x) | Err
+
+# Increment the value inside Ok, or propagate Err.
+define safe_inc as r ->
+  if Ok(v) = r
+  then Ok(builtin add v 1)
+  else Err
+
+# Chain two safe_inc calls; if both succeed, return the final value.
+define double_inc as r ->
+  if Ok(a) = safe_inc r,
+     Ok(b) = safe_inc Ok(a)
+  then b
+  else 0
+
+define main as double_inc Ok(40)
