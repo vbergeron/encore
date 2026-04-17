@@ -69,7 +69,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "encore-baremetal-rbtree"
+name = "encore-baremetal-fsm"
 version = "0.1.0"
 dependencies = [
  "cortex-m",

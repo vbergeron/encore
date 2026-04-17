@@ -54,6 +54,11 @@ pub struct Module {
     pub defines: Vec<Define>,
 }
 
+impl Val {
+    pub const FALSE: Self = Self::Ctor(0, vec![]);
+    pub const TRUE: Self = Self::Ctor(1, vec![]);
+}
+
 // ── Pretty-printing ─────────────────────────────────────────────────────────
 
 struct Indent(usize);

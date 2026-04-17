@@ -1,10 +1,10 @@
 [package]
-name = "encore-baremetal-sort"
+name = "encore-baremetal-fsm"
 version = "0.1.0"
 edition = "2024"
 
 [features]
-default = ["scheme"]
+default = ["fleche"]
 fleche = ["dep:encore_fleche"]
 scheme = ["dep:encore_scheme"]
 

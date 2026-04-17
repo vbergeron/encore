@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 encore_compiler = { path = "../encore_compiler" }
+encore_vm = { path = "../encore_vm" }

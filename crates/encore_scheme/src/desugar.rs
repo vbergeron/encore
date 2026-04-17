@@ -2,6 +2,10 @@ use std::collections::BTreeMap;
 
 use encore_compiler::ir::ds;
 use encore_compiler::ir::prim::{PrimOp, IntOp, BytesOp};
+use encore_vm::builtins::{
+    ARITY_CONS, ARITY_FALSE, ARITY_NIL, ARITY_TRUE, FIRST_USER_TAG, TAG_CONS, TAG_FALSE, TAG_NIL,
+    TAG_TRUE,
+};
 
 use crate::ir;
 use crate::parser::Sexp;
@@ -483,11 +487,13 @@ struct Lowering {
 impl Lowering {
     fn new() -> Self {
         let mut ctors = BTreeMap::new();
-        ctors.insert("False".into(), CtorInfo { tag: 0, arity: 0 });
-        ctors.insert("True".into(), CtorInfo { tag: 1, arity: 0 });
+        ctors.insert("False".into(), CtorInfo { tag: TAG_FALSE, arity: ARITY_FALSE });
+        ctors.insert("True".into(), CtorInfo { tag: TAG_TRUE, arity: ARITY_TRUE });
+        ctors.insert("Nil".into(), CtorInfo { tag: TAG_NIL, arity: ARITY_NIL });
+        ctors.insert("Cons".into(), CtorInfo { tag: TAG_CONS, arity: ARITY_CONS });
         Self {
             ctors,
-            next_tag: 2,
+            next_tag: FIRST_USER_TAG,
         }
     }
 

@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use crate::ds;
 use crate::prim::{PrimOp, IntOp, BytesOp};
 use crate::lexer::{Lexer, Token};
+use encore_vm::builtins::*;
 
 struct CtorInfo {
     tag: u8,
@@ -18,12 +19,14 @@ pub struct Parser {
 impl Parser {
     pub fn new(input: &str) -> Self {
         let mut ctors = BTreeMap::new();
-        ctors.insert("False".into(), CtorInfo { tag: 0, arity: 0 });
-        ctors.insert("True".into(), CtorInfo { tag: 1, arity: 0 });
+        ctors.insert("False".into(), CtorInfo { tag: TAG_FALSE, arity: ARITY_FALSE });
+        ctors.insert("True".into(), CtorInfo { tag: TAG_TRUE, arity: ARITY_TRUE });
+        ctors.insert("Nil".into(), CtorInfo { tag: TAG_NIL, arity: ARITY_NIL });
+        ctors.insert("Cons".into(), CtorInfo { tag: TAG_CONS, arity: ARITY_CONS });
         Self {
             lexer: Lexer::new(input),
             ctors,
-            next_tag: 2,
+            next_tag: FIRST_USER_TAG,
         }
     }
 

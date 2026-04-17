@@ -34,7 +34,7 @@ fn test_nullary_ctor() {
         data Zero | Succ(n)
         define main as Zero
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 4);
 }
 
 // -- Let + var --
@@ -75,7 +75,7 @@ fn test_ctor_with_fields() {
         data Pair(a, b)
         define main as Pair(True, False)
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 4);
 }
 
 // -- Field access --
@@ -143,7 +143,7 @@ fn test_peano_countdown() {
             end
           in countdown Succ(Succ(Succ(Zero)))
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 4);
 }
 
 // -- Lambda capture --
@@ -169,7 +169,7 @@ fn test_constant_fn() {
           let k = x -> y -> x in
           k A B
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 4);
 }
 
 // -- Multi-data declarations --
@@ -194,7 +194,7 @@ fn test_leading_pipe() {
           | Succ(n)
         define main as Succ(Zero)
     ");
-    assert_eq!(result.ctor_tag(), 3);
+    assert_eq!(result.ctor_tag(), 5);
 }
 
 // -- Triple nested app --
@@ -207,7 +207,7 @@ fn test_triple_nested_app() {
           let id = x -> x in
           id (id (id X))
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 4);
 }
 
 // -- Field of nested ctor --
@@ -219,7 +219,7 @@ fn test_field_first() {
         data Pair(x, y)
         define main as field 0 of Pair(A, B)
     ");
-    assert_eq!(result.ctor_tag(), 2);
+    assert_eq!(result.ctor_tag(), 4);
 }
 
 // -- Fix with match returning ctor --
@@ -636,7 +636,7 @@ fn test_list_nat_of_bytes_hello() {
 #[test]
 fn test_list_nat_of_bytes_with_extern() {
     fn provide_bytes(vm: &mut Vm, _arg: Value) -> Result<Value, ExternError> {
-        vm.alloc_bytes(b"AB").map_err(|_| ExternError("alloc failed"))
+        vm.alloc_bytes(b"AB").map_err(|_| ExternError::Custom("alloc failed"))
     }
 
     let source = "

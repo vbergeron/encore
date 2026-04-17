@@ -5,5 +5,7 @@ edition = "2024"
 
 [features]
 stats = []
+derive = ["dep:encore_derive"]
 
 [dependencies]
+encore_derive = { path = "../encore_derive", optional = true }

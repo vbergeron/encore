@@ -5,40 +5,34 @@ use cortex_m_rt::entry;
 use cortex_m_semihosting::{debug, hprintln};
 use panic_halt as _;
 
-use encore_vm::error::VmError;
-use encore_vm::program::Program;
-use encore_vm::value::Value;
-use encore_vm::vm::Vm;
+use encore_vm::error::ExternError;
+use encore_vm::ffi::VmList;
 
 encore_vm::encore_program!(env!("OUT_DIR"));
 encore_vm::encore_heap!(HEAP, 40_000);
 
-fn vm_exit_err(e: VmError) -> ! {
+fn vm_exit_err(e: ExternError) -> ! {
     let _ = hprintln!("VM error: {:?}", e);
     debug::exit(debug::EXIT_FAILURE);
     loop {}
 }
 
-fn list_length(vm: &Vm, mut v: Value) -> i32 {
-    let mut n = 0;
-    while v.is_ctor() && v.ctor_tag() == ctors::CONS {
-        v = vm.ctor_field(v, 1);
-        n += 1;
-    }
-    n
-}
-
 #[entry]
 fn main() -> ! {
-    let buf = HEAP();
-    let prog = Program::parse(BYTECODE).unwrap_or_else(|e| vm_exit_err(e));
-    let mut vm = Vm::init(buf);
-    vm.load(&prog).unwrap_or_else(|e| vm_exit_err(e));
+    let mut vm = boot(HEAP()).unwrap_or_else(|e| vm_exit_err(e));
 
-    let n = 256;
+    let n = 256i32;
 
-    let sorted = vm.call(funcs::SORT_SEQ, Value::int(n)).unwrap_or_else(|e| vm_exit_err(e));
-    let len = list_length(&vm, sorted);
+    let sorted: VmList<i32> = vm.call_global(funcs::SORT_SEQ, (n,))
+        .unwrap_or_else(|e| vm_exit_err(e));
+
+    let mut len = 0i32;
+    let mut list = sorted;
+    while let Some((_, tail)) = list.next(&vm) {
+        len += 1;
+        list = tail;
+    }
+
     let _ = hprintln!("merge_sort(rev_range({})) -> {} elements", n, len);
 
     debug::exit(debug::EXIT_SUCCESS);

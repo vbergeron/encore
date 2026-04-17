@@ -190,7 +190,7 @@ fn try_fold_prim(op: PrimOp, args: &[String], env: &Env) -> Option<Val> {
         PrimOp::Bytes(BytesOp::Eq) => {
             let a = get_bytes(env, &args[0])?;
             let b = get_bytes(env, &args[1])?;
-            Some(bool_val(a == b))
+            Some(if a == b { Val::TRUE } else { Val::FALSE })
         }
     }
 }
@@ -200,8 +200,8 @@ fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Val {
         IntOp::Add => Val::Int(a.wrapping_add(b)),
         IntOp::Sub => Val::Int(a.wrapping_sub(b)),
         IntOp::Mul => Val::Int(a.wrapping_mul(b)),
-        IntOp::Eq => bool_val(a == b),
-        IntOp::Lt => bool_val(a < b),
+        IntOp::Eq => if a == b { Val::TRUE } else { Val::FALSE },
+        IntOp::Lt => if a < b { Val::TRUE } else { Val::FALSE },
         IntOp::Byte => unreachable!("Byte is unary and handled by try_fold_prim"),
     }
 }
@@ -214,6 +214,3 @@ fn get_bytes<'a>(env: &'a Env, name: &str) -> Option<&'a [u8]> {
     if let Some(Known::Bytes(bs)) = env.get(name) { Some(bs.as_slice()) } else { None }
 }
 
-fn bool_val(b: bool) -> Val {
-    Val::Ctor(if b { 1 } else { 0 }, vec![])
-}

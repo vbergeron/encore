@@ -51,8 +51,16 @@ impl CodeAddress {
     pub fn raw(self) -> u16 { self.0 }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct GlobalAddress(u16);
+
+impl GlobalAddress {
+    pub const fn new(raw: u16) -> Self { Self(raw) }
+    pub fn raw(self) -> u16 { self.0 }
+}
+
 /// Packed 32-bit value: [typ:8 | meta:8 | payload:16]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Value(u32);
 
 impl Value {

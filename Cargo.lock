@@ -232,6 +232,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "encore_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "encore_disasm"
 version = "0.1.0"
 dependencies = [
@@ -245,6 +254,7 @@ name = "encore_fleche"
 version = "0.1.0"
 dependencies = [
  "encore_compiler",
+ "encore_vm",
 ]
 
 [[package]]
@@ -252,11 +262,15 @@ name = "encore_scheme"
 version = "0.1.0"
 dependencies = [
  "encore_compiler",
+ "encore_vm",
 ]
 
 [[package]]
 name = "encore_vm"
 version = "0.1.0"
+dependencies = [
+ "encore_derive",
+]
 
 [[package]]
 name = "equivalent"

@@ -5,15 +5,13 @@ use cortex_m_rt::entry;
 use cortex_m_semihosting::{debug, hprintln};
 use panic_halt as _;
 
-use encore_vm::error::VmError;
-use encore_vm::program::Program;
+use encore_vm::error::ExternError;
 use encore_vm::value::Value;
-use encore_vm::vm::Vm;
 
 encore_vm::encore_program!(env!("OUT_DIR"));
 encore_vm::encore_heap!(HEAP, 40_000);
 
-fn vm_exit_err(e: VmError) -> ! {
+fn vm_exit_err(e: ExternError) -> ! {
     let _ = hprintln!("VM error: {:?}", e);
     debug::exit(debug::EXIT_FAILURE);
     loop {}
@@ -21,27 +19,26 @@ fn vm_exit_err(e: VmError) -> ! {
 
 #[entry]
 fn main() -> ! {
-    let buf = HEAP();
-    let prog = Program::parse(BYTECODE).unwrap_or_else(|e| vm_exit_err(e));
-    let mut vm = Vm::init(buf);
-    vm.load(&prog).unwrap_or_else(|e| vm_exit_err(e));
+    let mut vm = boot(HEAP()).unwrap_or_else(|e| vm_exit_err(e));
 
-    let n = 30;
+    let n = 30i32;
 
-    let tree = vm.call(funcs::BUILD_TREE, Value::int(n)).unwrap_or_else(|e| vm_exit_err(e));
+    let tree: Value = vm.call_global(funcs::BUILD_TREE, (n,))
+        .unwrap_or_else(|e| vm_exit_err(e));
 
-    let d = vm.call(funcs::DEPTH, tree).unwrap_or_else(|e| vm_exit_err(e));
-    let _ = hprintln!("build_tree({}) depth = {}", n, d.int_value().unwrap());
+    let depth: i32 = vm.call_global(funcs::DEPTH, (tree,))
+        .unwrap_or_else(|e| vm_exit_err(e));
+    let _ = hprintln!("build_tree({}) depth = {}", n, depth);
 
-    let s = vm.call(funcs::SIZE, tree).unwrap_or_else(|e| vm_exit_err(e));
-    let _ = hprintln!("build_tree({}) size  = {}", n, s.int_value().unwrap());
+    let size: i32 = vm.call_global(funcs::SIZE, (tree,))
+        .unwrap_or_else(|e| vm_exit_err(e));
+    let _ = hprintln!("build_tree({}) size  = {}", n, size);
 
-    let ok = vm.call(funcs::BUILD_AND_CHECK, Value::int(n)).unwrap_or_else(|e| vm_exit_err(e));
-    let _ = hprintln!(
-        "build_and_check({}) = {}",
-        n,
-        if ok.is_ctor() && ok.ctor_tag() == ctors::TRUE { "true" } else { "false" }
-    );
+    // BUILD_AND_CHECK returns True (tag 1) or False (tag 0),
+    // which maps directly to Rust's bool via ValueDecode.
+    let ok: bool = vm.call_global(funcs::BUILD_AND_CHECK, (n,))
+        .unwrap_or_else(|e| vm_exit_err(e));
+    let _ = hprintln!("build_and_check({}) = {}", n, ok);
 
     let _ = hprintln!("{}", vm.stats());
 

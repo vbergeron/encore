@@ -1,13 +1,14 @@
 use crate::arena::Arena;
 use crate::code::Code;
 use crate::error::{ExternError, VmError};
+use crate::ffi::{EncodeArgs, ValueDecode, VmCallable};
 use crate::gc;
 use crate::opcode;
 use crate::program::Program;
 use crate::registers::Registers;
 #[cfg(feature = "stats")]
 use crate::stats::VmStats;
-use crate::value::{CodeAddress, HeapAddress, Reg, Value};
+use crate::value::{CodeAddress, GlobalAddress, HeapAddress, Reg, Value};
 
 const SELF: Reg = Reg::new(0);
 const CONT: Reg = Reg::new(1);
@@ -16,7 +17,9 @@ const A1: Reg = Reg::new(2);
 pub type ExternFn = fn(&mut Vm, Value) -> Result<Value, ExternError>;
 const MAX_EXTERN: usize = 32;
 
-fn unregistered(_: &mut Vm, _: Value) -> Result<Value, ExternError> { Err(ExternError("unregistered extern")) }
+fn unregistered(_: &mut Vm, _: Value) -> Result<Value, ExternError> {
+    Err(ExternError::Unregistered)
+}
 
 pub struct Vm<'a> {
     code: Code<'a>,
@@ -149,12 +152,7 @@ impl<'a> Vm<'a> {
 
     const RETURN_CONT: Value = Value::function_const(0);
 
-    pub fn call(&mut self, global_idx: usize, arg: Value) -> Result<Value, VmError> {
-        self.calln(global_idx, &[arg])
-    }
-
-    pub fn calln(&mut self, global_idx: usize, args: &[Value]) -> Result<Value, VmError> {
-        let func = self.globals[global_idx];
+    fn call_raw(&mut self, func: Value, args: &[Value]) -> Result<Value, VmError> {
         let code_ptr = self.resolve_code_ptr(func);
         self.registers[SELF] = func;
         self.registers[CONT] = Self::RETURN_CONT;
@@ -165,24 +163,33 @@ impl<'a> Vm<'a> {
         self.run()
     }
 
-    pub fn call_value(&mut self, func: Value, arg: Value) -> Result<Value, VmError> {
-        let code_ptr = self.resolve_code_ptr(func);
-        self.registers[SELF] = func;
-        self.registers[CONT] = Self::RETURN_CONT;
-        self.registers[A1] = arg;
-        self.code.jump(code_ptr);
-        self.run()
+    pub fn call_global_raw(&mut self, global_idx: GlobalAddress, args: &[Value]) -> Result<Value, VmError> {
+        let func = self.globals[global_idx.raw() as usize];
+        self.call_raw(func, args)
     }
 
-    pub fn calln_value(&mut self, func: Value, args: &[Value]) -> Result<Value, VmError> {
-        let code_ptr = self.resolve_code_ptr(func);
-        self.registers[SELF] = func;
-        self.registers[CONT] = Self::RETURN_CONT;
-        for (i, arg) in args.iter().enumerate() {
-            self.registers[Reg::new(2 + i as u8)] = *arg;
-        }
-        self.code.jump(code_ptr);
-        self.run()
+    pub fn call_global<Args, O>(&mut self, global_idx: GlobalAddress, args: Args) -> Result<O, ExternError>
+    where
+        Args: EncodeArgs,
+        O: ValueDecode,
+    {
+        let encoded = args.encode_args(self)?;
+        let raw = self.call_global_raw(global_idx, encoded.as_ref())?;
+        O::decode(self, raw).map_err(ExternError::from)
+    }
+
+    pub fn call_closure_raw(&mut self, callable: VmCallable, args: &[Value]) -> Result<Value, VmError> {
+        self.call_raw(callable.raw(), args)
+    }
+
+    pub fn call_closure<Args, O>(&mut self, callable: VmCallable, args: Args) -> Result<O, ExternError>
+    where
+        Args: EncodeArgs,
+        O: ValueDecode,
+    {
+        let encoded = args.encode_args(self)?;
+        let raw = self.call_closure_raw(callable, encoded.as_ref())?;
+        O::decode(self, raw).map_err(ExternError::from)
     }
 
     fn call_address(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {

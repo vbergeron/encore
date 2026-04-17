@@ -9,7 +9,7 @@ fleche = ["dep:encore_fleche"]
 scheme = ["dep:encore_scheme"]
 
 [dependencies]
-encore_vm = { path = "../../crates/encore_vm" }
+encore_vm = { path = "../../crates/encore_vm", features = ["derive"] }
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
 cortex-m-semihosting = "0.5"

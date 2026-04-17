@@ -1,8 +1,13 @@
 #![no_std]
 
+#[cfg(feature = "derive")]
+pub use encore_derive::{ValueDecode, ValueEncode};
+
 pub mod arena;
+pub mod builtins;
 pub mod code;
 pub mod error;
+pub mod ffi;
 pub mod gc;
 pub mod opcode;
 pub mod program;
@@ -37,5 +42,17 @@ macro_rules! encore_program {
 
         #[allow(unused_imports)]
         use bindings::{ctors, funcs};
+
+        /// Parse `BYTECODE`, initialise a VM over `heap`, and run the module's
+        /// top-level code to populate globals. Returns a ready-to-use `Vm`.
+        #[allow(dead_code)]
+        fn boot(
+            heap: &'static mut [$crate::value::Value],
+        ) -> ::core::result::Result<$crate::vm::Vm<'static>, $crate::error::ExternError> {
+            let prog = $crate::program::Program::parse(BYTECODE)?;
+            let mut vm = $crate::vm::Vm::init(heap);
+            vm.load(&prog)?;
+            ::core::result::Result::Ok(vm)
+        }
     };
 }

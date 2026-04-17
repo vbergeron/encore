@@ -1,7 +1,7 @@
 use encore_vm::error::{ExternError, VmError};
 use encore_vm::opcode::*;
 use encore_vm::program::Program;
-use encore_vm::value::{CodeAddress, HeapAddress, Value};
+use encore_vm::value::{CodeAddress, GlobalAddress, HeapAddress, Value};
 use encore_vm::vm::Vm;
 
 fn run(code: &[u8], arity_table: &[u8]) -> Result<Value, VmError> {
@@ -272,7 +272,7 @@ fn test_gc_reclaims_dead_closures() {
     vm.load(&prog).unwrap();
     let arg = Value::ctor(0, HeapAddress::NULL);
     for _ in 0..10 {
-        let result = vm.call(0, arg).unwrap();
+        let result = vm.call_global_raw(GlobalAddress::new(0), &[arg]).unwrap();
         assert!(result.is_ctor());
         assert_eq!(result.ctor_tag(), 0);
     }
@@ -331,7 +331,7 @@ fn test_call() {
     vm.load(&prog).unwrap();
 
     let arg = Value::ctor(0, HeapAddress::NULL);
-    let result = vm.call(0, arg).unwrap();
+    let result = vm.call_global_raw(GlobalAddress::new(0), &[arg]).unwrap();
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 0);
 }
@@ -528,7 +528,7 @@ fn test_bytes_gc_survives() {
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
     let arg = Value::int(0);
-    let result = vm.call(0, arg).unwrap();
+    let result = vm.call_global_raw(GlobalAddress::new(0), &[arg]).unwrap();
     assert!(result.is_bytes());
     assert_eq!(vm.bytes_len(result), 4);
     assert_eq!(vm.bytes_read(result, 0), b't');

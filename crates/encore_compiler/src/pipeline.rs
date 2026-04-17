@@ -54,19 +54,20 @@ pub fn compile_to_dir_with_ctors(
     if include_bindings {
         let mut s = String::new();
         s.push_str("pub mod funcs {\n");
+        s.push_str("    use encore_vm::value::GlobalAddress;\n");
         for (idx, name) in &global_names {
             s.push_str(&format!(
-                "    #[allow(dead_code)]\n    pub const {}: usize = {};\n",
+                "    #[allow(dead_code)]\n    pub const {}: GlobalAddress = GlobalAddress::new({});\n",
                 rust_const_name(name), idx,
             ));
         }
         s.push_str("}\n\n");
 
         s.push_str("pub mod ctors {\n");
-        for (idx, name) in ctor_names {
+        for (tag, name) in ctor_names {
             s.push_str(&format!(
                 "    #[allow(dead_code)]\n    pub const {}: u8 = {};\n",
-                rust_const_name(name), idx,
+                rust_const_name(name), tag,
             ));
         }
         s.push_str("}\n");
