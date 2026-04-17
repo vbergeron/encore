@@ -1,3 +1,4 @@
+use encore_vm::error::ExternError;
 use encore_vm::ffi::{AsVmBytes, AsVmList, VmBytes, VmList};
 use encore_vm::opcode::*;
 use encore_vm::program::Program;
@@ -414,4 +415,40 @@ fn test_asvmbytes_empty_argument() {
 
     let returned: VmBytes = vm.call_global(GlobalAddress::new(0), (AsVmBytes(b""),)).unwrap();
     assert!(returned.is_empty(&vm));
+}
+
+// -- Typed extern via `extern_fn!` macro --
+
+/// Typed handler: i32 in, i32 out. Doubles the argument.
+fn double_handler(_vm: &mut Vm, n: i32) -> Result<i32, ExternError> {
+    Ok(n * 2)
+}
+
+#[test]
+fn test_call_global_bare_arg() {
+    let mut mem = [Value::from_u32(0); 256];
+    let mut vm = make_vm(&mut mem, &IDENTITY_CODE, &[]);
+
+    // Bare value instead of (7i32,).
+    let out: i32 = vm.call_global(GlobalAddress::new(0), 7i32).unwrap();
+    assert_eq!(out, 7);
+}
+
+#[test]
+fn test_extern_fn_macro_roundtrip() {
+    // Global 0: returns extern(0)(A1). Opcodes:
+    //   FUNCTION X01 6 0, FIN X01,  <-- trampoline: returns function ptr
+    //   EXTERN X01 2 0 0, FIN X01   <-- body at offset 6: X01 = extern(0)(A1); return X01
+    let code = [
+        FUNCTION, X01, 6, 0, FIN, X01,
+        EXTERN, X01, 2, 0, 0, FIN, X01,
+    ];
+    let mut mem = [Value::from_u32(0); 256];
+    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let mut vm = Vm::init(&mut mem);
+    vm.register_extern(0, encore_vm::extern_fn!(double_handler));
+    vm.load(&prog).unwrap();
+
+    let out: i32 = vm.call_global(GlobalAddress::new(0), (21i32,)).unwrap();
+    assert_eq!(out, 42);
 }

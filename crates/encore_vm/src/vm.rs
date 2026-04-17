@@ -1,7 +1,7 @@
 use crate::arena::Arena;
 use crate::code::Code;
 use crate::error::{ExternError, VmError};
-use crate::ffi::{EncodeArgs, ValueDecode, VmCallable};
+use crate::ffi::{EncodeArgs, ValueDecode, ValueEncode, VmCallable};
 use crate::gc;
 use crate::opcode;
 use crate::program::Program;
@@ -52,6 +52,36 @@ impl<'a> Vm<'a> {
 
     pub fn register_extern(&mut self, slot: u16, f: ExternFn) {
         self.extern_fns[slot as usize] = f;
+    }
+
+    /// Register an extern using typed `Args` / `O` — the dual of
+    /// [`call_global`](Self::call_global). `F` must be zero-sized (a bare `fn`
+    /// item or a non-capturing closure); the const assertion enforces this so
+    /// the shim can synthesize an `F` from thin air without allocation.
+    pub fn register_extern_typed<Args, O, F>(&mut self, slot: u16, _f: F)
+    where
+        Args: ValueDecode,
+        O: ValueEncode,
+        F: Fn(&mut Vm, Args) -> Result<O, ExternError>,
+    {
+        const { assert!(core::mem::size_of::<F>() == 0, "extern handler must be a bare `fn` item or a non-capturing closure") };
+
+        fn shim<Args, O, F>(vm: &mut Vm, arg: Value) -> Result<Value, ExternError>
+        where
+            Args: ValueDecode,
+            O: ValueEncode,
+            F: Fn(&mut Vm, Args) -> Result<O, ExternError>,
+        {
+            // SAFETY: `F` is statically enforced to be zero-sized at the
+            // registration site, so producing an `F` out of uninitialised
+            // memory has no bytes to initialise.
+            let f: F = unsafe { core::mem::MaybeUninit::<F>::uninit().assume_init() };
+            let args = Args::decode(vm, arg)?;
+            let out = f(vm, args)?;
+            out.encode(vm).map_err(ExternError::from)
+        }
+
+        self.extern_fns[slot as usize] = shim::<Args, O, F>;
     }
 
     pub fn load(&mut self, prog: &Program<'a>) -> Result<(), VmError> {

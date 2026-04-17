@@ -15,6 +15,16 @@ impl EncodeArgs for () {
     }
 }
 
+// Convenience: a bare encodable value is treated as a single-argument call.
+// Disjoint from the tuple impls below because no tuple type implements
+// `ValueEncode`.
+impl<T: ValueEncode> EncodeArgs for T {
+    type Encoded = [Value; 1];
+    fn encode_args(self, vm: &mut Vm) -> Result<Self::Encoded, ExternError> {
+        Ok([self.encode(vm)?])
+    }
+}
+
 macro_rules! impl_encode_args_tuple {
     ($n:expr; $($name:ident:$idx:tt),+) => {
         impl<$($name),+> EncodeArgs for ($($name,)+)

@@ -30,6 +30,35 @@ macro_rules! encore_heap {
     };
 }
 
+/// Wrap a typed handler `fn(&mut Vm, Args) -> Result<O, ExternError>` into a
+/// plain [`ExternFn`](crate::vm::ExternFn) suitable for
+/// [`Vm::register_extern`](crate::vm::Vm::register_extern).
+///
+/// The macro expands to a named `fn` item that decodes `Args` from the
+/// incoming `Value`, calls the handler, and encodes `O` back. Because it is
+/// a free function (not a closure), no state is captured and it coerces
+/// directly to an `fn` pointer.
+///
+/// ```ignore
+/// fn greet(vm: &mut Vm, name: VmBytes) -> Result<VmBytes, ExternError> { /* … */ }
+/// vm.register_extern(0, encore_vm::extern_fn!(greet));
+/// ```
+#[macro_export]
+macro_rules! extern_fn {
+    ($handler:path) => {{
+        fn __wrapped(
+            vm: &mut $crate::vm::Vm,
+            arg: $crate::value::Value,
+        ) -> ::core::result::Result<$crate::value::Value, $crate::error::ExternError> {
+            let args = $crate::ffi::ValueDecode::decode(vm, arg)?;
+            let out = $handler(vm, args)?;
+            $crate::ffi::ValueEncode::encode(&out, vm)
+                .map_err($crate::error::ExternError::from)
+        }
+        __wrapped as $crate::vm::ExternFn
+    }};
+}
+
 #[macro_export]
 macro_rules! encore_program {
     ($dir:expr) => {
