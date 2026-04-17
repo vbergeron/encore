@@ -13,78 +13,51 @@
 //   letrec f = fun(x, k). B in <ctx>[encore f a1 k0] ... [encore f a2 k0]
 //   ──►  let f = cont(x). B[k := k0] in <ctx>[return f a1] ... [return f a2]
 
-use crate::ir::cps::{self, Case, Cont, Expr, Fun, Val};
+use crate::ir::cps::{self, Cont, Expr, Fun, Val};
+use crate::ir::cps_traversal::CPSTransformer;
+use crate::pass::cps_census::{Census, census_expr, count};
 use crate::pass::cps_subst::subst_expr;
-use crate::pass::cps_census::{census_expr, count, Census};
 
 pub fn contification(expr: Expr) -> Expr {
-    contify_expr(expr)
+    Contification.transform_expr(&mut (), expr)
 }
 
-fn contify_expr(expr: Expr) -> Expr {
-    match expr {
-        Expr::Letrec(name, fun, body) => {
-            let fun = Fun {
-                args: fun.args,
-                cont: fun.cont,
-                body: Box::new(contify_expr(*fun.body)),
-            };
-            let body = contify_expr(*body);
+struct Contification;
 
-            if is_self_recursive(&name, &fun) {
-                return Expr::Letrec(name, fun, Box::new(body));
-            }
+impl CPSTransformer for Contification {
+    type Ctx = ();
 
-            let (calls, escapes) = classify_uses(&name, &body);
+    fn transform_letrec(&self, ctx: &mut (), name: String, fun: Fun, body: Expr) -> Expr {
+        let fun = self.transform_fun(ctx, fun);
+        let body = self.transform_expr(ctx, body);
 
-            if escapes {
-                return Expr::Letrec(name, fun, Box::new(body));
-            }
+        if is_self_recursive(&name, &fun) {
+            return Expr::Letrec(name, fun, Box::new(body));
+        }
 
-            if !calls_match_arity(&name, fun.args.len(), &body) {
-                return Expr::Letrec(name, fun, Box::new(body));
-            }
+        let (calls, escapes) = classify_uses(&name, &body);
 
-            if calls == 1 {
-                return inline_call(&name, &fun, body);
-            }
+        if escapes {
+            return Expr::Letrec(name, fun, Box::new(body));
+        }
 
-            if calls > 1 {
-                if let Some(k0) = single_continuation(&name, &body) {
-                    if !is_bound(&k0, &body) {
-                        return contify_to_cont(name, fun, body, &k0);
-                    }
+        if !calls_match_arity(&name, fun.args.len(), &body) {
+            return Expr::Letrec(name, fun, Box::new(body));
+        }
+
+        if calls == 1 {
+            return inline_call(&name, &fun, body);
+        }
+
+        if calls > 1 {
+            if let Some(k0) = single_continuation(&name, &body) {
+                if !is_bound(&k0, &body) {
+                    return contify_to_cont(name, fun, body, &k0);
                 }
             }
+        }
 
-            Expr::Letrec(name, fun, Box::new(body))
-        }
-        Expr::Let(name, val, body) => {
-            let val = contify_val(val);
-            let body = contify_expr(*body);
-            Expr::Let(name, val, Box::new(body))
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| Case {
-                    binds: c.binds,
-                    body: contify_expr(c.body),
-                })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
-    }
-}
-
-fn contify_val(val: Val) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(Cont {
-            params: cont.params,
-            body: Box::new(contify_expr(*cont.body)),
-        }),
-        other => other,
+        Expr::Letrec(name, fun, Box::new(body))
     }
 }
 
@@ -186,7 +159,9 @@ fn calls_match_arity(name: &str, arity: usize, expr: &Expr) -> bool {
                 && (binder == name || calls_match_arity(name, arity, body))
         }
         Expr::Letrec(binder, fun, body) => {
-            if binder == name { return true; }
+            if binder == name {
+                return true;
+            }
             let fun_ok = fun.args.iter().any(|a| a == name)
                 || fun.cont == name
                 || calls_match_arity(name, arity, &fun.body);
@@ -202,8 +177,7 @@ fn calls_match_arity(name: &str, arity: usize, expr: &Expr) -> bool {
 fn calls_match_arity_val(name: &str, arity: usize, val: &Val) -> bool {
     match val {
         Val::Cont(cont) => {
-            cont.params.iter().any(|p| p == name)
-                || calls_match_arity(name, arity, &cont.body)
+            cont.params.iter().any(|p| p == name) || calls_match_arity(name, arity, &cont.body)
         }
         _ => true,
     }
@@ -236,10 +210,11 @@ fn collect_conts(name: &str, expr: &Expr, cont: &mut Option<String>) -> bool {
         }
         Expr::Letrec(binder, fun, body) => {
             if binder != name {
-                if !fun.args.iter().any(|a| a == name) && fun.cont != name {
-                    if !collect_conts(name, &fun.body, cont) {
-                        return false;
-                    }
+                if !fun.args.iter().any(|a| a == name)
+                    && fun.cont != name
+                    && !collect_conts(name, &fun.body, cont)
+                {
+                    return false;
                 }
                 collect_conts(name, body, cont)
             } else {
@@ -262,10 +237,10 @@ fn collect_conts(name: &str, expr: &Expr, cont: &mut Option<String>) -> bool {
         }
         Expr::Match(_, _, cases) => {
             for c in cases {
-                if !c.binds.contains(&name.to_string()) {
-                    if !collect_conts(name, &c.body, cont) {
-                        return false;
-                    }
+                if !c.binds.contains(&name.to_string())
+                    && !collect_conts(name, &c.body, cont)
+                {
+                    return false;
                 }
             }
             true
@@ -312,9 +287,7 @@ fn inline_call(name: &str, fun: &Fun, expr: Expr) -> Expr {
             let val = inline_call_val(name, fun, val);
             Expr::Let(n, val, Box::new(inline_call(name, fun, *body)))
         }
-        Expr::Letrec(n, f, body) => {
-            Expr::Letrec(n, f, Box::new(inline_call(name, fun, *body)))
-        }
+        Expr::Letrec(n, f, body) => Expr::Letrec(n, f, Box::new(inline_call(name, fun, *body))),
         Expr::Match(n, base, cases) => {
             let cases = cases
                 .into_iter()
@@ -353,16 +326,16 @@ fn contify_to_cont(name: String, fun: Fun, outer: Expr, k0: &str) -> Expr {
 
 fn rewrite_calls(name: &str, expr: Expr) -> Expr {
     match expr {
-        Expr::Encore(f, args, _) if f == name => {
-            Expr::Let("_nc".into(), Val::NullCont, Box::new(Expr::Encore(f, args, "_nc".into())))
-        }
+        Expr::Encore(f, args, _) if f == name => Expr::Let(
+            "_nc".into(),
+            Val::NullCont,
+            Box::new(Expr::Encore(f, args, "_nc".into())),
+        ),
         Expr::Let(n, val, body) => {
             let val = rewrite_calls_val(name, val);
             Expr::Let(n, val, Box::new(rewrite_calls(name, *body)))
         }
-        Expr::Letrec(n, f, body) => {
-            Expr::Letrec(n, f, Box::new(rewrite_calls(name, *body)))
-        }
+        Expr::Letrec(n, f, body) => Expr::Letrec(n, f, Box::new(rewrite_calls(name, *body))),
         Expr::Match(n, base, cases) => {
             let cases = cases
                 .into_iter()

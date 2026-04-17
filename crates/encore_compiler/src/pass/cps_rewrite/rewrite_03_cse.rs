@@ -5,14 +5,17 @@
 //   ... a ... b ...         ──►
 //
 
-use crate::ir::cps::{self, Cont, Expr, Fun, Val};
+use crate::ir::cps::{Case, Cont, Expr, Fun, Tag, Val};
+use crate::ir::cps_traversal::CPSTransformer;
 use crate::pass::cps_subst::subst_expr;
 
 pub fn cse(expr: Expr) -> Expr {
-    cse_expr(expr, &Vec::new())
+    Cse.transform_expr(&mut Available::new(), expr)
 }
 
 type Available = Vec<(Val, String)>;
+
+struct Cse;
 
 fn is_cse_candidate(val: &Val) -> bool {
     matches!(val, Val::Field(_, _) | Val::Prim(_, _) | Val::Ctor(_, _))
@@ -41,67 +44,69 @@ fn find_available(avail: &Available, val: &Val) -> Option<String> {
         .map(|(_, n)| n.clone())
 }
 
-/// Remove entries whose val or bound name mentions any of the given names.
-fn invalidate(avail: &Available, shadows: &[&str]) -> Available {
-    avail
-        .iter()
-        .filter(|(v, n)| {
-            !shadows
-                .iter()
-                .any(|s| n == s || val_mentions(v, s))
-        })
-        .cloned()
-        .collect()
+/// Drop entries whose val or bound name mentions any of the given names.
+fn invalidate_in_place(avail: &mut Available, shadows: &[&str]) {
+    avail.retain(|(v, n)| {
+        !shadows
+            .iter()
+            .any(|s| n == s || val_mentions(v, s))
+    });
 }
 
-fn cse_expr(expr: Expr, avail: &Available) -> Expr {
-    match expr {
-        Expr::Let(name, val, body) => {
-            let val = cse_val(val, avail);
-            if let Some(existing) = find_available(avail, &val) {
-                let mut body = *body;
-                subst_expr(&name, &existing, &mut body);
-                cse_expr(body, avail)
-            } else {
-                let mut avail = invalidate(avail, &[&name]);
-                avail.push((val.clone(), name.clone()));
-                let body = cse_expr(*body, &avail);
-                Expr::Let(name, val, Box::new(body))
-            }
+impl CPSTransformer for Cse {
+    type Ctx = Available;
+
+    fn transform_let(&self, avail: &mut Available, name: String, val: Val, body: Expr) -> Expr {
+        let val = self.transform_val(avail, val);
+        if let Some(existing) = find_available(avail, &val) {
+            let mut body = body;
+            subst_expr(&name, &existing, &mut body);
+            self.transform_expr(avail, body)
+        } else {
+            invalidate_in_place(avail, &[&name]);
+            avail.push((val.clone(), name.clone()));
+            let body = self.transform_expr(avail, body);
+            Expr::Let(name, val, Box::new(body))
         }
-        Expr::Letrec(name, fun, body) => {
-            let fun = Fun {
-                args: fun.args,
-                cont: fun.cont,
-                body: Box::new(cse_expr(*fun.body, &Vec::new())),
-            };
-            let body = cse_expr(*body, avail);
-            Expr::Letrec(name, fun, Box::new(body))
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| {
-                    let refs: Vec<&str> = c.binds.iter().map(|s| s.as_str()).collect();
-                    let branch_avail = invalidate(avail, &refs);
-                    cps::Case {
-                        binds: c.binds,
-                        body: cse_expr(c.body, &branch_avail),
-                    }
-                })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
     }
-}
 
-fn cse_val(val: Val, avail: &Available) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(Cont {
+    fn transform_letrec(&self, avail: &mut Available, name: String, fun: Fun, body: Expr) -> Expr {
+        let fun = Fun {
+            args: fun.args,
+            cont: fun.cont,
+            body: Box::new(self.transform_expr(&mut Available::new(), *fun.body)),
+        };
+        let body = self.transform_expr(avail, body);
+        Expr::Letrec(name, fun, Box::new(body))
+    }
+
+    fn transform_cont(&self, avail: &mut Available, cont: Cont) -> Cont {
+        let mut local = avail.clone();
+        Cont {
             params: cont.params,
-            body: Box::new(cse_expr(*cont.body, avail)),
-        }),
-        other => other,
+            body: Box::new(self.transform_expr(&mut local, *cont.body)),
+        }
+    }
+
+    fn transform_match_expr(
+        &self,
+        avail: &mut Available,
+        scrutinee: String,
+        base: Tag,
+        cases: Vec<Case>,
+    ) -> Expr {
+        let cases = cases
+            .into_iter()
+            .map(|c| {
+                let refs: Vec<&str> = c.binds.iter().map(|s| s.as_str()).collect();
+                let mut branch = avail.clone();
+                invalidate_in_place(&mut branch, &refs);
+                Case {
+                    binds: c.binds,
+                    body: self.transform_expr(&mut branch, c.body),
+                }
+            })
+            .collect();
+        Expr::Match(scrutinee, base, cases)
     }
 }

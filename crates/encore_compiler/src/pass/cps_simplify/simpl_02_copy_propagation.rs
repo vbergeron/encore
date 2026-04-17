@@ -3,49 +3,31 @@
 //   let y = x in f y     ──►   f x
 //
 
-use crate::ir::cps::{self, Expr, Fun, Cont, Val};
+use crate::ir::cps::{Expr, Val};
+use crate::ir::cps_traversal::CPSTransformer;
 
 use super::subst_expr;
 
 pub fn copy_propagation(expr: Expr) -> Expr {
-    match expr {
-        Expr::Let(name, Val::Var(y), body) => {
-            let mut body = copy_propagation(*body);
+    CopyPropagation.transform_expr(&mut (), expr)
+}
+
+struct CopyPropagation;
+
+impl CPSTransformer for CopyPropagation {
+    type Ctx = ();
+
+    fn transform_let(&self, ctx: &mut (), name: String, val: Val, body: Expr) -> Expr {
+        if let Val::Var(y) = val {
+            let mut body = self.transform_expr(ctx, body);
             subst_expr(&name, &y, &mut body);
             body
+        } else {
+            Expr::Let(
+                name,
+                self.transform_val(ctx, val),
+                Box::new(self.transform_expr(ctx, body)),
+            )
         }
-        Expr::Let(name, val, body) => {
-            let val = copy_propagation_val(val);
-            let body = copy_propagation(*body);
-            Expr::Let(name, val, Box::new(body))
-        }
-        Expr::Letrec(name, fun, body) => {
-            let fun = copy_propagation_fun(fun);
-            let body = copy_propagation(*body);
-            Expr::Letrec(name, fun, Box::new(body))
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| cps::Case { binds: c.binds, body: copy_propagation(c.body) })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
     }
-}
-
-fn copy_propagation_val(val: Val) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(copy_propagation_cont(cont)),
-        other => other,
-    }
-}
-
-fn copy_propagation_fun(fun: Fun) -> Fun {
-    Fun { args: fun.args, cont: fun.cont, body: Box::new(copy_propagation(*fun.body)) }
-}
-
-fn copy_propagation_cont(cont: Cont) -> Cont {
-    Cont { params: cont.params, body: Box::new(copy_propagation(*cont.body)) }
 }

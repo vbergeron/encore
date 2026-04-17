@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use crate::ir::cps::{self, Expr, Fun, Cont, Val};
+use crate::ir::cps::{Cont, Expr, Fun, Val};
+use crate::ir::cps_traversal::CPSTransformer;
 use crate::pass::cps_subst::subst_expr;
 
 pub type GlobalFuns = HashMap<String, Fun>;
@@ -94,19 +95,68 @@ fn rename_name(name: &mut String, renames: &HashMap<String, String>) {
 }
 
 pub fn inlining(expr: Expr, threshold: usize, globals: &GlobalFuns) -> Expr {
-    inline_expr(expr, threshold, &HashMap::new(), globals)
+    Inlining { threshold, globals }.transform_expr(&mut Env::new(), expr)
 }
 
 type Env = HashMap<String, Cont>;
+
+struct Inlining<'g> {
+    threshold: usize,
+    globals: &'g GlobalFuns,
+}
+
+impl<'g> CPSTransformer for Inlining<'g> {
+    type Ctx = Env;
+
+    fn transform_let(&self, env: &mut Env, name: String, val: Val, body: Expr) -> Expr {
+        if let Val::Cont(cont) = val {
+            let cont = self.transform_cont(env, cont);
+            let mut local = env.clone();
+            if expr_size(&cont.body) <= self.threshold {
+                local.insert(name.clone(), cont.clone());
+            }
+            let body = self.transform_expr(&mut local, body);
+            Expr::Let(name, Val::Cont(cont), Box::new(body))
+        } else {
+            Expr::Let(
+                name,
+                self.transform_val(env, val),
+                Box::new(self.transform_expr(env, body)),
+            )
+        }
+    }
+
+    fn transform_encore(
+        &self,
+        env: &mut Env,
+        f: String,
+        args: Vec<String>,
+        k: String,
+    ) -> Expr {
+        if let Some(cont) = env.get(&f) {
+            if args.len() == cont.params.len() {
+                let mut body = *cont.body.clone();
+                for (param, arg) in cont.params.iter().zip(args.iter()) {
+                    subst_expr(param, arg, &mut body);
+                }
+                return body;
+            }
+        }
+        if let Some(fun) = self.globals.get(&f) {
+            if fun.args.len() == args.len() {
+                return inline_global(fun, &args, &k);
+            }
+        }
+        Expr::Encore(f, args, k)
+    }
+}
 
 pub fn expr_size(expr: &Expr) -> usize {
     match expr {
         Expr::Let(_, val, body) => 1 + val_size(val) + expr_size(body),
         Expr::Letrec(_, fun, body) => 1 + expr_size(&fun.body) + expr_size(body),
         Expr::Encore(_, _, _) => 1,
-        Expr::Match(_, _, cases) => {
-            1 + cases.iter().map(|c| expr_size(&c.body)).sum::<usize>()
-        }
+        Expr::Match(_, _, cases) => 1 + cases.iter().map(|c| expr_size(&c.body)).sum::<usize>(),
         Expr::Fin(_) => 1,
     }
 }
@@ -125,11 +175,15 @@ fn inline_global(fun: &Fun, args: &[String], k: &str) -> Expr {
     // BEFORE calling alpha_rename_expr.  This avoids sequential-
     // substitution capture: without it, `subst(p1→a1)` can introduce
     // a name that a later `subst(p2→a2)` silently rewrites.
-    let renamed_params: Vec<String> = fun.args.iter().map(|p| {
-        let fresh = format!("{}{}", p, fresh_suffix());
-        renames.insert(p.clone(), fresh.clone());
-        fresh
-    }).collect();
+    let renamed_params: Vec<String> = fun
+        .args
+        .iter()
+        .map(|p| {
+            let fresh = format!("{}{}", p, fresh_suffix());
+            renames.insert(p.clone(), fresh.clone());
+            fresh
+        })
+        .collect();
     let renamed_cont = format!("{}{}", fun.cont, fresh_suffix());
     renames.insert(fun.cont.clone(), renamed_cont.clone());
     alpha_rename_expr(&mut body, &mut renames);
@@ -138,73 +192,4 @@ fn inline_global(fun: &Fun, args: &[String], k: &str) -> Expr {
     }
     subst_expr(&renamed_cont, k, &mut body);
     body
-}
-
-fn inline_expr(expr: Expr, threshold: usize, env: &Env, globals: &GlobalFuns) -> Expr {
-    match expr {
-        Expr::Let(name, Val::Cont(cont), body) => {
-            let cont = Cont {
-                params: cont.params,
-                body: Box::new(inline_expr(*cont.body, threshold, env, globals)),
-            };
-            let mut env = env.clone();
-            if expr_size(&cont.body) <= threshold {
-                env.insert(name.clone(), cont.clone());
-            }
-            let body = inline_expr(*body, threshold, &env, globals);
-            Expr::Let(name, Val::Cont(cont), Box::new(body))
-        }
-        Expr::Let(name, val, body) => {
-            let val = inline_val(val, threshold, env, globals);
-            let body = inline_expr(*body, threshold, env, globals);
-            Expr::Let(name, val, Box::new(body))
-        }
-        Expr::Letrec(name, fun, body) => {
-            let fun = Fun {
-                args: fun.args,
-                cont: fun.cont,
-                body: Box::new(inline_expr(*fun.body, threshold, env, globals)),
-            };
-            let body = inline_expr(*body, threshold, env, globals);
-            Expr::Letrec(name, fun, Box::new(body))
-        }
-        Expr::Encore(ref f, ref args, ref k) => {
-            if let Some(cont) = env.get(f) {
-                if args.len() == cont.params.len() {
-                    let mut body = *cont.body.clone();
-                    for (param, arg) in cont.params.iter().zip(args.iter()) {
-                        subst_expr(param, arg, &mut body);
-                    }
-                    return body;
-                }
-            }
-            if let Some(fun) = globals.get(f) {
-                if fun.args.len() == args.len() {
-                    return inline_global(fun, args, k);
-                }
-            }
-            expr
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| cps::Case {
-                    binds: c.binds,
-                    body: inline_expr(c.body, threshold, env, globals),
-                })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
-    }
-}
-
-fn inline_val(val: Val, threshold: usize, env: &Env, globals: &GlobalFuns) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(Cont {
-            params: cont.params,
-            body: Box::new(inline_expr(*cont.body, threshold, env, globals)),
-        }),
-        other => other,
-    }
 }

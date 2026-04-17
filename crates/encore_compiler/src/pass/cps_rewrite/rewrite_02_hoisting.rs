@@ -8,65 +8,42 @@
 
 use std::collections::HashSet;
 
-use crate::ir::cps::{self, Cont, Expr, Fun, Val};
+use crate::ir::cps::{Expr, Fun, Val};
+use crate::ir::cps_traversal::CPSTransformer;
 
 pub fn hoisting(expr: Expr) -> Expr {
-    hoist_expr(expr)
+    Hoisting.transform_expr(&mut (), expr)
 }
 
-fn hoist_expr(expr: Expr) -> Expr {
-    match expr {
-        Expr::Letrec(name, fun, body) => {
-            let inner_body = hoist_expr(*fun.body);
-            let outer_body = hoist_expr(*body);
+struct Hoisting;
 
-            let mut variant = HashSet::new();
-            variant.insert(name.clone());
-            for a in &fun.args {
-                variant.insert(a.clone());
-            }
-            variant.insert(fun.cont.clone());
+impl CPSTransformer for Hoisting {
+    type Ctx = ();
 
-            let mut hoisted = Vec::new();
-            let remaining = extract_hoistable(inner_body, &mut variant, &mut hoisted);
+    fn transform_letrec(&self, ctx: &mut (), name: String, fun: Fun, body: Expr) -> Expr {
+        let inner_body = self.transform_expr(ctx, *fun.body);
+        let outer_body = self.transform_expr(ctx, body);
 
-            let fun = Fun {
-                args: fun.args,
-                cont: fun.cont,
-                body: Box::new(remaining),
-            };
-            let mut result = Expr::Letrec(name, fun, Box::new(outer_body));
-            for (n, v) in hoisted.into_iter().rev() {
-                result = Expr::Let(n, v, Box::new(result));
-            }
-            result
+        let mut variant = HashSet::new();
+        variant.insert(name.clone());
+        for a in &fun.args {
+            variant.insert(a.clone());
         }
-        Expr::Let(name, val, body) => {
-            let val = hoist_val(val);
-            let body = hoist_expr(*body);
-            Expr::Let(name, val, Box::new(body))
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| cps::Case {
-                    binds: c.binds,
-                    body: hoist_expr(c.body),
-                })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
-    }
-}
+        variant.insert(fun.cont.clone());
 
-fn hoist_val(val: Val) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(Cont {
-            params: cont.params,
-            body: Box::new(hoist_expr(*cont.body)),
-        }),
-        other => other,
+        let mut hoisted = Vec::new();
+        let remaining = extract_hoistable(inner_body, &mut variant, &mut hoisted);
+
+        let fun = Fun {
+            args: fun.args,
+            cont: fun.cont,
+            body: Box::new(remaining),
+        };
+        let mut result = Expr::Letrec(name, fun, Box::new(outer_body));
+        for (n, v) in hoisted.into_iter().rev() {
+            result = Expr::Let(n, v, Box::new(result));
+        }
+        result
     }
 }
 

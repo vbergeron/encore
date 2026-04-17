@@ -5,12 +5,21 @@
 //   ──►   let g = var(f) in let _nc2 = nullcont in encore g arg _nc2
 //
 
-use crate::ir::cps::{self, Expr, Fun, Cont, Val};
+use crate::ir::cps::{Expr, Val};
+use crate::ir::cps_traversal::CPSTransformer;
 
 pub fn eta_reduction(expr: Expr) -> Expr {
-    match expr {
-        Expr::Let(name, Val::Cont(cont), body) => {
-            let body = eta_reduction(*body);
+    EtaReduction.transform_expr(&mut (), expr)
+}
+
+struct EtaReduction;
+
+impl CPSTransformer for EtaReduction {
+    type Ctx = ();
+
+    fn transform_let(&self, ctx: &mut (), name: String, val: Val, body: Expr) -> Expr {
+        if let Val::Cont(cont) = val {
+            let body = self.transform_expr(ctx, body);
             if let Expr::Let(_, Val::NullCont, ref inner) = *cont.body {
                 if let Expr::Encore(ref f, ref args, _) = **inner {
                     if args.len() == cont.params.len()
@@ -21,40 +30,14 @@ pub fn eta_reduction(expr: Expr) -> Expr {
                     }
                 }
             }
-            Expr::Let(name, Val::Cont(eta_reduction_cont(cont)), Box::new(body))
+            let cont = self.transform_cont(ctx, cont);
+            Expr::Let(name, Val::Cont(cont), Box::new(body))
+        } else {
+            Expr::Let(
+                name,
+                self.transform_val(ctx, val),
+                Box::new(self.transform_expr(ctx, body)),
+            )
         }
-        Expr::Let(name, val, body) => {
-            let val = eta_reduction_val(val);
-            let body = eta_reduction(*body);
-            Expr::Let(name, val, Box::new(body))
-        }
-        Expr::Letrec(name, fun, body) => {
-            let fun = eta_reduction_fun(fun);
-            let body = eta_reduction(*body);
-            Expr::Letrec(name, fun, Box::new(body))
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| cps::Case { binds: c.binds, body: eta_reduction(c.body) })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
     }
-}
-
-fn eta_reduction_val(val: Val) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(eta_reduction_cont(cont)),
-        other => other,
-    }
-}
-
-fn eta_reduction_fun(fun: Fun) -> Fun {
-    Fun { args: fun.args, cont: fun.cont, body: Box::new(eta_reduction(*fun.body)) }
-}
-
-fn eta_reduction_cont(cont: Cont) -> Cont {
-    Cont { params: cont.params, body: Box::new(eta_reduction(*cont.body)) }
 }

@@ -5,14 +5,23 @@
 //   let k = cont(x). x in let _nc = nullcont in encore k arg _nc     ──►   arg
 //
 
-use crate::ir::cps::{self, Expr, Fun, Cont, Val};
+use crate::ir::cps::{self, Cont, Expr, Val};
+use crate::ir::cps_traversal::CPSTransformer;
 
-use super::{count, census_expr, subst_expr, Census};
+use super::{Census, census_expr, count, subst_expr};
 
 pub fn beta_contraction(expr: Expr) -> Expr {
-    match expr {
-        Expr::Let(name, Val::Cont(cont), body) => {
-            let body = beta_contraction(*body);
+    BetaContraction.transform_expr(&mut (), expr)
+}
+
+struct BetaContraction;
+
+impl CPSTransformer for BetaContraction {
+    type Ctx = ();
+
+    fn transform_let(&self, ctx: &mut (), name: String, val: Val, body: Expr) -> Expr {
+        if let Val::Cont(cont) = val {
+            let body = self.transform_expr(ctx, body);
             let mut census = Census::new();
             census_expr(&mut census, &body);
             if count(&census, &name) == 1 {
@@ -20,43 +29,16 @@ pub fn beta_contraction(expr: Expr) -> Expr {
                     return inlined;
                 }
             }
-            let cont = beta_contraction_cont(cont);
+            let cont = self.transform_cont(ctx, cont);
             Expr::Let(name, Val::Cont(cont), Box::new(body))
+        } else {
+            Expr::Let(
+                name,
+                self.transform_val(ctx, val),
+                Box::new(self.transform_expr(ctx, body)),
+            )
         }
-        Expr::Let(name, val, body) => {
-            let val = beta_contraction_val(val);
-            let body = beta_contraction(*body);
-            Expr::Let(name, val, Box::new(body))
-        }
-        Expr::Letrec(name, fun, body) => {
-            let fun = beta_contraction_fun(fun);
-            let body = beta_contraction(*body);
-            Expr::Letrec(name, fun, Box::new(body))
-        }
-        Expr::Match(name, base, cases) => {
-            let cases = cases
-                .into_iter()
-                .map(|c| cps::Case { binds: c.binds, body: beta_contraction(c.body) })
-                .collect();
-            Expr::Match(name, base, cases)
-        }
-        other => other,
     }
-}
-
-fn beta_contraction_val(val: Val) -> Val {
-    match val {
-        Val::Cont(cont) => Val::Cont(beta_contraction_cont(cont)),
-        other => other,
-    }
-}
-
-fn beta_contraction_fun(fun: Fun) -> Fun {
-    Fun { args: fun.args, cont: fun.cont, body: Box::new(beta_contraction(*fun.body)) }
-}
-
-fn beta_contraction_cont(cont: Cont) -> Cont {
-    Cont { params: cont.params, body: Box::new(beta_contraction(*cont.body)) }
 }
 
 fn try_inline(name: &str, cont: &Cont, expr: Expr) -> Option<Expr> {
@@ -74,12 +56,10 @@ fn try_inline(name: &str, cont: &Cont, expr: Expr) -> Option<Expr> {
             None
         }
         Expr::Let(n, val, body) => {
-            try_inline(name, cont, *body)
-                .map(|new_body| Expr::Let(n, val, Box::new(new_body)))
+            try_inline(name, cont, *body).map(|new_body| Expr::Let(n, val, Box::new(new_body)))
         }
         Expr::Letrec(n, f, body) => {
-            try_inline(name, cont, *body)
-                .map(|new_body| Expr::Letrec(n, f, Box::new(new_body)))
+            try_inline(name, cont, *body).map(|new_body| Expr::Letrec(n, f, Box::new(new_body)))
         }
         Expr::Match(n, base, cases) => {
             let mut found = false;
