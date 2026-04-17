@@ -8,25 +8,28 @@ use encore_vm::builtins::*;
 struct CtorInfo {
     tag: u8,
     arity: u8,
+    type_id: u8,
 }
 
 pub struct Parser {
     lexer: Lexer,
     ctors: BTreeMap<String, CtorInfo>,
     next_tag: u8,
+    next_type_id: u8,
 }
 
 impl Parser {
     pub fn new(input: &str) -> Self {
         let mut ctors = BTreeMap::new();
-        ctors.insert("False".into(), CtorInfo { tag: TAG_FALSE, arity: ARITY_FALSE });
-        ctors.insert("True".into(), CtorInfo { tag: TAG_TRUE, arity: ARITY_TRUE });
-        ctors.insert("Nil".into(), CtorInfo { tag: TAG_NIL, arity: ARITY_NIL });
-        ctors.insert("Cons".into(), CtorInfo { tag: TAG_CONS, arity: ARITY_CONS });
+        ctors.insert("False".into(), CtorInfo { tag: TAG_FALSE, arity: ARITY_FALSE, type_id: 0 });
+        ctors.insert("True".into(),  CtorInfo { tag: TAG_TRUE,  arity: ARITY_TRUE,  type_id: 0 });
+        ctors.insert("Nil".into(),   CtorInfo { tag: TAG_NIL,   arity: ARITY_NIL,   type_id: 1 });
+        ctors.insert("Cons".into(),  CtorInfo { tag: TAG_CONS,  arity: ARITY_CONS,  type_id: 1 });
         Self {
             lexer: Lexer::new(input),
             ctors,
             next_tag: FIRST_USER_TAG,
+            next_type_id: 2,
         }
     }
 
@@ -52,19 +55,22 @@ impl Parser {
     fn parse_data(&mut self) {
         self.lexer.expect(&Token::Data);
 
+        let type_id = self.next_type_id;
+        self.next_type_id += 1;
+
         if *self.lexer.peek() == Token::Pipe {
             self.lexer.next();
         }
 
-        self.parse_variant();
+        self.parse_variant(type_id);
 
         while *self.lexer.peek() == Token::Pipe {
             self.lexer.next();
-            self.parse_variant();
+            self.parse_variant(type_id);
         }
     }
 
-    fn parse_variant(&mut self) {
+    fn parse_variant(&mut self, type_id: u8) {
         let name = match self.lexer.next() {
             Token::UpperIdent(s) => s,
             tok => panic!("expected constructor name, got {tok:?}"),
@@ -91,7 +97,7 @@ impl Parser {
 
         let tag = self.next_tag;
         self.next_tag += 1;
-        self.ctors.insert(name, CtorInfo { tag, arity });
+        self.ctors.insert(name, CtorInfo { tag, arity, type_id });
     }
 
     fn expect_lower_ident(&mut self) -> String {
@@ -124,6 +130,7 @@ impl Parser {
             Token::Match => self.parse_match(),
             Token::Field => self.parse_field(),
             Token::Builtin => self.parse_builtin(),
+            Token::If => self.parse_if_binding(),
             Token::LowerIdent(_) => {
                 let name = self.expect_lower_ident();
                 if *self.lexer.peek() == Token::Arrow {
@@ -165,6 +172,8 @@ impl Parser {
             self.lexer.expect(&Token::In);
             let rest = self.parse_expr();
             ds::Expr::Letrec(fname, param, Box::new(body), Box::new(rest))
+        } else if matches!(self.lexer.peek(), Token::UpperIdent(_)) {
+            self.parse_let_destruct_chain()
         } else {
             let name = self.expect_lower_ident();
             self.lexer.expect(&Token::Eq);
@@ -173,6 +182,138 @@ impl Parser {
             let body = self.parse_expr();
             ds::Expr::Let(name, Box::new(bound), Box::new(body))
         }
+    }
+
+    // Parses one `Ctor(binds) = expr` binding and returns (tag, type_id, binds, scrutinee).
+    fn parse_ctor_binding(&mut self) -> (u8, u8, Vec<String>, ds::Expr) {
+        let ctor_name = match self.lexer.next() {
+            Token::UpperIdent(s) => s,
+            tok => panic!("expected constructor name in pattern binding, got {tok:?}"),
+        };
+        let (tag, arity, type_id) = {
+            let info = self.ctors.get(&ctor_name)
+                .unwrap_or_else(|| panic!("unknown constructor: {ctor_name}"));
+            (info.tag, info.arity, info.type_id)
+        };
+
+        let mut binds = Vec::new();
+        if *self.lexer.peek() == Token::LParen {
+            self.lexer.next();
+            if *self.lexer.peek() != Token::RParen {
+                binds.push(self.expect_lower_ident());
+                while *self.lexer.peek() == Token::Comma {
+                    self.lexer.next();
+                    binds.push(self.expect_lower_ident());
+                }
+            }
+            self.lexer.expect(&Token::RParen);
+        }
+
+        assert_eq!(
+            binds.len(), arity as usize,
+            "constructor {ctor_name} has arity {arity}, but {} binds given",
+            binds.len()
+        );
+
+        self.lexer.expect(&Token::Eq);
+        let scrutinee = self.parse_expr();
+
+        (tag, type_id, binds, scrutinee)
+    }
+
+    // Returns (tag, arity) pairs sorted by tag for all constructors sharing type_id.
+    fn ctors_of_type(&self, type_id: u8) -> Vec<(u8, u8)> {
+        let mut result: Vec<(u8, u8)> = self.ctors.values()
+            .filter(|info| info.type_id == type_id)
+            .map(|info| (info.tag, info.arity))
+            .collect();
+        result.sort_by_key(|&(tag, _)| tag);
+        result
+    }
+
+    // `let` already consumed. Parses chained constructor bindings and desugars to
+    // nested single-case Match nodes (irrefutable — no failure arms).
+    //
+    // let Ctor1(a, b) = e1,
+    //     Ctor2(c)    = e2
+    // in body
+    //
+    // =>  match e1 case Ctor1(a, b) -> match e2 case Ctor2(c) -> body end end
+    fn parse_let_destruct_chain(&mut self) -> ds::Expr {
+        let mut bindings: Vec<(u8, Vec<String>, ds::Expr)> = Vec::new();
+
+        loop {
+            let (tag, _type_id, binds, scrutinee) = self.parse_ctor_binding();
+            bindings.push((tag, binds, scrutinee));
+            if *self.lexer.peek() == Token::Comma {
+                self.lexer.next();
+            } else {
+                break;
+            }
+        }
+
+        self.lexer.expect(&Token::In);
+        let body = self.parse_expr();
+
+        bindings.into_iter().rev().fold(body, |acc, (tag, binds, scrutinee)| {
+            ds::Expr::Match(
+                Box::new(scrutinee),
+                tag,
+                vec![ds::Case { binds, body: acc }],
+            )
+        })
+    }
+
+    // Parses `if` pattern binding and desugars to nested Match nodes.
+    // Failure arms for every sibling constructor each receive a clone of `alt`.
+    //
+    // if Ctor1(a) = e1,
+    //    Ctor2(b) = e2
+    //   then body
+    //   else alt
+    //
+    // => match e1
+    //      case Ctor1(a) -> match e2 case Ctor2(b) -> body case Sib(_) -> alt end
+    //      case Sib1     -> alt
+    //    end
+    fn parse_if_binding(&mut self) -> ds::Expr {
+        self.lexer.expect(&Token::If);
+
+        let mut raw_bindings: Vec<(u8, u8, Vec<String>, ds::Expr)> = Vec::new();
+        loop {
+            raw_bindings.push(self.parse_ctor_binding());
+            if *self.lexer.peek() == Token::Comma {
+                self.lexer.next();
+            } else {
+                break;
+            }
+        }
+
+        self.lexer.expect(&Token::Then);
+        let body = self.parse_expr();
+        self.lexer.expect(&Token::Else);
+        let alt = self.parse_expr();
+
+        // Pre-compute sibling constructors while self is still available.
+        let bindings: Vec<(u8, Vec<(u8, u8)>, Vec<String>, ds::Expr)> = raw_bindings
+            .into_iter()
+            .map(|(tag, type_id, binds, scrutinee)| {
+                (tag, self.ctors_of_type(type_id), binds, scrutinee)
+            })
+            .collect();
+
+        bindings.into_iter().rev().fold(body, |acc, (tag, type_ctors, binds, scrutinee)| {
+            let base_tag = type_ctors.iter().map(|&(t, _)| t).min().unwrap_or(tag);
+            let matched_idx = type_ctors.iter().position(|&(t, _)| t == tag).unwrap();
+            let mut cases: Vec<ds::Case> = type_ctors.iter().map(|&(_, arity)| {
+                ds::Case {
+                    binds: vec!["_".to_string(); arity as usize],
+                    body: alt.clone(),
+                }
+            }).collect();
+            cases[matched_idx] = ds::Case { binds, body: acc };
+            ds::Expr::Match(Box::new(scrutinee), base_tag, cases)
+        })
     }
 
     fn parse_match(&mut self) -> ds::Expr {

@@ -703,6 +703,172 @@ fn test_compilation_deterministic() {
     }
 }
 
+// -- Chained let destructuring --
+
+#[test]
+fn test_let_destruct_single() {
+    let result = run("
+        data Pair(a, b)
+        define main as
+          let Pair(x, y) = Pair(10, 32) in
+          builtin add x y
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 42);
+}
+
+#[test]
+fn test_let_destruct_chain() {
+    let result = run("
+        data Pair(a, b)
+        define main as
+          let Pair(x, y) = Pair(3, 4),
+              Pair(p, q) = Pair(x, y)
+          in builtin add p q
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 7);
+}
+
+#[test]
+fn test_let_destruct_chain_three() {
+    let result = run("
+        data Triple(a, b, c)
+        data Pair(x, y)
+        define main as
+          let Triple(a, b, c) = Triple(1, 2, 3),
+              Pair(p, q) = Pair(a, b),
+              Pair(r, s) = Pair(q, c)
+          in builtin add (builtin add p r) s
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 6);
+}
+
+#[test]
+fn test_let_destruct_nullary() {
+    let result = run("
+        data Wrap(x)
+        define main as
+          let Wrap(v) = Wrap(42) in v
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 42);
+}
+
+// -- if pattern binding --
+
+#[test]
+fn test_if_binding_success() {
+    let result = run("
+        data Ok(x) | Err
+        define main as
+          if Ok(v) = Ok(42)
+          then v
+          else 0
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 42);
+}
+
+#[test]
+fn test_if_binding_failure() {
+    let result = run("
+        data Ok(x) | Err
+        define main as
+          if Ok(v) = Err
+          then v
+          else 99
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 99);
+}
+
+#[test]
+fn test_if_binding_three_ctors() {
+    let result = run("
+        data Red | Green | Blue
+        define main as
+          if Green = Green
+          then 1
+          else 0
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 1);
+}
+
+#[test]
+fn test_if_binding_three_ctors_miss() {
+    let result = run("
+        data Red | Green | Blue
+        define main as
+          if Green = Blue
+          then 1
+          else 0
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 0);
+}
+
+#[test]
+fn test_if_binding_chain_both_succeed() {
+    let result = run("
+        data Ok(x) | Err
+        data Some(x) | None
+        define main as
+          if Ok(a) = Ok(1),
+             Some(b) = Some(2)
+          then builtin add a b
+          else 0
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 3);
+}
+
+#[test]
+fn test_if_binding_chain_first_fails() {
+    let result = run("
+        data Ok(x) | Err
+        data Some(x) | None
+        define main as
+          if Ok(a) = Err,
+             Some(b) = Some(2)
+          then builtin add a b
+          else 99
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 99);
+}
+
+#[test]
+fn test_if_binding_chain_second_fails() {
+    let result = run("
+        data Ok(x) | Err
+        data Some(x) | None
+        define main as
+          if Ok(a) = Ok(1),
+             Some(b) = None
+          then builtin add a b
+          else 99
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 99);
+}
+
+#[test]
+fn test_if_binding_uses_outer_bind_in_chain() {
+    let result = run("
+        data Ok(x) | Err
+        define main as
+          if Ok(a) = Ok(10),
+             Ok(b) = Ok(a)
+          then b
+          else 0
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 10);
+}
+
 // -- Scheme: fold_left with match+call init (inliner bug reproducer) --
 
 fn run_scheme_int(source: &str) -> i32 {

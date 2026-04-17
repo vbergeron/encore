@@ -22,6 +22,9 @@ pub enum Token {
     Of,
     Builtin,
     Extern,
+    If,
+    Then,
+    Else,
     StringLit(Vec<u8>),
     Eof,
 }
@@ -146,6 +149,9 @@ impl Lexer {
             "of" => Token::Of,
             "builtin" => Token::Builtin,
             "extern" => Token::Extern,
+            "if" => Token::If,
+            "then" => Token::Then,
+            "else" => Token::Else,
             _ if s.chars().next().unwrap().is_uppercase() => Token::UpperIdent(s),
             _ => Token::LowerIdent(s),
         }
