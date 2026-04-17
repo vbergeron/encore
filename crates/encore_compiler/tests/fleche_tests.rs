@@ -703,6 +703,41 @@ fn test_compilation_deterministic() {
     }
 }
 
+// -- Chained plain let --
+
+#[test]
+fn test_let_chain_plain_two() {
+    let result = run("
+        define main as
+          let x = 10, y = 20 in
+          builtin add x y
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 30);
+}
+
+#[test]
+fn test_let_chain_plain_three() {
+    let result = run("
+        define main as
+          let x = 1, y = 2, z = 3 in
+          builtin add x (builtin add y z)
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 6);
+}
+
+#[test]
+fn test_let_chain_plain_dependent() {
+    let result = run("
+        define main as
+          let x = 10, y = builtin add x 5 in
+          y
+    ");
+    assert!(result.is_int());
+    assert_eq!(result.int_value().unwrap(), 15);
+}
+
 // -- Chained let destructuring --
 
 #[test]

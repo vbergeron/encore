@@ -178,9 +178,19 @@ impl Parser {
             let name = self.expect_lower_ident();
             self.lexer.expect(&Token::Eq);
             let bound = self.parse_expr();
+            let mut bindings = vec![(name, bound)];
+            while *self.lexer.peek() == Token::Comma {
+                self.lexer.next();
+                let n = self.expect_lower_ident();
+                self.lexer.expect(&Token::Eq);
+                let b = self.parse_expr();
+                bindings.push((n, b));
+            }
             self.lexer.expect(&Token::In);
             let body = self.parse_expr();
-            ds::Expr::Let(name, Box::new(bound), Box::new(body))
+            bindings.into_iter().rev().fold(body, |acc, (n, b)| {
+                ds::Expr::Let(n, Box::new(b), Box::new(acc))
+            })
         }
     }
 
