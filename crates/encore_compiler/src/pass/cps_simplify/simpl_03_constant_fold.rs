@@ -155,72 +155,65 @@ impl CPSTransformer for ConstantFold {
 
 fn try_fold_prim(op: PrimOp, args: &[String], env: &Env) -> Option<Val> {
     match op {
-        PrimOp::Int(IntOp::Byte) => match env.get(&args[0]) {
-            Some(Known::Int(n)) if *n >= 0 && *n <= 255 => Some(Val::Bytes(vec![*n as u8])),
-            _ => None,
-        },
-        PrimOp::Int(iop) => match (env.get(&args[0]), env.get(&args[1])) {
-            (Some(Known::Int(a)), Some(Known::Int(b))) => Some(eval_int_prim(iop, *a, *b)),
-            _ => None,
-        },
-        PrimOp::Bytes(bop) => try_fold_bytes_prim(bop, args, env),
+        PrimOp::Int(IntOp::Byte) => {
+            let n = get_int(env, &args[0])?;
+            (0..=255).contains(&n).then(|| Val::Bytes(vec![n as u8]))
+        }
+        PrimOp::Int(op) => {
+            let a = get_int(env, &args[0])?;
+            let b = get_int(env, &args[1])?;
+            Some(eval_int_binop(op, a, b))
+        }
+        PrimOp::Bytes(BytesOp::Len) => {
+            let bs = get_bytes(env, &args[0])?;
+            Some(Val::Int(bs.len() as i32))
+        }
+        PrimOp::Bytes(BytesOp::Get) => {
+            let bs = get_bytes(env, &args[0])?;
+            let idx = usize::try_from(get_int(env, &args[1])?).ok()?;
+            bs.get(idx).map(|b| Val::Int(*b as i32))
+        }
+        PrimOp::Bytes(BytesOp::Concat) => {
+            let a = get_bytes(env, &args[0])?;
+            let b = get_bytes(env, &args[1])?;
+            let mut result = a.to_vec();
+            result.extend_from_slice(b);
+            Some(Val::Bytes(result))
+        }
+        PrimOp::Bytes(BytesOp::Slice) => {
+            let bs = get_bytes(env, &args[0])?;
+            let start = usize::try_from(get_int(env, &args[1])?).ok()?;
+            let len = usize::try_from(get_int(env, &args[2])?).ok()?;
+            let end = start.checked_add(len)?;
+            (end <= bs.len()).then(|| Val::Bytes(bs[start..end].to_vec()))
+        }
+        PrimOp::Bytes(BytesOp::Eq) => {
+            let a = get_bytes(env, &args[0])?;
+            let b = get_bytes(env, &args[1])?;
+            Some(bool_val(a == b))
+        }
     }
 }
 
-fn eval_int_prim(op: IntOp, a: i32, b: i32) -> Val {
+fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Val {
     match op {
         IntOp::Add => Val::Int(a.wrapping_add(b)),
         IntOp::Sub => Val::Int(a.wrapping_sub(b)),
         IntOp::Mul => Val::Int(a.wrapping_mul(b)),
-        IntOp::Eq => Val::Ctor(if a == b { 1 } else { 0 }, vec![]),
-        IntOp::Lt => Val::Ctor(if a < b { 1 } else { 0 }, vec![]),
-        IntOp::Byte => unreachable!(),
+        IntOp::Eq => bool_val(a == b),
+        IntOp::Lt => bool_val(a < b),
+        IntOp::Byte => unreachable!("Byte is unary and handled by try_fold_prim"),
     }
 }
 
-fn try_fold_bytes_prim(op: BytesOp, args: &[String], env: &Env) -> Option<Val> {
-    match op {
-        BytesOp::Len => match env.get(&args[0]) {
-            Some(Known::Bytes(bs)) => Some(Val::Int(bs.len() as i32)),
-            _ => None,
-        },
-        BytesOp::Get => match (env.get(&args[0]), env.get(&args[1])) {
-            (Some(Known::Bytes(bs)), Some(Known::Int(idx))) => {
-                let idx = *idx as usize;
-                if idx < bs.len() {
-                    Some(Val::Int(bs[idx] as i32))
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        },
-        BytesOp::Concat => match (env.get(&args[0]), env.get(&args[1])) {
-            (Some(Known::Bytes(a)), Some(Known::Bytes(b))) => {
-                let mut result = a.clone();
-                result.extend_from_slice(b);
-                Some(Val::Bytes(result))
-            }
-            _ => None,
-        },
-        BytesOp::Slice => match (env.get(&args[0]), env.get(&args[1]), env.get(&args[2])) {
-            (Some(Known::Bytes(bs)), Some(Known::Int(start)), Some(Known::Int(len))) => {
-                let start = *start as usize;
-                let len = *len as usize;
-                if start + len <= bs.len() {
-                    Some(Val::Bytes(bs[start..start + len].to_vec()))
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        },
-        BytesOp::Eq => match (env.get(&args[0]), env.get(&args[1])) {
-            (Some(Known::Bytes(a)), Some(Known::Bytes(b))) => {
-                let tag = if a == b { 1 } else { 0 };
-                Some(Val::Ctor(tag, vec![]))
-            }
-            _ => None,
-        },
-    }
+fn get_int(env: &Env, name: &str) -> Option<i32> {
+    if let Some(Known::Int(n)) = env.get(name) { Some(*n) } else { None }
+}
+
+fn get_bytes<'a>(env: &'a Env, name: &str) -> Option<&'a [u8]> {
+    if let Some(Known::Bytes(bs)) = env.get(name) { Some(bs.as_slice()) } else { None }
+}
+
+fn bool_val(b: bool) -> Val {
+    Val::Ctor(if b { 1 } else { 0 }, vec![])
 }
