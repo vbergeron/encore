@@ -63,7 +63,7 @@ The compiler backend. Owns all IR types (`ds`, `dsi`, `prim`, `cps`, `asm`) and 
 - **ASM peephole** — register sinking to reduce unnecessary `MOV` instructions
 - **ASM emit** — generates VM bytecode and serializes the program binary
 
-See [FLECHE.md](FLECHE.md) for the compiler pipeline and [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
+See [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
 
 ### `encore_vm`
 
@@ -74,11 +74,13 @@ A `#![no_std]` bytecode interpreter with:
 - Mark-compact garbage collector
 - Single-opcode calling convention: `ENCORE` (set callee and continuation registers, jump). Continuation resumption uses `ENCORE` with the `NULL` register as the dead continuation
 
-See [VM.md](VM.md) for details.
+See [VM.md](VM.md) for details and [AOT.md](AOT.md) for the native compilation design.
 
 ### `encore_scheme`
 
 Scheme/S-expression frontend for Rocq-extracted `.scm` files. Parses S-expressions, desugars special forms (`lambda`, `match`, `if`, `letrec`, etc.), and lowers to the same `ds::Module` as Fleche. Used by `encore compile scheme` and by bare-metal example build scripts.
+
+See [SCHEME.md](SCHEME.md) for the frontend reference.
 
 ### `encore_disasm`
 
