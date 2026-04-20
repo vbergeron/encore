@@ -1,3 +1,5 @@
+use encore_compiler::frontend::ParseError;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     LowerIdent(String),
@@ -44,23 +46,26 @@ impl Lexer {
         }
     }
 
-    pub fn peek(&mut self) -> &Token {
+    pub fn peek(&mut self) -> Result<&Token, ParseError> {
         if self.peeked.is_none() {
-            self.peeked = Some(self.read_token());
+            self.peeked = Some(self.read_token()?);
         }
-        self.peeked.as_ref().unwrap()
+        Ok(self.peeked.as_ref().unwrap())
     }
 
-    pub fn next(&mut self) -> Token {
+    pub fn next(&mut self) -> Result<Token, ParseError> {
         if let Some(tok) = self.peeked.take() {
-            return tok;
+            return Ok(tok);
         }
         self.read_token()
     }
 
-    pub fn expect(&mut self, expected: &Token) {
-        let tok = self.next();
-        assert_eq!(&tok, expected, "expected {expected:?}, got {tok:?}");
+    pub fn expect(&mut self, expected: &Token) -> Result<(), ParseError> {
+        let tok = self.next()?;
+        if &tok != expected {
+            return Err(ParseError { message: format!("expected {expected:?}, got {tok:?}") });
+        }
+        Ok(())
     }
 
     fn skip_whitespace(&mut self) {
@@ -78,43 +83,45 @@ impl Lexer {
         }
     }
 
-    fn read_token(&mut self) -> Token {
+    fn read_token(&mut self) -> Result<Token, ParseError> {
         self.skip_whitespace();
 
         if self.pos >= self.input.len() {
-            return Token::Eof;
+            return Ok(Token::Eof);
         }
 
         let ch = self.input[self.pos];
 
         if ch == '-' && self.pos + 1 < self.input.len() && self.input[self.pos + 1] == '>' {
             self.pos += 2;
-            return Token::Arrow;
+            return Ok(Token::Arrow);
         }
 
         match ch {
-            '=' => { self.pos += 1; Token::Eq }
-            '|' => { self.pos += 1; Token::Pipe }
-            '(' => { self.pos += 1; Token::LParen }
-            ')' => { self.pos += 1; Token::RParen }
-            ',' => { self.pos += 1; Token::Comma }
+            '=' => { self.pos += 1; Ok(Token::Eq) }
+            '|' => { self.pos += 1; Ok(Token::Pipe) }
+            '(' => { self.pos += 1; Ok(Token::LParen) }
+            ')' => { self.pos += 1; Ok(Token::RParen) }
+            ',' => { self.pos += 1; Ok(Token::Comma) }
             '"' => self.read_string(),
-            '0'..='9' => self.read_number(),
-            c if c.is_alphabetic() || c == '_' => self.read_ident(),
-            c => panic!("unexpected character: {c:?}"),
+            '0'..='9' => Ok(self.read_number()),
+            c if c.is_alphabetic() || c == '_' => Ok(self.read_ident()),
+            c => Err(ParseError { message: format!("unexpected character: {c:?}") }),
         }
     }
 
-    fn read_string(&mut self) -> Token {
-        self.pos += 1; // skip opening "
+    fn read_string(&mut self) -> Result<Token, ParseError> {
+        self.pos += 1;
         let start = self.pos;
         while self.pos < self.input.len() && self.input[self.pos] != '"' {
             self.pos += 1;
         }
+        if self.pos >= self.input.len() {
+            return Err(ParseError { message: "unterminated string literal".into() });
+        }
         let bytes: Vec<u8> = self.input[start..self.pos].iter().map(|&c| c as u8).collect();
-        assert!(self.pos < self.input.len(), "unterminated string literal");
-        self.pos += 1; // skip closing "
-        Token::StringLit(bytes)
+        self.pos += 1;
+        Ok(Token::StringLit(bytes))
     }
 
     fn read_number(&mut self) -> Token {

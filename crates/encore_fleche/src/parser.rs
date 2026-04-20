@@ -1,158 +1,134 @@
-use std::collections::BTreeMap;
-
 use crate::ds;
 use crate::prim::{PrimOp, IntOp, BytesOp};
 use crate::lexer::{Lexer, Token};
-use encore_vm::builtins::*;
-
-struct CtorInfo {
-    tag: u8,
-    arity: u8,
-    type_id: u8,
-}
+use encore_compiler::frontend::{CtorRegistry, ParseError};
 
 pub struct Parser {
     lexer: Lexer,
-    ctors: BTreeMap<String, CtorInfo>,
-    next_tag: u8,
-    next_type_id: u8,
+    ctors: CtorRegistry,
 }
 
 impl Parser {
     pub fn new(input: &str) -> Self {
-        let mut ctors = BTreeMap::new();
-        ctors.insert("False".into(), CtorInfo { tag: TAG_FALSE, arity: ARITY_FALSE, type_id: 0 });
-        ctors.insert("True".into(),  CtorInfo { tag: TAG_TRUE,  arity: ARITY_TRUE,  type_id: 0 });
-        ctors.insert("Nil".into(),   CtorInfo { tag: TAG_NIL,   arity: ARITY_NIL,   type_id: 1 });
-        ctors.insert("Cons".into(),  CtorInfo { tag: TAG_CONS,  arity: ARITY_CONS,  type_id: 1 });
         Self {
             lexer: Lexer::new(input),
-            ctors,
-            next_tag: FIRST_USER_TAG,
-            next_type_id: 2,
+            ctors: CtorRegistry::new(),
         }
     }
 
-    pub fn parse_module(&mut self) -> ds::Module {
-        while *self.lexer.peek() == Token::Data {
-            self.parse_data();
+    pub fn parse_module(&mut self) -> Result<ds::Module, ParseError> {
+        while *self.lexer.peek()? == Token::Data {
+            self.parse_data()?;
         }
 
         let mut defines = Vec::new();
-        while *self.lexer.peek() != Token::Eof {
-            defines.push(self.parse_define());
+        while *self.lexer.peek()? != Token::Eof {
+            defines.push(self.parse_define()?);
         }
 
-        ds::Module { defines }
+        Ok(ds::Module { defines })
     }
 
     pub fn ctor_names(&self) -> Vec<(u8, String)> {
-        self.ctors.iter()
-            .map(|(name, info)| (info.tag, name.clone()))
-            .collect()
+        self.ctors.ctor_names()
     }
 
-    fn parse_data(&mut self) {
-        self.lexer.expect(&Token::Data);
+    fn parse_data(&mut self) -> Result<(), ParseError> {
+        self.lexer.expect(&Token::Data)?;
 
-        let type_id = self.next_type_id;
-        self.next_type_id += 1;
+        let type_id = self.ctors.alloc_type_id();
 
-        if *self.lexer.peek() == Token::Pipe {
-            self.lexer.next();
+        if *self.lexer.peek()? == Token::Pipe {
+            self.lexer.next()?;
         }
 
-        self.parse_variant(type_id);
+        self.parse_variant(type_id)?;
 
-        while *self.lexer.peek() == Token::Pipe {
-            self.lexer.next();
-            self.parse_variant(type_id);
+        while *self.lexer.peek()? == Token::Pipe {
+            self.lexer.next()?;
+            self.parse_variant(type_id)?;
         }
+        Ok(())
     }
 
-    fn parse_variant(&mut self, type_id: u8) {
-        let name = match self.lexer.next() {
+    fn parse_variant(&mut self, type_id: u8) -> Result<(), ParseError> {
+        let name = match self.lexer.next()? {
             Token::UpperIdent(s) => s,
-            tok => panic!("expected constructor name, got {tok:?}"),
+            tok => return Err(format!("expected constructor name, got {tok:?}").into()),
         };
 
         let mut arity: u8 = 0;
-        if *self.lexer.peek() == Token::LParen {
-            self.lexer.next();
-            if *self.lexer.peek() != Token::RParen {
-                self.expect_lower_ident();
+        if *self.lexer.peek()? == Token::LParen {
+            self.lexer.next()?;
+            if *self.lexer.peek()? != Token::RParen {
+                self.expect_lower_ident()?;
                 arity = 1;
-                while *self.lexer.peek() == Token::Comma {
-                    self.lexer.next();
-                    self.expect_lower_ident();
+                while *self.lexer.peek()? == Token::Comma {
+                    self.lexer.next()?;
+                    self.expect_lower_ident()?;
                     arity += 1;
                 }
             }
-            self.lexer.expect(&Token::RParen);
+            self.lexer.expect(&Token::RParen)?;
         }
 
-        if self.ctors.contains_key(&name) {
-            return;
-        }
-
-        let tag = self.next_tag;
-        self.next_tag += 1;
-        self.ctors.insert(name, CtorInfo { tag, arity, type_id });
+        self.ctors.resolve_with_type(&name, arity, type_id);
+        Ok(())
     }
 
-    fn expect_lower_ident(&mut self) -> String {
-        match self.lexer.next() {
-            Token::LowerIdent(s) => s,
-            tok => panic!("expected identifier, got {tok:?}"),
+    fn expect_lower_ident(&mut self) -> Result<String, ParseError> {
+        match self.lexer.next()? {
+            Token::LowerIdent(s) => Ok(s),
+            tok => Err(format!("expected identifier, got {tok:?}").into()),
         }
     }
 
-    fn parse_define(&mut self) -> ds::Define {
-        self.lexer.expect(&Token::Define);
-        if *self.lexer.peek() == Token::Extern {
-            self.lexer.next();
-            let name = self.expect_lower_ident();
-            let slot = match self.lexer.next() {
+    fn parse_define(&mut self) -> Result<ds::Define, ParseError> {
+        self.lexer.expect(&Token::Define)?;
+        if *self.lexer.peek()? == Token::Extern {
+            self.lexer.next()?;
+            let name = self.expect_lower_ident()?;
+            let slot = match self.lexer.next()? {
                 Token::Number(n) => n as u16,
-                tok => panic!("expected extern slot index, got {tok:?}"),
+                tok => return Err(format!("expected extern slot index, got {tok:?}").into()),
             };
-            return ds::Define { name, body: ds::Expr::Extern(slot) };
+            return Ok(ds::Define { name, body: ds::Expr::Extern(slot) });
         }
-        let name = self.expect_lower_ident();
-        self.lexer.expect(&Token::As);
-        let body = self.parse_expr();
-        ds::Define { name, body }
+        let name = self.expect_lower_ident()?;
+        self.lexer.expect(&Token::As)?;
+        let body = self.parse_expr()?;
+        Ok(ds::Define { name, body })
     }
 
-    fn parse_expr(&mut self) -> ds::Expr {
-        match self.lexer.peek() {
+    fn parse_expr(&mut self) -> Result<ds::Expr, ParseError> {
+        match self.lexer.peek()? {
             Token::Let => self.parse_let(),
             Token::Match => self.parse_match(),
             Token::Field => self.parse_field(),
             Token::Builtin => self.parse_builtin(),
             Token::If => self.parse_if_binding(),
             Token::LowerIdent(_) => {
-                let name = self.expect_lower_ident();
-                if *self.lexer.peek() == Token::Arrow {
-                    self.lexer.next();
+                let name = self.expect_lower_ident()?;
+                if *self.lexer.peek()? == Token::Arrow {
+                    self.lexer.next()?;
                     let mut params = vec![name];
-                    while let Token::LowerIdent(_) = self.lexer.peek() {
-                        let next = self.expect_lower_ident();
-                        if *self.lexer.peek() == Token::Arrow {
-                            self.lexer.next();
+                    while let Token::LowerIdent(_) = self.lexer.peek()? {
+                        let next = self.expect_lower_ident()?;
+                        if *self.lexer.peek()? == Token::Arrow {
+                            self.lexer.next()?;
                             params.push(next);
                         } else {
                             let body_head = ds::Expr::Var(next);
-                            let body = self.parse_app_rest(body_head);
-                            return params.into_iter().rev().fold(body, |b, p| {
+                            let body = self.parse_app_rest(body_head)?;
+                            return Ok(params.into_iter().rev().fold(body, |b, p| {
                                 ds::Expr::Lambda(vec![p], Box::new(b))
-                            });
+                            }));
                         }
                     }
-                    let body = self.parse_expr();
-                    params.into_iter().rev().fold(body, |b, p| {
+                    let body = self.parse_expr()?;
+                    Ok(params.into_iter().rev().fold(body, |b, p| {
                         ds::Expr::Lambda(vec![p], Box::new(b))
-                    })
+                    }))
                 } else {
                     self.parse_app_rest(ds::Expr::Var(name))
                 }
@@ -161,158 +137,124 @@ impl Parser {
         }
     }
 
-    fn parse_let(&mut self) -> ds::Expr {
-        self.lexer.expect(&Token::Let);
-        if *self.lexer.peek() == Token::Rec {
-            self.lexer.next();
-            let fname = self.expect_lower_ident();
-            let param = self.expect_lower_ident();
-            self.lexer.expect(&Token::Eq);
-            let body = self.parse_expr();
-            self.lexer.expect(&Token::In);
-            let rest = self.parse_expr();
-            ds::Expr::Letrec(fname, param, Box::new(body), Box::new(rest))
-        } else if matches!(self.lexer.peek(), Token::UpperIdent(_)) {
+    fn parse_let(&mut self) -> Result<ds::Expr, ParseError> {
+        self.lexer.expect(&Token::Let)?;
+        if *self.lexer.peek()? == Token::Rec {
+            self.lexer.next()?;
+            let fname = self.expect_lower_ident()?;
+            let param = self.expect_lower_ident()?;
+            self.lexer.expect(&Token::Eq)?;
+            let body = self.parse_expr()?;
+            self.lexer.expect(&Token::In)?;
+            let rest = self.parse_expr()?;
+            Ok(ds::Expr::Letrec(fname, param, Box::new(body), Box::new(rest)))
+        } else if matches!(self.lexer.peek()?, Token::UpperIdent(_)) {
             self.parse_let_destruct_chain()
         } else {
-            let name = self.expect_lower_ident();
-            self.lexer.expect(&Token::Eq);
-            let bound = self.parse_expr();
+            let name = self.expect_lower_ident()?;
+            self.lexer.expect(&Token::Eq)?;
+            let bound = self.parse_expr()?;
             let mut bindings = vec![(name, bound)];
-            while *self.lexer.peek() == Token::Comma {
-                self.lexer.next();
-                let n = self.expect_lower_ident();
-                self.lexer.expect(&Token::Eq);
-                let b = self.parse_expr();
+            while *self.lexer.peek()? == Token::Comma {
+                self.lexer.next()?;
+                let n = self.expect_lower_ident()?;
+                self.lexer.expect(&Token::Eq)?;
+                let b = self.parse_expr()?;
                 bindings.push((n, b));
             }
-            self.lexer.expect(&Token::In);
-            let body = self.parse_expr();
-            bindings.into_iter().rev().fold(body, |acc, (n, b)| {
+            self.lexer.expect(&Token::In)?;
+            let body = self.parse_expr()?;
+            Ok(bindings.into_iter().rev().fold(body, |acc, (n, b)| {
                 ds::Expr::Let(n, Box::new(b), Box::new(acc))
-            })
+            }))
         }
     }
 
-    // Parses one `Ctor(binds) = expr` binding and returns (tag, type_id, binds, scrutinee).
-    fn parse_ctor_binding(&mut self) -> (u8, u8, Vec<String>, ds::Expr) {
-        let ctor_name = match self.lexer.next() {
+    fn parse_ctor_binding(&mut self) -> Result<(u8, u8, Vec<String>, ds::Expr), ParseError> {
+        let ctor_name = match self.lexer.next()? {
             Token::UpperIdent(s) => s,
-            tok => panic!("expected constructor name in pattern binding, got {tok:?}"),
+            tok => return Err(format!("expected constructor name in pattern binding, got {tok:?}").into()),
         };
-        let (tag, arity, type_id) = {
-            let info = self.ctors.get(&ctor_name)
-                .unwrap_or_else(|| panic!("unknown constructor: {ctor_name}"));
-            (info.tag, info.arity, info.type_id)
-        };
+        let (tag, arity, type_id) = self.ctors.get_with_type(&ctor_name)
+            .ok_or_else(|| ParseError::from(format!("unknown constructor: {ctor_name}")))?;
 
         let mut binds = Vec::new();
-        if *self.lexer.peek() == Token::LParen {
-            self.lexer.next();
-            if *self.lexer.peek() != Token::RParen {
-                binds.push(self.expect_lower_ident());
-                while *self.lexer.peek() == Token::Comma {
-                    self.lexer.next();
-                    binds.push(self.expect_lower_ident());
+        if *self.lexer.peek()? == Token::LParen {
+            self.lexer.next()?;
+            if *self.lexer.peek()? != Token::RParen {
+                binds.push(self.expect_lower_ident()?);
+                while *self.lexer.peek()? == Token::Comma {
+                    self.lexer.next()?;
+                    binds.push(self.expect_lower_ident()?);
                 }
             }
-            self.lexer.expect(&Token::RParen);
+            self.lexer.expect(&Token::RParen)?;
         }
 
-        assert_eq!(
-            binds.len(), arity as usize,
-            "constructor {ctor_name} has arity {arity}, but {} binds given",
-            binds.len()
-        );
+        if binds.len() != arity as usize {
+            return Err(format!(
+                "constructor {ctor_name} has arity {arity}, but {} binds given",
+                binds.len()
+            ).into());
+        }
 
-        self.lexer.expect(&Token::Eq);
-        let scrutinee = self.parse_expr();
+        self.lexer.expect(&Token::Eq)?;
+        let scrutinee = self.parse_expr()?;
 
-        (tag, type_id, binds, scrutinee)
+        Ok((tag, type_id, binds, scrutinee))
     }
 
-    // Returns (tag, arity) pairs sorted by tag for all constructors sharing type_id.
-    fn ctors_of_type(&self, type_id: u8) -> Vec<(u8, u8)> {
-        let mut result: Vec<(u8, u8)> = self.ctors.values()
-            .filter(|info| info.type_id == type_id)
-            .map(|info| (info.tag, info.arity))
-            .collect();
-        result.sort_by_key(|&(tag, _)| tag);
-        result
-    }
-
-    // `let` already consumed. Parses chained constructor bindings and desugars to
-    // nested single-case Match nodes (irrefutable — no failure arms).
-    //
-    // let Ctor1(a, b) = e1,
-    //     Ctor2(c)    = e2
-    // in body
-    //
-    // =>  match e1 case Ctor1(a, b) -> match e2 case Ctor2(c) -> body end end
-    fn parse_let_destruct_chain(&mut self) -> ds::Expr {
+    fn parse_let_destruct_chain(&mut self) -> Result<ds::Expr, ParseError> {
         let mut bindings: Vec<(u8, Vec<String>, ds::Expr)> = Vec::new();
 
         loop {
-            let (tag, _type_id, binds, scrutinee) = self.parse_ctor_binding();
+            let (tag, _type_id, binds, scrutinee) = self.parse_ctor_binding()?;
             bindings.push((tag, binds, scrutinee));
-            if *self.lexer.peek() == Token::Comma {
-                self.lexer.next();
+            if *self.lexer.peek()? == Token::Comma {
+                self.lexer.next()?;
             } else {
                 break;
             }
         }
 
-        self.lexer.expect(&Token::In);
-        let body = self.parse_expr();
+        self.lexer.expect(&Token::In)?;
+        let body = self.parse_expr()?;
 
-        bindings.into_iter().rev().fold(body, |acc, (tag, binds, scrutinee)| {
+        Ok(bindings.into_iter().rev().fold(body, |acc, (tag, binds, scrutinee)| {
             ds::Expr::Match(
                 Box::new(scrutinee),
                 tag,
                 vec![ds::Case { binds, body: acc }],
             )
-        })
+        }))
     }
 
-    // Parses `if` pattern binding and desugars to nested Match nodes.
-    // Failure arms for every sibling constructor each receive a clone of `alt`.
-    //
-    // if Ctor1(a) = e1,
-    //    Ctor2(b) = e2
-    //   then body
-    //   else alt
-    //
-    // => match e1
-    //      case Ctor1(a) -> match e2 case Ctor2(b) -> body case Sib(_) -> alt end
-    //      case Sib1     -> alt
-    //    end
-    fn parse_if_binding(&mut self) -> ds::Expr {
-        self.lexer.expect(&Token::If);
+    fn parse_if_binding(&mut self) -> Result<ds::Expr, ParseError> {
+        self.lexer.expect(&Token::If)?;
 
         let mut raw_bindings: Vec<(u8, u8, Vec<String>, ds::Expr)> = Vec::new();
         loop {
-            raw_bindings.push(self.parse_ctor_binding());
-            if *self.lexer.peek() == Token::Comma {
-                self.lexer.next();
+            raw_bindings.push(self.parse_ctor_binding()?);
+            if *self.lexer.peek()? == Token::Comma {
+                self.lexer.next()?;
             } else {
                 break;
             }
         }
 
-        self.lexer.expect(&Token::Then);
-        let body = self.parse_expr();
-        self.lexer.expect(&Token::Else);
-        let alt = self.parse_expr();
+        self.lexer.expect(&Token::Then)?;
+        let body = self.parse_expr()?;
+        self.lexer.expect(&Token::Else)?;
+        let alt = self.parse_expr()?;
 
-        // Pre-compute sibling constructors while self is still available.
         let bindings: Vec<(u8, Vec<(u8, u8)>, Vec<String>, ds::Expr)> = raw_bindings
             .into_iter()
             .map(|(tag, type_id, binds, scrutinee)| {
-                (tag, self.ctors_of_type(type_id), binds, scrutinee)
+                (tag, self.ctors.ctors_of_type(type_id), binds, scrutinee)
             })
             .collect();
 
-        bindings.into_iter().rev().fold(body, |acc, (tag, type_ctors, binds, scrutinee)| {
+        Ok(bindings.into_iter().rev().fold(body, |acc, (tag, type_ctors, binds, scrutinee)| {
             let base_tag = type_ctors.iter().map(|&(t, _)| t).min().unwrap_or(tag);
             let matched_idx = type_ctors.iter().position(|&(t, _)| t == tag).unwrap();
             let mut cases: Vec<ds::Case> = type_ctors.iter().map(|&(_, arity)| {
@@ -323,79 +265,78 @@ impl Parser {
             }).collect();
             cases[matched_idx] = ds::Case { binds, body: acc };
             ds::Expr::Match(Box::new(scrutinee), base_tag, cases)
-        })
+        }))
     }
 
-    fn parse_match(&mut self) -> ds::Expr {
-        self.lexer.expect(&Token::Match);
-        let scrutinee = self.parse_app();
+    fn parse_match(&mut self) -> Result<ds::Expr, ParseError> {
+        self.lexer.expect(&Token::Match)?;
+        let scrutinee = self.parse_app()?;
 
         let mut cases = Vec::new();
-        while *self.lexer.peek() == Token::Case {
-            self.lexer.next();
-            let ctor_name = match self.lexer.next() {
+        while *self.lexer.peek()? == Token::Case {
+            self.lexer.next()?;
+            let ctor_name = match self.lexer.next()? {
                 Token::UpperIdent(s) => s,
-                tok => panic!("expected constructor name in case, got {tok:?}"),
+                tok => return Err(format!("expected constructor name in case, got {tok:?}").into()),
             };
 
-            let info = self.ctors.get(&ctor_name)
-                .unwrap_or_else(|| panic!("unknown constructor: {ctor_name}"));
-            let tag = info.tag;
-            let arity = info.arity;
+            let (tag, arity) = self.ctors.get(&ctor_name)
+                .ok_or_else(|| ParseError::from(format!("unknown constructor: {ctor_name}")))?;
 
             let mut binds = Vec::new();
-            if *self.lexer.peek() == Token::LParen {
-                self.lexer.next();
-                if *self.lexer.peek() != Token::RParen {
-                    binds.push(self.expect_lower_ident());
-                    while *self.lexer.peek() == Token::Comma {
-                        self.lexer.next();
-                        binds.push(self.expect_lower_ident());
+            if *self.lexer.peek()? == Token::LParen {
+                self.lexer.next()?;
+                if *self.lexer.peek()? != Token::RParen {
+                    binds.push(self.expect_lower_ident()?);
+                    while *self.lexer.peek()? == Token::Comma {
+                        self.lexer.next()?;
+                        binds.push(self.expect_lower_ident()?);
                     }
                 }
-                self.lexer.expect(&Token::RParen);
+                self.lexer.expect(&Token::RParen)?;
             }
 
-            assert_eq!(
-                binds.len(), arity as usize,
-                "constructor {ctor_name} has arity {arity}, but {n} binds given",
-                n = binds.len()
-            );
+            if binds.len() != arity as usize {
+                return Err(format!(
+                    "constructor {ctor_name} has arity {arity}, but {} binds given",
+                    binds.len()
+                ).into());
+            }
 
-            self.lexer.expect(&Token::Arrow);
-            let body = self.parse_expr();
+            self.lexer.expect(&Token::Arrow)?;
+            let body = self.parse_expr()?;
 
             cases.push((tag, ds::Case { binds, body }));
         }
 
-        self.lexer.expect(&Token::End);
+        self.lexer.expect(&Token::End)?;
 
         let base_tag = cases.iter().map(|(t, _)| *t).min().unwrap_or(0);
         let mut sorted_cases: Vec<ds::Case> = Vec::new();
         for tag in base_tag..base_tag + cases.len() as u8 {
             let (_, case) = cases.iter()
                 .find(|(t, _)| *t == tag)
-                .unwrap_or_else(|| panic!("missing case for tag {tag}"));
+                .ok_or_else(|| ParseError::from(format!("missing case for tag {tag}")))?;
             sorted_cases.push(case.clone());
         }
 
-        ds::Expr::Match(Box::new(scrutinee), base_tag, sorted_cases)
+        Ok(ds::Expr::Match(Box::new(scrutinee), base_tag, sorted_cases))
     }
 
-    fn parse_field(&mut self) -> ds::Expr {
-        self.lexer.expect(&Token::Field);
-        let idx = match self.lexer.next() {
+    fn parse_field(&mut self) -> Result<ds::Expr, ParseError> {
+        self.lexer.expect(&Token::Field)?;
+        let idx = match self.lexer.next()? {
             Token::Number(n) => n as u8,
-            tok => panic!("expected field index, got {tok:?}"),
+            tok => return Err(format!("expected field index, got {tok:?}").into()),
         };
-        self.lexer.expect(&Token::Of);
-        let expr = self.parse_expr();
-        ds::Expr::Field(Box::new(expr), idx)
+        self.lexer.expect(&Token::Of)?;
+        let expr = self.parse_expr()?;
+        Ok(ds::Expr::Field(Box::new(expr), idx))
     }
 
-    fn parse_builtin(&mut self) -> ds::Expr {
-        self.lexer.expect(&Token::Builtin);
-        let op_name = self.expect_lower_ident();
+    fn parse_builtin(&mut self) -> Result<ds::Expr, ParseError> {
+        self.lexer.expect(&Token::Builtin)?;
+        let op_name = self.expect_lower_ident()?;
         let (op, arity) = match op_name.as_str() {
             "add"          => (PrimOp::Int(IntOp::Add), 2),
             "sub"          => (PrimOp::Int(IntOp::Sub), 2),
@@ -408,98 +349,97 @@ impl Parser {
             "bytes_concat" => (PrimOp::Bytes(BytesOp::Concat), 2),
             "bytes_slice"  => (PrimOp::Bytes(BytesOp::Slice), 3),
             "bytes_eq"     => (PrimOp::Bytes(BytesOp::Eq), 2),
-            _ => panic!("unknown builtin operation: {op_name}"),
+            _ => return Err(format!("unknown builtin operation: {op_name}").into()),
         };
-        let args: Vec<ds::Expr> = (0..arity).map(|_| self.parse_atom()).collect();
-        ds::Expr::Prim(op, args)
+        let args: Vec<ds::Expr> = (0..arity)
+            .map(|_| self.parse_atom())
+            .collect::<Result<_, _>>()?;
+        Ok(ds::Expr::Prim(op, args))
     }
 
-    fn parse_app(&mut self) -> ds::Expr {
-        let head = self.parse_atom();
+    fn parse_app(&mut self) -> Result<ds::Expr, ParseError> {
+        let head = self.parse_atom()?;
         self.parse_app_rest(head)
     }
 
-    fn parse_app_rest(&mut self, head: ds::Expr) -> ds::Expr {
+    fn parse_app_rest(&mut self, head: ds::Expr) -> Result<ds::Expr, ParseError> {
         let mut args = Vec::new();
-        while self.is_atom_start() {
-            args.push(self.parse_atom());
+        while self.is_atom_start()? {
+            args.push(self.parse_atom()?);
         }
         if args.is_empty() {
-            head
+            Ok(head)
         } else {
-            ds::Expr::Apply(Box::new(head), args)
+            Ok(ds::Expr::Apply(Box::new(head), args))
         }
     }
 
-    fn is_atom_start(&mut self) -> bool {
-        matches!(
-            self.lexer.peek(),
+    fn is_atom_start(&mut self) -> Result<bool, ParseError> {
+        Ok(matches!(
+            self.lexer.peek()?,
             Token::LowerIdent(_) | Token::UpperIdent(_) | Token::Number(_)
                 | Token::StringLit(_) | Token::LParen
-        )
+        ))
     }
 
-    fn parse_atom(&mut self) -> ds::Expr {
-        match self.lexer.peek() {
+    fn parse_atom(&mut self) -> Result<ds::Expr, ParseError> {
+        match self.lexer.peek()? {
             Token::LowerIdent(_) => {
-                let name = self.expect_lower_ident();
-                ds::Expr::Var(name)
+                let name = self.expect_lower_ident()?;
+                Ok(ds::Expr::Var(name))
             }
             Token::UpperIdent(_) => self.parse_ctor(),
             Token::Number(_) => {
-                let n = match self.lexer.next() {
+                let n = match self.lexer.next()? {
                     Token::Number(n) => n,
                     _ => unreachable!(),
                 };
-                ds::Expr::Int(n as i32)
+                Ok(ds::Expr::Int(n as i32))
             }
             Token::StringLit(_) => {
-                let data = match self.lexer.next() {
+                let data = match self.lexer.next()? {
                     Token::StringLit(data) => data,
                     _ => unreachable!(),
                 };
-                ds::Expr::Bytes(data)
+                Ok(ds::Expr::Bytes(data))
             }
             Token::LParen => {
-                self.lexer.next();
-                let expr = self.parse_expr();
-                self.lexer.expect(&Token::RParen);
-                expr
+                self.lexer.next()?;
+                let expr = self.parse_expr()?;
+                self.lexer.expect(&Token::RParen)?;
+                Ok(expr)
             }
-            tok => panic!("expected expression, got {tok:?}"),
+            tok => Err(format!("expected expression, got {tok:?}").into()),
         }
     }
 
-    fn parse_ctor(&mut self) -> ds::Expr {
-        let name = match self.lexer.next() {
+    fn parse_ctor(&mut self) -> Result<ds::Expr, ParseError> {
+        let name = match self.lexer.next()? {
             Token::UpperIdent(s) => s,
-            tok => panic!("expected constructor name, got {tok:?}"),
+            tok => return Err(format!("expected constructor name, got {tok:?}").into()),
         };
 
-        let info = self.ctors.get(&name)
-            .unwrap_or_else(|| panic!("unknown constructor: {name}"));
-        let tag = info.tag;
-        let arity = info.arity;
+        let (tag, arity) = self.ctors.get(&name)
+            .ok_or_else(|| ParseError::from(format!("unknown constructor: {name}")))?;
 
         let mut fields = Vec::new();
         if arity > 0 {
-            self.lexer.expect(&Token::LParen);
-            fields.push(self.parse_expr());
-            while *self.lexer.peek() == Token::Comma {
-                self.lexer.next();
-                fields.push(self.parse_expr());
+            self.lexer.expect(&Token::LParen)?;
+            fields.push(self.parse_expr()?);
+            while *self.lexer.peek()? == Token::Comma {
+                self.lexer.next()?;
+                fields.push(self.parse_expr()?);
             }
-            self.lexer.expect(&Token::RParen);
+            self.lexer.expect(&Token::RParen)?;
         }
 
-        assert_eq!(
-            fields.len(), arity as usize,
-            "constructor {name} expects {arity} fields, got {n}",
-            n = fields.len()
-        );
+        if fields.len() != arity as usize {
+            return Err(format!(
+                "constructor {name} expects {arity} fields, got {}",
+                fields.len()
+            ).into());
+        }
 
-        ds::Expr::Ctor(tag, fields)
+        Ok(ds::Expr::Ctor(tag, fields))
     }
 }
-
-

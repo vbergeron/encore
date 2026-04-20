@@ -2,10 +2,13 @@ use std::fs;
 use std::process;
 
 use clap::{Parser, Subcommand};
+use encore_compiler::frontend::Frontend as FrontendTrait;
 use encore_compiler::pass::asm_emit::Metadata;
 use encore_compiler::pass::cps_optimize::OptimizeConfig;
+use encore_fleche::FlecheFrontend;
+use encore_scheme::SchemeFrontend;
 use encore_vm::program::Program;
-use encore_vm::value::{GlobalAddress, Value};
+use encore_vm::value::Value;
 use encore_vm::vm::Vm;
 
 const DEFAULT_HEAP_SIZE: usize = 1 << 16;
@@ -180,11 +183,11 @@ fn main() {
         Command::Compile { frontend } => match frontend {
             Frontend::Fleche { file, out, include_metadata, include_bindings, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile_fleche(&file, &out, config, include_metadata, include_bindings);
+                cmd_compile(&FlecheFrontend, &file, &out, config, include_metadata, include_bindings);
             }
             Frontend::Scheme { file, out, include_metadata, include_bindings, opt } => {
                 let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile_scheme(&file, &out, config, include_metadata, include_bindings);
+                cmd_compile(&SchemeFrontend, &file, &out, config, include_metadata, include_bindings);
             }
         },
         Command::Disasm { file, interactive } => cmd_disasm(&file, interactive),
@@ -223,7 +226,7 @@ fn cmd_run(path: &str, entry: Option<&str>, heap_size: usize) {
     #[cfg(feature = "stats")]
     eprintln!("{}", vm.stats());
 
-    print_value(vm.global_raw(GlobalAddress::new(entry_idx as u16)));
+    print_value(vm.global(entry_idx));
 }
 
 fn resolve_entry(entry: &str, prog: &Program) -> usize {
@@ -254,17 +257,20 @@ fn resolve_entry(entry: &str, prog: &Program) -> usize {
     process::exit(1);
 }
 
-fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool, include_bindings: bool) {
+fn cmd_compile(frontend: &dyn FrontendTrait, path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool, include_bindings: bool) {
     let source = fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
     });
 
-    let (module, ctor_names) = encore_fleche::parse_with_metadata(&source);
+    let output = frontend.parse(&source).unwrap_or_else(|e| {
+        eprintln!("error: {e}");
+        process::exit(1);
+    });
 
     if include_bindings {
         encore_compiler::pipeline::compile_to_dir_with_ctors(
-            &module, config, true, std::path::Path::new(out), &ctor_names,
+            &output.module, config, true, std::path::Path::new(out), &output.ctor_names,
         ).unwrap_or_else(|e| {
             eprintln!("error: compile_to_dir: {e}");
             process::exit(1);
@@ -272,55 +278,15 @@ fn cmd_compile_fleche(path: &str, out: &str, config: Option<OptimizeConfig>, inc
         eprintln!("compiled {path} -> {out}/");
     } else {
         let metadata = if include_metadata {
-            let global_names = module.defines.iter()
+            let global_names = output.module.defines.iter()
                 .enumerate()
                 .map(|(i, d)| (i as u8, d.name.clone()))
                 .collect();
-            Some(Metadata { ctor_names, global_names })
+            Some(Metadata { ctor_names: output.ctor_names, global_names })
         } else {
             None
         };
-        let binary = encore_compiler::pipeline::compile_module(module, config, metadata.as_ref());
-        fs::create_dir_all(out).unwrap_or_else(|e| {
-            eprintln!("error: cannot create {out}: {e}");
-            process::exit(1);
-        });
-        let bin_path = std::path::Path::new(out).join("bytecode.bin");
-        fs::write(&bin_path, &binary).unwrap_or_else(|e| {
-            eprintln!("error: cannot write {}: {e}", bin_path.display());
-            process::exit(1);
-        });
-        eprintln!("compiled {path} -> {} ({} bytes)", bin_path.display(), binary.len());
-    }
-}
-
-fn cmd_compile_scheme(path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool, include_bindings: bool) {
-    let source = fs::read_to_string(path).unwrap_or_else(|e| {
-        eprintln!("error: cannot read {path}: {e}");
-        process::exit(1);
-    });
-
-    let (module, ctor_names) = encore_scheme::parse_with_metadata(&source);
-
-    if include_bindings {
-        encore_compiler::pipeline::compile_to_dir_with_ctors(
-            &module, config, true, std::path::Path::new(out), &ctor_names,
-        ).unwrap_or_else(|e| {
-            eprintln!("error: compile_to_dir: {e}");
-            process::exit(1);
-        });
-        eprintln!("compiled {path} -> {out}/");
-    } else {
-        let metadata = if include_metadata {
-            let global_names = module.defines.iter()
-                .enumerate()
-                .map(|(i, d)| (i as u8, d.name.clone()))
-                .collect();
-            Some(Metadata { ctor_names, global_names })
-        } else {
-            None
-        };
-        let binary = encore_compiler::pipeline::compile_module(module, config, metadata.as_ref());
+        let binary = encore_compiler::pipeline::compile_module(output.module, config, metadata.as_ref());
         fs::create_dir_all(out).unwrap_or_else(|e| {
             eprintln!("error: cannot create {out}: {e}");
             process::exit(1);

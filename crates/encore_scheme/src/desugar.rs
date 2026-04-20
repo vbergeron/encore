@@ -1,11 +1,6 @@
-use std::collections::BTreeMap;
-
+use encore_compiler::frontend::CtorRegistry;
 use encore_compiler::ir::ds;
 use encore_compiler::ir::prim::{PrimOp, IntOp, BytesOp};
-use encore_vm::builtins::{
-    ARITY_CONS, ARITY_FALSE, ARITY_NIL, ARITY_TRUE, FIRST_USER_TAG, TAG_CONS, TAG_FALSE, TAG_NIL,
-    TAG_TRUE,
-};
 
 use crate::ir;
 use crate::parser::Sexp;
@@ -473,45 +468,13 @@ fn parse_application(items: &[Sexp]) -> Result<ir::Expr, String> {
 // Phase 2: ir::Module -> ds::Module (lowering)
 // ---------------------------------------------------------------------------
 
-struct CtorInfo {
-    tag: u8,
-    #[allow(dead_code)]
-    arity: u8,
-}
-
 struct Lowering {
-    ctors: BTreeMap<String, CtorInfo>,
-    next_tag: u8,
+    ctors: CtorRegistry,
 }
 
 impl Lowering {
     fn new() -> Self {
-        let mut ctors = BTreeMap::new();
-        ctors.insert("False".into(), CtorInfo { tag: TAG_FALSE, arity: ARITY_FALSE });
-        ctors.insert("True".into(), CtorInfo { tag: TAG_TRUE, arity: ARITY_TRUE });
-        ctors.insert("Nil".into(), CtorInfo { tag: TAG_NIL, arity: ARITY_NIL });
-        ctors.insert("Cons".into(), CtorInfo { tag: TAG_CONS, arity: ARITY_CONS });
-        Self {
-            ctors,
-            next_tag: FIRST_USER_TAG,
-        }
-    }
-
-    fn resolve_tag(&mut self, name: &str, arity: u8) -> u8 {
-        if let Some(info) = self.ctors.get(name) {
-            return info.tag;
-        }
-        let tag = self.next_tag;
-        self.next_tag += 1;
-        self.ctors.insert(name.to_string(), CtorInfo { tag, arity });
-        tag
-    }
-
-    fn ctor_names(&self) -> Vec<(u8, String)> {
-        self.ctors
-            .iter()
-            .map(|(name, info)| (info.tag, name.clone()))
-            .collect()
+        Self { ctors: CtorRegistry::new() }
     }
 
     fn lower_module(&mut self, module: ir::Module) -> ds::Module {
@@ -596,7 +559,7 @@ impl Lowering {
 
             ir::Expr::Ctor(tag_name, fields) => {
                 let arity = fields.len() as u8;
-                let tag = self.resolve_tag(&tag_name, arity);
+                let tag = self.ctors.resolve(&tag_name, arity);
                 ds::Expr::Ctor(tag, fields.into_iter().map(|f| self.lower_expr(f)).collect())
             }
 
@@ -606,7 +569,7 @@ impl Lowering {
                     .into_iter()
                     .map(|c| {
                         let arity = c.bindings.len() as u8;
-                        let tag = self.resolve_tag(&c.tag, arity);
+                        let tag = self.ctors.resolve(&c.tag, arity);
                         (tag, c)
                     })
                     .collect();
@@ -672,7 +635,7 @@ impl Lowering {
 pub fn lower_module(module: ir::Module) -> (ds::Module, Vec<(u8, String)>) {
     let mut lowering = Lowering::new();
     let ds_module = lowering.lower_module(module);
-    (ds_module, lowering.ctor_names())
+    (ds_module, lowering.ctors.ctor_names())
 }
 
 #[cfg(test)]
