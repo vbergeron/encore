@@ -56,7 +56,8 @@ impl CtorRegistry {
         ctors.insert("True".into(), CtorInfo { tag: TAG_TRUE, arity: ARITY_TRUE, type_id: 0 });
         ctors.insert("Nil".into(), CtorInfo { tag: TAG_NIL, arity: ARITY_NIL, type_id: 1 });
         ctors.insert("Cons".into(), CtorInfo { tag: TAG_CONS, arity: ARITY_CONS, type_id: 1 });
-        Self { ctors, next_tag: FIRST_USER_TAG, next_type_id: 2 }
+        ctors.insert("Pair".into(), CtorInfo { tag: TAG_PAIR, arity: ARITY_PAIR, type_id: 2 });
+        Self { ctors, next_tag: FIRST_USER_TAG, next_type_id: 3 }
     }
 
     pub fn alloc_type_id(&mut self) -> u8 {

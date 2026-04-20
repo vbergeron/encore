@@ -8,7 +8,7 @@ use encore_compiler::pass::cps_optimize::OptimizeConfig;
 use encore_fleche::FlecheFrontend;
 use encore_scheme::SchemeFrontend;
 use encore_vm::program::Program;
-use encore_vm::value::Value;
+use encore_vm::value::{GlobalAddress, Value};
 use encore_vm::vm::Vm;
 
 const DEFAULT_HEAP_SIZE: usize = 1 << 16;
@@ -226,7 +226,7 @@ fn cmd_run(path: &str, entry: Option<&str>, heap_size: usize) {
     #[cfg(feature = "stats")]
     eprintln!("{}", vm.stats());
 
-    print_value(vm.global(entry_idx));
+    print_value(vm.global_raw(GlobalAddress::new(entry_idx as u16)));
 }
 
 fn resolve_entry(entry: &str, prog: &Program) -> usize {
