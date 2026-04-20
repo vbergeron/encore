@@ -12,8 +12,6 @@ pub enum Token {
     RParen,
     Comma,
     Data,
-    Define,
-    As,
     Let,
     In,
     Rec,
@@ -134,8 +132,6 @@ impl Lexer {
 
         match s.as_str() {
             "data" => Token::Data,
-            "define" => Token::Define,
-            "as" => Token::As,
             "let" => Token::Let,
             "in" => Token::In,
             "rec" => Token::Rec,

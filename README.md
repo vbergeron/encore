@@ -102,13 +102,13 @@ encore ──► encore_fleche ──► encore_compiler ──► encore_vm
 ```
 data Zero | Succ(n)
 
-define main as
-  let rec countdown n =
-    match n
-    | Zero -> 0
-    | Succ(pred) -> builtin add 1 (countdown pred)
-    end
-  in countdown Succ(Succ(Succ(Zero)))
+let rec countdown n =
+  match n
+  | Zero -> 0
+  | Succ(pred) -> builtin add 1 (countdown pred)
+  end
+
+let main = countdown Succ(Succ(Succ(Zero)))
 ```
 
 ## CLI usage

@@ -1,7 +1,7 @@
 # Naive recursive fibonacci — deep recursion, heavy arithmetic
 # fib(15) = 610
 
-define fib as n ->
+let fib = n ->
   let done = builtin lt n 2 in
   match done
   | True -> n
@@ -13,4 +13,4 @@ define fib as n ->
     builtin add ra rb
   end
 
-define main as fib 15
+let main = fib 15

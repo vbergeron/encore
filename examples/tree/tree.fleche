@@ -3,7 +3,7 @@
 
 data Leaf | Node(left, right)
 
-define count as t ->
+let count = t ->
   match t
   | Leaf -> 1
   | Node(l, r) ->
@@ -12,5 +12,5 @@ define count as t ->
     builtin add a b
   end
 
-define main as
+let main =
   count Node(Node(Leaf, Leaf), Node(Leaf, Node(Leaf, Leaf)))

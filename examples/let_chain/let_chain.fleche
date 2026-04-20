@@ -10,16 +10,16 @@ data Pair(fst, snd)
 data Triple(a, b, c)
 
 # Swap the two fields of a Pair.
-define swap as p ->
+let swap = p ->
   let Pair(x, y) = p
   in Pair(y, x)
 
 # Sum all three fields of a Triple, via an intermediate Pair.
-define triple_sum as t ->
+let triple_sum = t ->
   let Triple(a, b, c) = t,
       Pair(ab, cc)    = Pair(builtin add a b, c)
   in builtin add ab cc
 
-define main as
+let main =
   let Pair(r, s) = swap Pair(10, 32) in
   builtin add r (triple_sum Triple(1, 2, 3))

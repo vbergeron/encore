@@ -4,7 +4,7 @@
 data Zero | Succ(n)
 data Pair(fst, snd)
 
-define ack as p ->
+let ack = p ->
   let m = field 0 of p in
   let n = field 1 of p in
   match m
@@ -18,7 +18,7 @@ define ack as p ->
     end
   end
 
-define to_int as n ->
+let to_int = n ->
   match n
   | Zero -> 0
   | Succ(p) ->
@@ -26,5 +26,5 @@ define to_int as n ->
     builtin add r 1
   end
 
-define main as
+let main =
   to_int (ack Pair(Succ(Succ(Succ(Zero))), Succ(Succ(Succ(Zero)))))

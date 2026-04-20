@@ -17,15 +17,14 @@ impl Parser {
     }
 
     pub fn parse_module(&mut self) -> Result<ds::Module, ParseError> {
-        while *self.tokens.peek()? == Token::Data {
-            self.parse_data()?;
-        }
-
         let mut defines = Vec::new();
         while *self.tokens.peek()? != Token::Eof {
-            defines.push(self.parse_define()?);
+            if *self.tokens.peek()? == Token::Data {
+                self.parse_data()?;
+            } else {
+                defines.push(self.parse_define()?);
+            }
         }
-
         Ok(ds::Module { defines })
     }
 
@@ -95,14 +94,24 @@ impl Parser {
     // -- Defines --
 
     fn parse_define(&mut self) -> Result<ds::Define, ParseError> {
-        self.tokens.expect(&Token::Define)?;
+        self.tokens.expect(&Token::Let)?;
         if self.tokens.try_consume(&Token::Extern)? {
             let name = self.tokens.expect_lower_identifier()?;
             let slot = self.tokens.expect_number()? as u16;
             return Ok(ds::Define { name, body: ds::Expr::Extern(slot) });
         }
+        if self.tokens.try_consume(&Token::Rec)? {
+            let name = self.tokens.expect_lower_identifier()?;
+            let param = self.tokens.expect_lower_identifier()?;
+            self.tokens.expect(&Token::Eq)?;
+            let body = self.parse_expr()?;
+            return Ok(ds::Define {
+                name,
+                body: ds::Expr::Lambda(vec![param], Box::new(body)),
+            });
+        }
         let name = self.tokens.expect_lower_identifier()?;
-        self.tokens.expect(&Token::As)?;
+        self.tokens.expect(&Token::Eq)?;
         let body = self.parse_expr()?;
         Ok(ds::Define { name, body })
     }

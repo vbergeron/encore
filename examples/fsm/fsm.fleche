@@ -11,9 +11,9 @@ data Print(val) | Beep
 data Nil | Cons(head, tail)
 data Pair(fst, snd)
 
-define init as 0
+let init = 0
 
-define step as state -> event ->
+let step = state -> event ->
   match event
   | Inc ->
     let s = builtin add state 1 in

@@ -3,7 +3,7 @@
 
 data Nil | Cons(head, tail)
 
-define make as n ->
+let make = n ->
   let done = builtin eq n 0 in
   match done
   | True -> Nil
@@ -12,7 +12,7 @@ define make as n ->
     Cons(n, make m)
   end
 
-define map as f ->
+let map = f ->
   let rec go lst =
     match lst
     | Nil -> Nil
@@ -22,7 +22,7 @@ define map as f ->
     end
   in go
 
-define filter as p ->
+let filter = p ->
   let rec go lst =
     match lst
     | Nil -> Nil
@@ -36,7 +36,7 @@ define filter as p ->
     end
   in go
 
-define sum as lst ->
+let sum = lst ->
   match lst
   | Nil -> 0
   | Cons(h, t) ->
@@ -44,9 +44,9 @@ define sum as lst ->
     builtin add h r
   end
 
-define double as x -> builtin mul x 2
+let double = x -> builtin mul x 2
 
-define is_big as x -> builtin lt 5 x
+let is_big = x -> builtin lt 5 x
 
-define main as
+let main =
   sum (filter is_big (map double (make 50)))

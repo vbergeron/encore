@@ -11,16 +11,16 @@
 data Ok(x) | Err
 
 # Increment the value inside Ok, or propagate Err.
-define safe_inc as r ->
+let safe_inc = r ->
   if Ok(v) = r
   then Ok(builtin add v 1)
   else Err
 
 # Chain two safe_inc calls; if both succeed, return the final value.
-define double_inc as r ->
+let double_inc = r ->
   if Ok(a) = safe_inc r,
      Ok(b) = safe_inc Ok(a)
   then b
   else 0
 
-define main as double_inc Ok(40)
+let main = double_inc Ok(40)

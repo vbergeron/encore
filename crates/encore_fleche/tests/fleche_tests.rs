@@ -32,7 +32,7 @@ fn run_multi(source: &str) -> Value {
 fn test_nullary_ctor() {
     let result = run("
         data Zero | Succ(n)
-        define main as Zero
+        let main = Zero
     ");
     assert_eq!(result.ctor_tag(), 5);
 }
@@ -42,7 +42,7 @@ fn test_nullary_ctor() {
 #[test]
 fn test_let_var() {
     let result = run("
-        define main as let x = True in x
+        let main = let x = True in x
     ");
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -52,7 +52,7 @@ fn test_let_var() {
 #[test]
 fn test_identity() {
     let result = run("
-        define main as let id = x -> x in id True
+        let main = let id = x -> x in id True
     ");
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -62,7 +62,7 @@ fn test_identity() {
 #[test]
 fn test_nested_app() {
     let result = run("
-        define main as let id = x -> x in id (id True)
+        let main = let id = x -> x in id (id True)
     ");
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -73,7 +73,7 @@ fn test_nested_app() {
 fn test_ctor_with_fields() {
     let result = run("
         data Pair(a, b)
-        define main as Pair(True, False)
+        let main = Pair(True, False)
     ");
     assert_eq!(result.ctor_tag(), 4);
 }
@@ -84,7 +84,7 @@ fn test_ctor_with_fields() {
 fn test_field_access() {
     let result = run("
         data Pair(a, b)
-        define main as field 1 of Pair(True, False)
+        let main = field 1 of Pair(True, False)
     ");
     assert_eq!(result.ctor_tag(), 0);
 }
@@ -94,7 +94,7 @@ fn test_field_access() {
 #[test]
 fn test_match_branch0() {
     let result = run("
-        define main as
+        let main =
           match True
             | True -> False
             | False -> True
@@ -106,7 +106,7 @@ fn test_match_branch0() {
 #[test]
 fn test_match_branch1() {
     let result = run("
-        define main as
+        let main =
           match False
             | True -> False
             | False -> True
@@ -121,7 +121,7 @@ fn test_match_branch1() {
 fn test_match_with_binds() {
     let result = run("
         data Pair(a, b)
-        define main as
+        let main =
           match Pair(True, False)
             | Pair(x, y) -> y
           end
@@ -135,7 +135,7 @@ fn test_match_with_binds() {
 fn test_peano_countdown() {
     let result = run("
         data Zero | Succ(n)
-        define main as
+        let main =
           let rec countdown n =
             match n
               | Zero -> n
@@ -151,7 +151,7 @@ fn test_peano_countdown() {
 #[test]
 fn test_lambda_capture() {
     let result = run("
-        define main as
+        let main =
           let v = True in
           let f = x -> v in
           f False
@@ -165,7 +165,7 @@ fn test_lambda_capture() {
 fn test_constant_fn() {
     let result = run("
         data A | B | C
-        define main as
+        let main =
           let k = x -> y -> x in
           k A B
     ");
@@ -179,7 +179,7 @@ fn test_multi_data() {
     let result = run("
         data Zero | Succ(n)
         data True | False
-        define main as True
+        let main = True
     ");
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -192,7 +192,7 @@ fn test_leading_pipe() {
         data
           | Zero
           | Succ(n)
-        define main as Succ(Zero)
+        let main = Succ(Zero)
     ");
     assert_eq!(result.ctor_tag(), 6);
 }
@@ -203,7 +203,7 @@ fn test_leading_pipe() {
 fn test_triple_nested_app() {
     let result = run("
         data X
-        define main as
+        let main =
           let id = x -> x in
           id (id (id X))
     ");
@@ -217,7 +217,7 @@ fn test_field_first() {
     let result = run("
         data A | B
         data Pair(x, y)
-        define main as field 0 of Pair(A, B)
+        let main = field 0 of Pair(A, B)
     ");
     assert_eq!(result.ctor_tag(), 5);
 }
@@ -228,7 +228,7 @@ fn test_field_first() {
 fn test_fix_map() {
     let result = run("
         data Zero | Succ(n)
-        define main as
+        let main =
           let rec is_zero n =
             match n
               | Zero -> True
@@ -243,7 +243,7 @@ fn test_fix_map() {
 
 #[test]
 fn test_int_literal() {
-    let result = run("define main as 42");
+    let result = run("let main = 42");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 42);
 }
@@ -252,7 +252,7 @@ fn test_int_literal() {
 
 #[test]
 fn test_builtin_add() {
-    let result = run("define main as builtin add 3 4");
+    let result = run("let main = builtin add 3 4");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 7);
 }
@@ -261,7 +261,7 @@ fn test_builtin_add() {
 
 #[test]
 fn test_builtin_sub() {
-    let result = run("define main as builtin sub 10 3");
+    let result = run("let main = builtin sub 10 3");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 7);
 }
@@ -270,7 +270,7 @@ fn test_builtin_sub() {
 
 #[test]
 fn test_builtin_mul() {
-    let result = run("define main as builtin mul 6 7");
+    let result = run("let main = builtin mul 6 7");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 42);
 }
@@ -279,7 +279,7 @@ fn test_builtin_mul() {
 
 #[test]
 fn test_builtin_eq_true() {
-    let result = run("define main as builtin eq 3 3");
+    let result = run("let main = builtin eq 3 3");
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -288,7 +288,7 @@ fn test_builtin_eq_true() {
 
 #[test]
 fn test_builtin_eq_false() {
-    let result = run("define main as builtin eq 3 4");
+    let result = run("let main = builtin eq 3 4");
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 0);
 }
@@ -297,7 +297,7 @@ fn test_builtin_eq_false() {
 
 #[test]
 fn test_builtin_lt_true() {
-    let result = run("define main as builtin lt 3 5");
+    let result = run("let main = builtin lt 3 5");
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -306,7 +306,7 @@ fn test_builtin_lt_true() {
 
 #[test]
 fn test_builtin_lt_false() {
-    let result = run("define main as builtin lt 5 3");
+    let result = run("let main = builtin lt 5 3");
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 0);
 }
@@ -317,7 +317,7 @@ fn test_builtin_lt_false() {
 fn test_int_in_ctor_field() {
     let result = run("
         data Pair(a, b)
-        define main as field 0 of Pair(42, 0)
+        let main = field 0 of Pair(42, 0)
     ");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 42);
@@ -328,7 +328,7 @@ fn test_int_in_ctor_field() {
 #[test]
 fn test_builtin_lt_with_match() {
     let result = run("
-        define main as
+        let main =
           let r = builtin lt 3 5 in
           match r
             | False -> 0
@@ -344,7 +344,7 @@ fn test_builtin_lt_with_match() {
 #[test]
 fn test_arithmetic_let() {
     let result = run("
-        define main as
+        let main =
           let x = 10 in
           let y = 20 in
           builtin add x y
@@ -359,7 +359,7 @@ fn test_arithmetic_let() {
 fn test_multi_arg_lambda_partial_apply() {
     let result = run("
         data A | B
-        define main as
+        let main =
           let f = x -> y -> match x
             | A -> y
             | B -> y
@@ -375,7 +375,7 @@ fn test_multi_arg_lambda_partial_apply() {
 #[test]
 fn test_exact_multi_arg_call() {
     let result = run("
-        define main as
+        let main =
           let f = x -> y -> builtin add x y in
           f 3 4
     ");
@@ -386,8 +386,8 @@ fn test_exact_multi_arg_call() {
 #[test]
 fn test_partial_apply_define() {
     let result = run_multi("
-        define add as x -> y -> builtin add x y
-        define main as
+        let add = x -> y -> builtin add x y
+        let main =
           let inc = add 1 in
           inc 41
     ");
@@ -398,7 +398,7 @@ fn test_partial_apply_define() {
 #[test]
 fn test_over_application() {
     let result = run("
-        define main as
+        let main =
           let f = x -> y -> z -> builtin add y z in
           f 0 3 4
     ");
@@ -409,7 +409,7 @@ fn test_over_application() {
 #[test]
 fn test_chained_partial_application() {
     let result = run("
-        define main as
+        let main =
           let f = x -> y -> z -> builtin add (builtin add x y) z in
           let g = f 1 in
           let h = g 2 in
@@ -422,7 +422,7 @@ fn test_chained_partial_application() {
 #[test]
 fn test_higher_order_unknown_callee() {
     let result = run("
-        define main as
+        let main =
           let apply = f -> x -> f x in
           apply (y -> builtin add y 1) 41
     ");
@@ -433,7 +433,7 @@ fn test_higher_order_unknown_callee() {
 #[test]
 fn test_letrec_as_value() {
     let result = run("
-        define main as
+        let main =
           let rec f x = builtin add x 1 in
           let g = f in
           g 41
@@ -465,9 +465,9 @@ fn test_extern_basic() {
     }
 
     let result = run_with_externs("
-        define extern triple_it 0
+        let extern triple_it 0
 
-        define main as triple_it 7
+        let main = triple_it 7
     ", &[(0, triple)]);
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 21);
@@ -483,10 +483,10 @@ fn test_extern_composed() {
     }
 
     let result = run_with_externs("
-        define extern dbl 0
-        define extern neg 1
+        let extern dbl 0
+        let extern neg 1
 
-        define main as neg (dbl 5)
+        let main = neg (dbl 5)
     ", &[(0, double), (1, negate)]);
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), -10);
@@ -500,8 +500,8 @@ fn test_extern_with_wrapper() {
     }
 
     let result = run_with_externs("
-        define extern raw_add 0
-        define main as raw_add True
+        let extern raw_add 0
+        let main = raw_add True
     ", &[(0, raw_add)]);
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 100);
@@ -512,7 +512,7 @@ fn test_extern_with_wrapper() {
 #[test]
 fn test_immediate_multi_arg_lambda() {
     let result = run("
-        define main as (x -> y -> builtin add x y) 3 4
+        let main = (x -> y -> builtin add x y) 3 4
     ");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 7);
@@ -522,7 +522,7 @@ fn test_immediate_multi_arg_lambda() {
 fn test_immediate_two_arg_lambda_with_ctor() {
     let result = run("
         data Pair(a, b)
-        define main as
+        let main =
           let p = (x -> y -> Pair(x, y)) 10 20 in
           field 0 of p
     ");
@@ -533,8 +533,8 @@ fn test_immediate_two_arg_lambda_with_ctor() {
 #[test]
 fn test_over_applied_known_function() {
     let result = run_multi("
-        define const as x -> y -> x
-        define main as const 42 99
+        let const = x -> y -> x
+        let main = const 42 99
     ");
     assert!(result.is_int());
     assert_eq!(result.int_value().unwrap(), 42);
@@ -543,7 +543,7 @@ fn test_over_applied_known_function() {
 #[test]
 fn test_immediate_lambda_in_let() {
     let result = run("
-        define main as
+        let main =
           let r = (x -> y -> x) 10 20 in
           r
     ");
@@ -554,8 +554,8 @@ fn test_immediate_lambda_in_let() {
 #[test]
 fn test_partial_apply_known_multi_arg() {
     let result = run_multi("
-        define f as x -> y -> builtin add x y
-        define main as
+        let f = x -> y -> builtin add x y
+        let main =
           let g = f 10 in
           g 20
     ");
@@ -581,7 +581,7 @@ fn test_list_nat_of_bytes_empty() {
     let result = run_multi("
         data Nil | Cons(h, t)
 
-        define list_nat_of_bytes as buf ->
+        let list_nat_of_bytes = buf ->
           let len = builtin bytes_len buf in
           let rec go i =
             let done = builtin eq i len in
@@ -594,7 +594,7 @@ fn test_list_nat_of_bytes_empty() {
             end
           in go 0
 
-        define main as list_nat_of_bytes \"\"
+        let main = list_nat_of_bytes \"\"
     ");
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 2); // Nil
@@ -605,7 +605,7 @@ fn test_list_nat_of_bytes_hello() {
     let source = "
         data Nil | Cons(h, t)
 
-        define list_nat_of_bytes as buf ->
+        let list_nat_of_bytes = buf ->
           let len = builtin bytes_len buf in
           let rec go i =
             let done = builtin eq i len in
@@ -618,7 +618,7 @@ fn test_list_nat_of_bytes_hello() {
             end
           in go 0
 
-        define main as list_nat_of_bytes \"hello\"
+        let main = list_nat_of_bytes \"hello\"
     ";
     let module = encore_fleche::parse(source);
     let binary = pipeline::compile_module(module, None, None);
@@ -641,9 +641,9 @@ fn test_list_nat_of_bytes_with_extern() {
     let source = "
         data Nil | Cons(h, t)
 
-        define extern get_buf 0
+        let extern get_buf 0
 
-        define list_nat_of_bytes as buf ->
+        let list_nat_of_bytes = buf ->
           let len = builtin bytes_len buf in
           let rec go i =
             let done = builtin eq i len in
@@ -656,7 +656,7 @@ fn test_list_nat_of_bytes_with_extern() {
             end
           in go 0
 
-        define main as list_nat_of_bytes (get_buf 0)
+        let main = list_nat_of_bytes (get_buf 0)
     ";
     let module = encore_fleche::parse(source);
     let binary = pipeline::compile_module(module, None, None);
@@ -676,13 +676,13 @@ fn test_compilation_deterministic() {
     let source = "
         data Red | Green | Blue
         data None | Some(x)
-        define classify as color ->
+        let classify = color ->
           match color
             | Red -> Some(Red)
             | Green -> None
             | Blue -> Some(Blue)
           end
-        define main as classify Green
+        let main = classify Green
     ";
     let compile = || {
         let (module, ctor_names) = encore_fleche::parse_with_metadata(source);
@@ -706,7 +706,7 @@ fn test_compilation_deterministic() {
 #[test]
 fn test_let_chain_plain_two() {
     let result = run("
-        define main as
+        let main =
           let x = 10, y = 20 in
           builtin add x y
     ");
@@ -717,7 +717,7 @@ fn test_let_chain_plain_two() {
 #[test]
 fn test_let_chain_plain_three() {
     let result = run("
-        define main as
+        let main =
           let x = 1, y = 2, z = 3 in
           builtin add x (builtin add y z)
     ");
@@ -728,7 +728,7 @@ fn test_let_chain_plain_three() {
 #[test]
 fn test_let_chain_plain_dependent() {
     let result = run("
-        define main as
+        let main =
           let x = 10, y = builtin add x 5 in
           y
     ");
@@ -742,7 +742,7 @@ fn test_let_chain_plain_dependent() {
 fn test_let_destruct_single() {
     let result = run("
         data Pair(a, b)
-        define main as
+        let main =
           let Pair(x, y) = Pair(10, 32) in
           builtin add x y
     ");
@@ -754,7 +754,7 @@ fn test_let_destruct_single() {
 fn test_let_destruct_chain() {
     let result = run("
         data Pair(a, b)
-        define main as
+        let main =
           let Pair(x, y) = Pair(3, 4),
               Pair(p, q) = Pair(x, y)
           in builtin add p q
@@ -768,7 +768,7 @@ fn test_let_destruct_chain_three() {
     let result = run("
         data Triple(a, b, c)
         data Pair(x, y)
-        define main as
+        let main =
           let Triple(a, b, c) = Triple(1, 2, 3),
               Pair(p, q) = Pair(a, b),
               Pair(r, s) = Pair(q, c)
@@ -782,7 +782,7 @@ fn test_let_destruct_chain_three() {
 fn test_let_destruct_nullary() {
     let result = run("
         data Wrap(x)
-        define main as
+        let main =
           let Wrap(v) = Wrap(42) in v
     ");
     assert!(result.is_int());
@@ -795,7 +795,7 @@ fn test_let_destruct_nullary() {
 fn test_if_binding_success() {
     let result = run("
         data Ok(x) | Err
-        define main as
+        let main =
           if Ok(v) = Ok(42)
           then v
           else 0
@@ -808,7 +808,7 @@ fn test_if_binding_success() {
 fn test_if_binding_failure() {
     let result = run("
         data Ok(x) | Err
-        define main as
+        let main =
           if Ok(v) = Err
           then v
           else 99
@@ -821,7 +821,7 @@ fn test_if_binding_failure() {
 fn test_if_binding_three_ctors() {
     let result = run("
         data Red | Green | Blue
-        define main as
+        let main =
           if Green = Green
           then 1
           else 0
@@ -834,7 +834,7 @@ fn test_if_binding_three_ctors() {
 fn test_if_binding_three_ctors_miss() {
     let result = run("
         data Red | Green | Blue
-        define main as
+        let main =
           if Green = Blue
           then 1
           else 0
@@ -848,7 +848,7 @@ fn test_if_binding_chain_both_succeed() {
     let result = run("
         data Ok(x) | Err
         data Some(x) | None
-        define main as
+        let main =
           if Ok(a) = Ok(1),
              Some(b) = Some(2)
           then builtin add a b
@@ -863,7 +863,7 @@ fn test_if_binding_chain_first_fails() {
     let result = run("
         data Ok(x) | Err
         data Some(x) | None
-        define main as
+        let main =
           if Ok(a) = Err,
              Some(b) = Some(2)
           then builtin add a b
@@ -878,7 +878,7 @@ fn test_if_binding_chain_second_fails() {
     let result = run("
         data Ok(x) | Err
         data Some(x) | None
-        define main as
+        let main =
           if Ok(a) = Ok(1),
              Some(b) = None
           then builtin add a b
@@ -892,7 +892,7 @@ fn test_if_binding_chain_second_fails() {
 fn test_if_binding_uses_outer_bind_in_chain() {
     let result = run("
         data Ok(x) | Err
-        define main as
+        let main =
           if Ok(a) = Ok(10),
              Ok(b) = Ok(a)
           then b
@@ -908,7 +908,7 @@ fn test_if_binding_uses_outer_bind_in_chain() {
 fn test_match_wildcard_only_branch() {
     let result = run("
         data A | B | C
-        define main as
+        let main =
           match A
             | A -> 1
             | _ -> 0
@@ -921,7 +921,7 @@ fn test_match_wildcard_only_branch() {
 fn test_match_wildcard_fallthrough() {
     let result = run("
         data A | B | C
-        define main as
+        let main =
           match C
             | A -> 1
             | _ -> 99
@@ -934,7 +934,7 @@ fn test_match_wildcard_fallthrough() {
 fn test_match_wildcard_middle_gap() {
     let result = run("
         data A | B | C | D
-        define main as
+        let main =
           match B
             | A -> 1
             | D -> 4
@@ -948,7 +948,7 @@ fn test_match_wildcard_middle_gap() {
 fn test_match_wildcard_with_fields() {
     let result = run("
         data Leaf | Node(l, r)
-        define main as
+        let main =
           match Leaf
             | Node(l, r) -> builtin add l r
             | _ -> 42
@@ -961,7 +961,7 @@ fn test_match_wildcard_with_fields() {
 fn test_match_wildcard_preserves_explicit_binds() {
     let result = run("
         data Leaf | Node(l, r)
-        define main as
+        let main =
           match Node(10, 20)
             | Node(l, r) -> builtin add l r
             | _ -> 0
@@ -974,7 +974,7 @@ fn test_match_wildcard_preserves_explicit_binds() {
 fn test_match_wildcard_last_position() {
     let result = run("
         data Zero | Succ(n)
-        define main as
+        let main =
           match Succ(Succ(Zero))
             | Zero -> 0
             | _ -> 1
@@ -986,7 +986,7 @@ fn test_match_wildcard_last_position() {
 #[test]
 fn test_match_wildcard_builtin_bool() {
     let result = run("
-        define main as
+        let main =
           let r = builtin lt 3 5 in
           match r
             | True -> 1
@@ -1002,7 +1002,7 @@ fn test_match_wildcard_builtin_bool() {
 fn test_match_wildcard_case_after_wildcard_is_error() {
     let mut parser = encore_fleche::parser::Parser::new("
         data A | B | C
-        define main as
+        let main =
           match A
             | A -> 1
             | _ -> 0
@@ -1019,7 +1019,7 @@ fn test_match_wildcard_case_after_wildcard_is_error() {
 fn test_match_wildcard_duplicate_is_error() {
     let mut parser = encore_fleche::parser::Parser::new("
         data A | B | C
-        define main as
+        let main =
           match A
             | A -> 1
             | _ -> 0
@@ -1037,7 +1037,7 @@ fn test_match_wildcard_duplicate_is_error() {
 #[test]
 fn test_negative_literal() {
     let result = run("
-        define main as -7
+        let main = -7
     ");
     assert_eq!(result.int_value().unwrap(), -7);
 }
@@ -1045,7 +1045,7 @@ fn test_negative_literal() {
 #[test]
 fn test_negative_literal_in_builtin() {
     let result = run("
-        define main as builtin add 10 -3
+        let main = builtin add 10 -3
     ");
     assert_eq!(result.int_value().unwrap(), 7);
 }
@@ -1054,7 +1054,7 @@ fn test_negative_literal_in_builtin() {
 fn test_negative_literal_in_ctor() {
     let result = run("
         data Wrap(val)
-        define main as field 0 of Wrap(-42)
+        let main = field 0 of Wrap(-42)
     ");
     assert_eq!(result.int_value().unwrap(), -42);
 }
@@ -1064,7 +1064,7 @@ fn test_negative_literal_in_ctor() {
 #[test]
 fn test_string_escape_newline() {
     let result = run(r#"
-        define main as builtin bytes_len "hello\n"
+        let main = builtin bytes_len "hello\n"
     "#);
     assert_eq!(result.int_value().unwrap(), 6);
 }
@@ -1072,7 +1072,7 @@ fn test_string_escape_newline() {
 #[test]
 fn test_string_escape_tab() {
     let result = run(r#"
-        define main as builtin bytes_get "\t" 0
+        let main = builtin bytes_get "\t" 0
     "#);
     assert_eq!(result.int_value().unwrap(), 9);
 }
@@ -1080,7 +1080,7 @@ fn test_string_escape_tab() {
 #[test]
 fn test_string_escape_null() {
     let result = run(r#"
-        define main as builtin bytes_get "\0" 0
+        let main = builtin bytes_get "\0" 0
     "#);
     assert_eq!(result.int_value().unwrap(), 0);
 }
@@ -1088,7 +1088,7 @@ fn test_string_escape_null() {
 #[test]
 fn test_string_escape_backslash() {
     let result = run(r#"
-        define main as builtin bytes_len "\\"
+        let main = builtin bytes_len "\\"
     "#);
     assert_eq!(result.int_value().unwrap(), 1);
 }
@@ -1096,7 +1096,7 @@ fn test_string_escape_backslash() {
 #[test]
 fn test_string_escape_quote() {
     let result = run(r#"
-        define main as builtin bytes_len "\""
+        let main = builtin bytes_len "\""
     "#);
     assert_eq!(result.int_value().unwrap(), 1);
 }
@@ -1104,7 +1104,7 @@ fn test_string_escape_quote() {
 #[test]
 fn test_string_escape_mixed() {
     let result = run(r#"
-        define main as builtin bytes_len "a\nb\tc"
+        let main = builtin bytes_len "a\nb\tc"
     "#);
     assert_eq!(result.int_value().unwrap(), 5);
 }
@@ -1115,7 +1115,7 @@ fn test_string_escape_mixed() {
 fn test_match_non_exhaustive_missing_one() {
     let mut parser = encore_fleche::parser::Parser::new("
         data A | B | C
-        define main as
+        let main =
           match A
           | A -> 1
           | B -> 2
@@ -1134,7 +1134,7 @@ fn test_match_non_exhaustive_missing_one() {
 fn test_match_non_exhaustive_missing_multiple() {
     let mut parser = encore_fleche::parser::Parser::new("
         data A | B | C | D
-        define main as
+        let main =
           match A
           | A -> 1
           end
@@ -1155,7 +1155,7 @@ fn test_match_cross_type_error() {
     let mut parser = encore_fleche::parser::Parser::new("
         data A | B
         data C | D
-        define main as
+        let main =
           match A
           | A -> 1
           | C -> 2
@@ -1171,7 +1171,7 @@ fn test_match_cross_type_error() {
 fn test_match_exhaustive_all_covered() {
     let result = run("
         data A | B | C
-        define main as
+        let main =
           match B
           | A -> 1
           | B -> 2

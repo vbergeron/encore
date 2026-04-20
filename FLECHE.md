@@ -10,7 +10,7 @@ Line comments start with `#` and run to end of line:
 
 ```
 # This is a comment
-define main as 42  # inline comment
+let main = 42  # inline comment
 ```
 
 ### Identifiers
@@ -56,15 +56,29 @@ data Leaf | Node(l, r) # tags 7, 8
 ### Definitions
 
 ```
-define main as <expr>
+let main = <expr>
 ```
 
-A module is a sequence of `data` declarations followed by `define` statements. Each define introduces a global binding.
+A module is a sequence of `data` declarations and `let` bindings (interleaved in any order). Each `let` introduces a global binding.
 
-Foreign functions are declared with `define extern`:
+Top-level `let rec` defines a recursive function:
 
 ```
-define extern my_print 0
+let rec fib n =
+  let done = builtin lt n 2 in
+  match done
+  | True -> n
+  | False ->
+    let a = builtin sub n 1 in
+    let b = builtin sub n 2 in
+    builtin add (fib a) (fib b)
+  end
+```
+
+Foreign functions are declared with `let extern`:
+
+```
+let extern my_print 0
 ```
 
 This binds `my_print` as a global that calls extern slot `0` at runtime.
@@ -273,7 +287,7 @@ Example using comparisons with match:
 ```
 data False | True
 
-define main as
+let main =
   let r = builtin lt 3 5 in
   match r
   | False -> 0
