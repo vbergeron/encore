@@ -41,3 +41,4 @@ impl ValueEncode for bool {
         Ok(Value::ctor(*self as u8, crate::value::HeapAddress::NULL))
     }
 }
+

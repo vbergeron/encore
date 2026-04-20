@@ -153,6 +153,41 @@ impl<T: ValueEncode> VmList<T> {
     }
 }
 
+/// An iterator over a `VmList<T>` that borrows the `Vm` for element decoding.
+///
+/// Produced by [`VmList::iter`]. Implements [`Iterator`] so it works in
+/// `for` loops and with all iterator adaptors.
+///
+/// ```ignore
+/// for effect in effects.iter(&vm) {
+///     match effect { ... }
+/// }
+/// ```
+pub struct VmIter<'vm, 'heap, T> {
+    vm: &'vm Vm<'heap>,
+    cursor: VmList<T>,
+}
+
+impl<'vm, 'heap, T: ValueDecode> Iterator for VmIter<'vm, 'heap, T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<T> {
+        let (head, tail) = self.cursor.next(self.vm)?;
+        self.cursor = tail;
+        Some(head)
+    }
+}
+
+impl<T: ValueDecode> VmList<T> {
+    /// Return a borrowing iterator over this list.
+    ///
+    /// The iterator holds `&'vm Vm` so it can decode each element lazily
+    /// without any allocation.
+    pub fn iter<'vm, 'heap>(&self, vm: &'vm Vm<'heap>) -> VmIter<'vm, 'heap, T> {
+        VmIter { vm, cursor: *self }
+    }
+}
+
 // Manual impls: `T` doesn't need to be `Clone`/`Copy`/`Debug` — the handle
 // only wraps a `Value` plus a zero-sized marker.
 impl<T> Clone for VmList<T> {

@@ -95,8 +95,13 @@ impl<'a> Vm<'a> {
         Ok(())
     }
 
-    pub fn global(&self, idx: usize) -> Value {
-        self.globals[idx]
+    pub fn global_raw(&self, idx: GlobalAddress) -> Value {
+        self.globals[idx.raw() as usize]
+    }
+
+    pub fn global<O: crate::ffi::ValueDecode>(&self, idx: GlobalAddress) -> Result<O, ExternError> {
+        let raw = self.global_raw(idx);
+        O::decode(self, raw).map_err(ExternError::from)
     }
 
     pub fn ctor_field(&self, val: Value, idx: usize) -> Value {
