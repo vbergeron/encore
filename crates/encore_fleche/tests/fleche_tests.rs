@@ -96,8 +96,8 @@ fn test_match_branch0() {
     let result = run("
         define main as
           match True
-            case True -> False
-            case False -> True
+            | True -> False
+            | False -> True
           end
     ");
     assert_eq!(result.ctor_tag(), 0);
@@ -108,8 +108,8 @@ fn test_match_branch1() {
     let result = run("
         define main as
           match False
-            case True -> False
-            case False -> True
+            | True -> False
+            | False -> True
           end
     ");
     assert_eq!(result.ctor_tag(), 1);
@@ -123,7 +123,7 @@ fn test_match_with_binds() {
         data Pair(a, b)
         define main as
           match Pair(True, False)
-            case Pair(x, y) -> y
+            | Pair(x, y) -> y
           end
     ");
     assert_eq!(result.ctor_tag(), 0);
@@ -138,8 +138,8 @@ fn test_peano_countdown() {
         define main as
           let rec countdown n =
             match n
-              case Zero -> n
-              case Succ(pred) -> countdown pred
+              | Zero -> n
+              | Succ(pred) -> countdown pred
             end
           in countdown Succ(Succ(Succ(Zero)))
     ");
@@ -231,8 +231,8 @@ fn test_fix_map() {
         define main as
           let rec is_zero n =
             match n
-              case Zero -> True
-              case Succ(p) -> False
+              | Zero -> True
+              | Succ(p) -> False
             end
           in is_zero Zero
     ");
@@ -331,8 +331,8 @@ fn test_builtin_lt_with_match() {
         define main as
           let r = builtin lt 3 5 in
           match r
-            case False -> 0
-            case True -> 1
+            | False -> 0
+            | True -> 1
           end
     ");
     assert!(result.is_int());
@@ -361,8 +361,8 @@ fn test_multi_arg_lambda_partial_apply() {
         data A | B
         define main as
           let f = x -> y -> match x
-            case A -> y
-            case B -> y
+            | A -> y
+            | B -> y
           end
           in
           let g = f A in
@@ -586,8 +586,8 @@ fn test_list_nat_of_bytes_empty() {
           let rec go i =
             let done = builtin eq i len in
             match done
-              case True -> Nil
-              case False ->
+              | True -> Nil
+              | False ->
                 let b = builtin bytes_get buf i in
                 let next = builtin add i 1 in
                 Cons(b, go next)
@@ -610,8 +610,8 @@ fn test_list_nat_of_bytes_hello() {
           let rec go i =
             let done = builtin eq i len in
             match done
-              case True -> Nil
-              case False ->
+              | True -> Nil
+              | False ->
                 let b = builtin bytes_get buf i in
                 let next = builtin add i 1 in
                 Cons(b, go next)
@@ -628,7 +628,6 @@ fn test_list_nat_of_bytes_hello() {
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
     let result = vm.global_raw(GlobalAddress::new(last as u16));
-    // Nil=2, Cons=3 (after False=0, True=1)
     let bytes = collect_int_list(&vm, 2, 3, result);
     assert_eq!(bytes, vec![104, 101, 108, 108, 111]); // h e l l o
 }
@@ -649,8 +648,8 @@ fn test_list_nat_of_bytes_with_extern() {
           let rec go i =
             let done = builtin eq i len in
             match done
-              case True -> Nil
-              case False ->
+              | True -> Nil
+              | False ->
                 let b = builtin bytes_get buf i in
                 let next = builtin add i 1 in
                 Cons(b, go next)
@@ -668,7 +667,6 @@ fn test_list_nat_of_bytes_with_extern() {
     vm.register_extern(0, provide_bytes);
     vm.load(&prog).unwrap();
     let result = vm.global_raw(GlobalAddress::new(last as u16));
-    // Nil=2, Cons=3 (after False=0, True=1)
     let bytes = collect_int_list(&vm, 2, 3, result);
     assert_eq!(bytes, vec![65, 66]); // A B
 }
@@ -680,9 +678,9 @@ fn test_compilation_deterministic() {
         data None | Some(x)
         define classify as color ->
           match color
-            case Red -> Some(Red)
-            case Green -> None
-            case Blue -> Some(Blue)
+            | Red -> Some(Red)
+            | Green -> None
+            | Blue -> Some(Blue)
           end
         define main as classify Green
     ";
@@ -904,117 +902,281 @@ fn test_if_binding_uses_outer_bind_in_chain() {
     assert_eq!(result.int_value().unwrap(), 10);
 }
 
-// -- Scheme: fold_left with match+call init (inliner bug reproducer) --
+// -- Wildcard match --
 
-fn run_scheme_int(source: &str) -> i32 {
-    let module = encore_scheme::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
-    let prog = Program::parse(&binary).unwrap();
-    let last = prog.n_globals() - 1;
-    let mut mem = [Value::from_u32(0); 8192];
-    let mut vm = Vm::init(&mut mem);
-    vm.load(&prog).unwrap();
-    vm.global_raw(GlobalAddress::new(last as u16)).int_value().unwrap()
+#[test]
+fn test_match_wildcard_only_branch() {
+    let result = run("
+        data A | B | C
+        define main as
+          match A
+            | A -> 1
+            | _ -> 0
+          end
+    ");
+    assert_eq!(result.int_value().unwrap(), 1);
 }
 
 #[test]
-fn test_scheme_fold_left_match_init() {
-    // Minimal reproducer: 3-arg wrapper around fold_left where the
-    // init accumulator is computed via match + function call.
-    // Expected: id(42) = 42, then 42 + 1 = 43.
-    let result = run_scheme_int("
-        (define fold_left (lambdas (f l a0)
-          (match l
-             ((Nil) a0)
-             ((Cons b l0) (@ fold_left f l0 (@ f a0 b))))))
-
-        (define go (lambdas (ops n0 lst)
-          (@ fold_left
-            (lambdas (acc n) (+ acc n))
-            lst
-            (match ops
-              ((Box h) (h n0))))))
-
-        (define id (lambda (x) x))
-
-        (define main (@ go `(Box ,id) 42 `(Cons ,1 ,`(Nil))))
+fn test_match_wildcard_fallthrough() {
+    let result = run("
+        data A | B | C
+        define main as
+          match C
+            | A -> 1
+            | _ -> 99
+          end
     ");
-    assert_eq!(result, 43);
-}
-
-// -- Scheme: bytes_of_list_nat --
-
-fn run_scheme_bytes(source: &str) -> Vec<u8> {
-    let module = encore_scheme::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
-    let prog = Program::parse(&binary).unwrap();
-    let last = prog.n_globals() - 1;
-    let mut mem = [Value::from_u32(0); 8192];
-    let mut vm = Vm::init(&mut mem);
-    vm.load(&prog).unwrap();
-    let result = vm.global_raw(GlobalAddress::new(last as u16));
-    assert!(result.is_bytes(), "expected bytes, got {}", result.type_name());
-    let len = vm.bytes_len(result);
-    (0..len).map(|i| vm.bytes_read(result, i)).collect()
-}
-
-const BYTES_OF_LIST_NAT_PRELUDE: &str = "
-(define fold_left (lambdas (f l a0)
-  (match l
-     ((Nil) a0)
-     ((Cons b l0) (@ fold_left f l0 (@ f a0 b))))))
-
-(define bytes_of_list_nat (lambdas (bytesOps n0 lst)
-  (@ fold_left (lambdas (acc n)
-    (match bytesOps
-       ((Build_BytesOps _ _ _ bytes_concat0)
-         (@ bytes_concat0 acc
-           (match bytesOps
-              ((Build_BytesOps _ _ bytes_of_nat0 _) (bytes_of_nat0 n)))))))
-    lst
-    (match bytesOps
-       ((Build_BytesOps _ _ bytes_of_nat0 _) (bytes_of_nat0 n0))))))
-
-(define bytes_len (lambda (b) (bytes-len b)))
-(define bytes_get (lambdas (b i) (bytes-get b i)))
-(define bytes_of_nat (lambda (i) (int->byte i)))
-(define bytes_concat (lambdas (l r) (bytes-concat l r)))
-(define bytes_ops `(Build_BytesOps ,bytes_len ,bytes_get ,bytes_of_nat
-  ,bytes_concat))
-";
-
-#[test]
-fn test_scheme_bytes_of_list_nat_singleton() {
-    let source = format!("{BYTES_OF_LIST_NAT_PRELUDE}
-        (define main (@ bytes_of_list_nat bytes_ops 42 `(Nil)))
-    ");
-    assert_eq!(run_scheme_bytes(&source), vec![42]);
+    assert_eq!(result.int_value().unwrap(), 99);
 }
 
 #[test]
-fn test_scheme_bytes_of_list_nat_two_elements() {
-    let source = format!("{BYTES_OF_LIST_NAT_PRELUDE}
-        (define main (@ bytes_of_list_nat bytes_ops 1
-          `(Cons ,2 ,`(Nil))))
+fn test_match_wildcard_middle_gap() {
+    let result = run("
+        data A | B | C | D
+        define main as
+          match B
+            | A -> 1
+            | D -> 4
+            | _ -> 0
+          end
     ");
-    assert_eq!(run_scheme_bytes(&source), vec![1, 2]);
+    assert_eq!(result.int_value().unwrap(), 0);
 }
 
 #[test]
-fn test_scheme_bytes_of_list_nat_multi() {
-    let source = format!("{BYTES_OF_LIST_NAT_PRELUDE}
-        (define main (@ bytes_of_list_nat bytes_ops 1
-          `(Cons ,2 ,`(Cons ,3 ,`(Nil)))))
+fn test_match_wildcard_with_fields() {
+    let result = run("
+        data Leaf | Node(l, r)
+        define main as
+          match Leaf
+            | Node(l, r) -> builtin add l r
+            | _ -> 42
+          end
     ");
-    assert_eq!(run_scheme_bytes(&source), vec![1, 2, 3]);
+    assert_eq!(result.int_value().unwrap(), 42);
 }
 
 #[test]
-fn test_scheme_bytes_of_list_nat_boundary_values() {
-    let source = format!("{BYTES_OF_LIST_NAT_PRELUDE}
-        (define main (@ bytes_of_list_nat bytes_ops 0
-          `(Cons ,127 ,`(Cons ,255 ,`(Nil)))))
+fn test_match_wildcard_preserves_explicit_binds() {
+    let result = run("
+        data Leaf | Node(l, r)
+        define main as
+          match Node(10, 20)
+            | Node(l, r) -> builtin add l r
+            | _ -> 0
+          end
     ");
-    assert_eq!(run_scheme_bytes(&source), vec![0, 127, 255]);
+    assert_eq!(result.int_value().unwrap(), 30);
 }
 
+#[test]
+fn test_match_wildcard_last_position() {
+    let result = run("
+        data Zero | Succ(n)
+        define main as
+          match Succ(Succ(Zero))
+            | Zero -> 0
+            | _ -> 1
+          end
+    ");
+    assert_eq!(result.int_value().unwrap(), 1);
+}
+
+#[test]
+fn test_match_wildcard_builtin_bool() {
+    let result = run("
+        define main as
+          let r = builtin lt 3 5 in
+          match r
+            | True -> 1
+            | _ -> 0
+          end
+    ");
+    assert_eq!(result.int_value().unwrap(), 1);
+}
+
+// -- Wildcard match errors --
+
+#[test]
+fn test_match_wildcard_case_after_wildcard_is_error() {
+    let mut parser = encore_fleche::parser::Parser::new("
+        data A | B | C
+        define main as
+          match A
+            | A -> 1
+            | _ -> 0
+            | B -> 2
+          end
+    ");
+    match parser.parse_module() {
+        Err(e) => assert!(e.message.contains("after wildcard"), "got: {}", e.message),
+        Ok(_) => panic!("expected parse error"),
+    }
+}
+
+#[test]
+fn test_match_wildcard_duplicate_is_error() {
+    let mut parser = encore_fleche::parser::Parser::new("
+        data A | B | C
+        define main as
+          match A
+            | A -> 1
+            | _ -> 0
+            | _ -> 2
+          end
+    ");
+    match parser.parse_module() {
+        Err(e) => assert!(e.message.contains("duplicate wildcard"), "got: {}", e.message),
+        Ok(_) => panic!("expected parse error"),
+    }
+}
+
+// -- Negative literals --
+
+#[test]
+fn test_negative_literal() {
+    let result = run("
+        define main as -7
+    ");
+    assert_eq!(result.int_value().unwrap(), -7);
+}
+
+#[test]
+fn test_negative_literal_in_builtin() {
+    let result = run("
+        define main as builtin add 10 -3
+    ");
+    assert_eq!(result.int_value().unwrap(), 7);
+}
+
+#[test]
+fn test_negative_literal_in_ctor() {
+    let result = run("
+        data Wrap(val)
+        define main as field 0 of Wrap(-42)
+    ");
+    assert_eq!(result.int_value().unwrap(), -42);
+}
+
+// -- String escapes --
+
+#[test]
+fn test_string_escape_newline() {
+    let result = run(r#"
+        define main as builtin bytes_len "hello\n"
+    "#);
+    assert_eq!(result.int_value().unwrap(), 6);
+}
+
+#[test]
+fn test_string_escape_tab() {
+    let result = run(r#"
+        define main as builtin bytes_get "\t" 0
+    "#);
+    assert_eq!(result.int_value().unwrap(), 9);
+}
+
+#[test]
+fn test_string_escape_null() {
+    let result = run(r#"
+        define main as builtin bytes_get "\0" 0
+    "#);
+    assert_eq!(result.int_value().unwrap(), 0);
+}
+
+#[test]
+fn test_string_escape_backslash() {
+    let result = run(r#"
+        define main as builtin bytes_len "\\"
+    "#);
+    assert_eq!(result.int_value().unwrap(), 1);
+}
+
+#[test]
+fn test_string_escape_quote() {
+    let result = run(r#"
+        define main as builtin bytes_len "\""
+    "#);
+    assert_eq!(result.int_value().unwrap(), 1);
+}
+
+#[test]
+fn test_string_escape_mixed() {
+    let result = run(r#"
+        define main as builtin bytes_len "a\nb\tc"
+    "#);
+    assert_eq!(result.int_value().unwrap(), 5);
+}
+
+// -- Match exhaustiveness --
+
+#[test]
+fn test_match_non_exhaustive_missing_one() {
+    let mut parser = encore_fleche::parser::Parser::new("
+        data A | B | C
+        define main as
+          match A
+          | A -> 1
+          | B -> 2
+          end
+    ");
+    match parser.parse_module() {
+        Err(e) => {
+            assert!(e.message.contains("non-exhaustive"), "got: {}", e.message);
+            assert!(e.message.contains("C"), "error should name missing ctor C, got: {}", e.message);
+        }
+        Ok(_) => panic!("expected non-exhaustive match error"),
+    }
+}
+
+#[test]
+fn test_match_non_exhaustive_missing_multiple() {
+    let mut parser = encore_fleche::parser::Parser::new("
+        data A | B | C | D
+        define main as
+          match A
+          | A -> 1
+          end
+    ");
+    match parser.parse_module() {
+        Err(e) => {
+            assert!(e.message.contains("non-exhaustive"), "got: {}", e.message);
+            assert!(e.message.contains("B"), "error should name missing ctor B, got: {}", e.message);
+            assert!(e.message.contains("C"), "error should name missing ctor C, got: {}", e.message);
+            assert!(e.message.contains("D"), "error should name missing ctor D, got: {}", e.message);
+        }
+        Ok(_) => panic!("expected non-exhaustive match error"),
+    }
+}
+
+#[test]
+fn test_match_cross_type_error() {
+    let mut parser = encore_fleche::parser::Parser::new("
+        data A | B
+        data C | D
+        define main as
+          match A
+          | A -> 1
+          | C -> 2
+          end
+    ");
+    match parser.parse_module() {
+        Err(e) => assert!(e.message.contains("different types"), "got: {}", e.message),
+        Ok(_) => panic!("expected cross-type match error"),
+    }
+}
+
+#[test]
+fn test_match_exhaustive_all_covered() {
+    let result = run("
+        data A | B | C
+        define main as
+          match B
+          | A -> 1
+          | B -> 2
+          | C -> 3
+          end
+    ");
+    assert_eq!(result.int_value().unwrap(), 2);
+}

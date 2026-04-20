@@ -5,11 +5,11 @@ data Leaf | Node(left, right)
 
 define count as t ->
   match t
-    case Leaf -> 1
-    case Node(l, r) ->
-      let a = count l in
-      let b = count r in
-      builtin add a b
+  | Leaf -> 1
+  | Node(l, r) ->
+    let a = count l in
+    let b = count r in
+    builtin add a b
   end
 
 define main as

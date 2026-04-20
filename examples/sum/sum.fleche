@@ -8,11 +8,11 @@ define sum as p ->
   let acc = field 1 of p in
   let done = builtin eq n 0 in
   match done
-    case True -> acc
-    case False ->
-      let m = builtin sub n 1 in
-      let a = builtin add acc n in
-      sum Pair(m, a)
+  | True -> acc
+  | False ->
+    let m = builtin sub n 1 in
+    let a = builtin add acc n in
+    sum Pair(m, a)
   end
 
 define main as sum Pair(1000, 0)

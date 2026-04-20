@@ -6,42 +6,42 @@ data Nil | Cons(head, tail)
 define make as n ->
   let done = builtin eq n 0 in
   match done
-    case True -> Nil
-    case False ->
-      let m = builtin sub n 1 in
-      Cons(n, make m)
+  | True -> Nil
+  | False ->
+    let m = builtin sub n 1 in
+    Cons(n, make m)
   end
 
 define map as f ->
   let rec go lst =
     match lst
-      case Nil -> Nil
-      case Cons(h, t) ->
-        let fh = f h in
-        Cons(fh, go t)
+    | Nil -> Nil
+    | Cons(h, t) ->
+      let fh = f h in
+      Cons(fh, go t)
     end
   in go
 
 define filter as p ->
   let rec go lst =
     match lst
-      case Nil -> Nil
-      case Cons(h, t) ->
-        let keep = p h in
-        let rest = go t in
-        match keep
-          case True -> Cons(h, rest)
-          case False -> rest
-        end
+    | Nil -> Nil
+    | Cons(h, t) ->
+      let keep = p h in
+      let rest = go t in
+      match keep
+      | True -> Cons(h, rest)
+      | False -> rest
+      end
     end
   in go
 
 define sum as lst ->
   match lst
-    case Nil -> 0
-    case Cons(h, t) ->
-      let r = sum t in
-      builtin add h r
+  | Nil -> 0
+  | Cons(h, t) ->
+    let r = sum t in
+    builtin add h r
   end
 
 define double as x -> builtin mul x 2

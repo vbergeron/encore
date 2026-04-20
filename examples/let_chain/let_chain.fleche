@@ -4,7 +4,7 @@
 #     Ctor2(c)    = e2
 # in body
 #
-# desugars to nested single-case match expressions (irrefutable patterns).
+# desugars to nested single-branch match expressions (irrefutable patterns).
 
 data Pair(fst, snd)
 data Triple(a, b, c)

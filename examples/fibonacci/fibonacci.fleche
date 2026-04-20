@@ -4,13 +4,13 @@
 define fib as n ->
   let done = builtin lt n 2 in
   match done
-    case True -> n
-    case False ->
-      let a = builtin sub n 1 in
-      let b = builtin sub n 2 in
-      let ra = fib a in
-      let rb = fib b in
-      builtin add ra rb
+  | True -> n
+  | False ->
+    let a = builtin sub n 1 in
+    let b = builtin sub n 2 in
+    let ra = fib a in
+    let rb = fib b in
+    builtin add ra rb
   end
 
 define main as fib 15

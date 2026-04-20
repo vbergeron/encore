@@ -76,17 +76,30 @@ This binds `my_print` as a global that calls extern slot `0` at runtime.
 ```
 42
 0
+-7
 ```
 
-Non-negative decimal integers, represented as signed 24-bit values at runtime.
+Decimal integers, optionally negative, represented as signed 24-bit values at runtime.
 
 #### String literals
 
 ```
 "hello"
+"line one\nline two"
+"tab\there"
 ```
 
-String literals produce `Bytes` values. Each character maps to one byte. No escape sequences are supported.
+String literals produce `Bytes` values. The following escape sequences are supported:
+
+| Escape | Byte value |
+|--------|------------|
+| `\\`   | `\` (0x5C) |
+| `\"`   | `"` (0x22) |
+| `\n`   | newline (0x0A) |
+| `\t`   | tab (0x09) |
+| `\0`   | null (0x00) |
+
+Unescaped characters map to one byte each.
 
 #### Variables
 
@@ -193,12 +206,38 @@ Zero-indexed projection into a constructor's fields.
 
 ```
 match expr
-  case Zero -> e1
-  case Succ(pred) -> e2
+| Zero -> e1
+| Succ(pred) -> e2
 end
 ```
 
-Cases must cover a **contiguous range** of tags. The order of `case` branches does not matter; they are sorted by tag internally. Binders in parentheses are bound to the constructor's fields positionally.
+Branches are introduced with `|`, the same separator used in `data` declarations. All branches must belong to the same type, and the match must be **exhaustive** — every constructor of the type must be covered. The order of branches does not matter; they are sorted by tag internally. Binders in parentheses are bound to the constructor's fields positionally.
+
+Mixing constructors from different types in a single match is a compile error. Omitting a constructor without a wildcard is also a compile error:
+
+```
+data A | B | C
+
+match x
+| A -> 1
+| B -> 2
+end
+-- error: non-exhaustive match: missing constructor(s) C
+```
+
+A wildcard arm `| _ -> expr` can be used as a default for all unmatched constructors of the type. At least one explicit constructor branch must be present alongside the wildcard. The wildcard must be the last branch:
+
+```
+data A | B | C | D
+
+match x
+| A -> 1
+| D -> 4
+| _ -> 0
+end
+```
+
+The wildcard fills in all missing cases (`B` and `C` above) with the default body.
 
 #### Builtin operations
 
@@ -237,7 +276,7 @@ data False | True
 define main as
   let r = builtin lt 3 5 in
   match r
-    case False -> 0
-    case True -> 1
+  | False -> 0
+  | True -> 1
   end
 ```

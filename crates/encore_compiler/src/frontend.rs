@@ -97,6 +97,12 @@ impl CtorRegistry {
         result
     }
 
+    pub fn name_of_tag(&self, tag: u8) -> Option<&str> {
+        self.ctors.iter()
+            .find(|(_, info)| info.tag == tag)
+            .map(|(name, _)| name.as_str())
+    }
+
     pub fn ctor_names(&self) -> Vec<(u8, String)> {
         self.ctors.iter()
             .map(|(name, info)| (info.tag, name.clone()))

@@ -15,16 +15,16 @@ define init as 0
 
 define step as state -> event ->
   match event
-    case Inc ->
-      let s = builtin add state 1 in
-      Pair(s, Cons(Print(s), Nil))
-    case Dec ->
-      let s = builtin sub state 1 in
-      let is_zero = builtin eq s 0 in
-      match is_zero
-        case False -> Pair(s, Cons(Print(s), Nil))
-        case True -> Pair(s, Cons(Print(s), Cons(Beep, Nil)))
-      end
-    case Reset ->
-      Pair(0, Cons(Print(0), Cons(Beep, Nil)))
+  | Inc ->
+    let s = builtin add state 1 in
+    Pair(s, Cons(Print(s), Nil))
+  | Dec ->
+    let s = builtin sub state 1 in
+    let is_zero = builtin eq s 0 in
+    match is_zero
+    | False -> Pair(s, Cons(Print(s), Nil))
+    | True -> Pair(s, Cons(Print(s), Cons(Beep, Nil)))
+    end
+  | Reset ->
+    Pair(0, Cons(Print(0), Cons(Beep, Nil)))
   end

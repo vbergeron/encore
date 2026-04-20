@@ -8,22 +8,22 @@ define ack as p ->
   let m = field 0 of p in
   let n = field 1 of p in
   match m
-    case Zero -> Succ(n)
-    case Succ(pm) ->
-      match n
-        case Zero -> ack Pair(pm, Succ(Zero))
-        case Succ(pn) ->
-          let inner = ack Pair(m, pn) in
-          ack Pair(pm, inner)
-      end
+  | Zero -> Succ(n)
+  | Succ(pm) ->
+    match n
+    | Zero -> ack Pair(pm, Succ(Zero))
+    | Succ(pn) ->
+      let inner = ack Pair(m, pn) in
+      ack Pair(pm, inner)
+    end
   end
 
 define to_int as n ->
   match n
-    case Zero -> 0
-    case Succ(p) ->
-      let r = to_int p in
-      builtin add r 1
+  | Zero -> 0
+  | Succ(p) ->
+    let r = to_int p in
+    builtin add r 1
   end
 
 define main as
