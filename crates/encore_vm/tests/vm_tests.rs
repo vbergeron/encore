@@ -9,7 +9,7 @@ fn run(code: &[u8], arity_table: &[u8]) -> Result<Value, VmError> {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog)?;
-    Ok(vm.global(0))
+    Ok(vm.global_raw(GlobalAddress::new(0)))
 }
 
 const X01: u8 = 10;
@@ -92,7 +92,7 @@ fn test_load_global() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let result = vm.global(1);
+    let result = vm.global_raw(GlobalAddress::new(1));
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 42);
 }
@@ -301,7 +301,7 @@ fn test_gc_preserves_live_data() {
     let mut mem = [Value::from_u32(0); 6];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let result = vm.global(0);
+    let result = vm.global_raw(GlobalAddress::new(0));
     assert!(result.is_ctor());
     assert_eq!(result.ctor_tag(), 1);
 }
@@ -355,7 +355,7 @@ fn test_extern_dispatch() {
     vm.register_extern(0, double_it);
     vm.load(&prog).unwrap();
 
-    assert_eq!(vm.global(0).int_value().unwrap(), 42);
+    assert_eq!(vm.global_raw(GlobalAddress::new(0)).int_value().unwrap(), 42);
 }
 
 #[test]
@@ -383,7 +383,7 @@ fn test_bytes_literal_empty() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    assert_eq!(vm.bytes_len(vm.global(0)), 0);
+    assert_eq!(vm.bytes_len(vm.global_raw(GlobalAddress::new(0))), 0);
 }
 
 #[test]
@@ -393,7 +393,7 @@ fn test_bytes_literal() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let val = vm.global(0);
+    let val = vm.global_raw(GlobalAddress::new(0));
     assert!(val.is_bytes());
     assert_eq!(vm.bytes_len(val), 5);
     assert_eq!(vm.bytes_read(val, 0), b'h');
@@ -440,7 +440,7 @@ fn test_bytes_concat() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let val = vm.global(0);
+    let val = vm.global_raw(GlobalAddress::new(0));
     assert!(val.is_bytes());
     assert_eq!(vm.bytes_len(val), 5);
     assert_eq!(vm.bytes_read(val, 0), b'a');
@@ -463,7 +463,7 @@ fn test_bytes_slice() {
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let val = vm.global(0);
+    let val = vm.global_raw(GlobalAddress::new(0));
     assert!(val.is_bytes());
     assert_eq!(vm.bytes_len(val), 3);
     assert_eq!(vm.bytes_read(val, 0), b'e');

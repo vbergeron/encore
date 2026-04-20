@@ -2,7 +2,7 @@ use encore_compiler::pipeline;
 use encore_fleche;
 use encore_vm::error::ExternError;
 use encore_vm::program::Program;
-use encore_vm::value::Value;
+use encore_vm::value::{Value, GlobalAddress};
 use encore_vm::vm::Vm;
 
 fn run(source: &str) -> Value {
@@ -12,7 +12,7 @@ fn run(source: &str) -> Value {
     let mut mem = [Value::from_u32(0); 4096];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    vm.global(0)
+    vm.global_raw(GlobalAddress::new(0))
 }
 
 fn run_multi(source: &str) -> Value {
@@ -23,7 +23,7 @@ fn run_multi(source: &str) -> Value {
     let mut mem = [Value::from_u32(0); 4096];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    vm.global(last)
+    vm.global_raw(GlobalAddress::new(last as u16))
 }
 
 // -- Nullary ctor --
@@ -34,7 +34,7 @@ fn test_nullary_ctor() {
         data Zero | Succ(n)
         define main as Zero
     ");
-    assert_eq!(result.ctor_tag(), 4);
+    assert_eq!(result.ctor_tag(), 5);
 }
 
 // -- Let + var --
@@ -143,7 +143,7 @@ fn test_peano_countdown() {
             end
           in countdown Succ(Succ(Succ(Zero)))
     ");
-    assert_eq!(result.ctor_tag(), 4);
+    assert_eq!(result.ctor_tag(), 5);
 }
 
 // -- Lambda capture --
@@ -169,7 +169,7 @@ fn test_constant_fn() {
           let k = x -> y -> x in
           k A B
     ");
-    assert_eq!(result.ctor_tag(), 4);
+    assert_eq!(result.ctor_tag(), 5);
 }
 
 // -- Multi-data declarations --
@@ -194,7 +194,7 @@ fn test_leading_pipe() {
           | Succ(n)
         define main as Succ(Zero)
     ");
-    assert_eq!(result.ctor_tag(), 5);
+    assert_eq!(result.ctor_tag(), 6);
 }
 
 // -- Triple nested app --
@@ -207,7 +207,7 @@ fn test_triple_nested_app() {
           let id = x -> x in
           id (id (id X))
     ");
-    assert_eq!(result.ctor_tag(), 4);
+    assert_eq!(result.ctor_tag(), 5);
 }
 
 // -- Field of nested ctor --
@@ -219,7 +219,7 @@ fn test_field_first() {
         data Pair(x, y)
         define main as field 0 of Pair(A, B)
     ");
-    assert_eq!(result.ctor_tag(), 4);
+    assert_eq!(result.ctor_tag(), 5);
 }
 
 // -- Fix with match returning ctor --
@@ -455,7 +455,7 @@ fn run_with_externs(source: &str, externs: &[(u16, encore_vm::vm::ExternFn)]) ->
         vm.register_extern(slot, f);
     }
     vm.load(&prog).unwrap();
-    vm.global(last)
+    vm.global_raw(GlobalAddress::new(last as u16))
 }
 
 #[test]
@@ -627,7 +627,7 @@ fn test_list_nat_of_bytes_hello() {
     let mut mem = [Value::from_u32(0); 4096];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let result = vm.global(last);
+    let result = vm.global_raw(GlobalAddress::new(last as u16));
     // Nil=2, Cons=3 (after False=0, True=1)
     let bytes = collect_int_list(&vm, 2, 3, result);
     assert_eq!(bytes, vec![104, 101, 108, 108, 111]); // h e l l o
@@ -667,7 +667,7 @@ fn test_list_nat_of_bytes_with_extern() {
     let mut vm = Vm::init(&mut mem);
     vm.register_extern(0, provide_bytes);
     vm.load(&prog).unwrap();
-    let result = vm.global(last);
+    let result = vm.global_raw(GlobalAddress::new(last as u16));
     // Nil=2, Cons=3 (after False=0, True=1)
     let bytes = collect_int_list(&vm, 2, 3, result);
     assert_eq!(bytes, vec![65, 66]); // A B
@@ -914,7 +914,7 @@ fn run_scheme_int(source: &str) -> i32 {
     let mut mem = [Value::from_u32(0); 8192];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    vm.global(last).int_value().unwrap()
+    vm.global_raw(GlobalAddress::new(last as u16)).int_value().unwrap()
 }
 
 #[test]
@@ -952,7 +952,7 @@ fn run_scheme_bytes(source: &str) -> Vec<u8> {
     let mut mem = [Value::from_u32(0); 8192];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
-    let result = vm.global(last);
+    let result = vm.global_raw(GlobalAddress::new(last as u16));
     assert!(result.is_bytes(), "expected bytes, got {}", result.type_name());
     let len = vm.bytes_len(result);
     (0..len).map(|i| vm.bytes_read(result, i)).collect()
