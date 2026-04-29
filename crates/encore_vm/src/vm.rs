@@ -225,11 +225,11 @@ impl<'a> Vm<'a> {
         core::mem::replace(&mut self.registers[SELF], saved)
     }
 
-    pub fn call_closure_raw(&mut self, callable: VmCallable, args: &[Value]) -> Result<Value, VmError> {
+    pub fn call_closure_raw(&mut self, callable: &VmCallable, args: &[Value]) -> Result<Value, VmError> {
         self.call_raw(callable.raw(), args)
     }
 
-    pub fn call_closure<Args, O>(&mut self, callable: VmCallable, args: Args) -> Result<O, ExternError>
+    pub fn call_closure<Args, O>(&mut self, callable: &VmCallable, args: Args) -> Result<O, ExternError>
     where
         Args: EncodeArgs,
         O: ValueDecode,
@@ -237,6 +237,7 @@ impl<'a> Vm<'a> {
         let saved = self.pin(callable.raw());
         let encoded = args.encode_args(self)?;
         let func = self.unpin(saved);
+        callable.update(func);
         let raw = self.call_raw(func, encoded.as_ref())?;
         O::decode(self, raw).map_err(ExternError::from)
     }

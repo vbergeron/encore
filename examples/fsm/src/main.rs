@@ -54,7 +54,7 @@ fn run_step(vm: &mut Vm, state: i32, event: Event) -> StepResult {
     let partial: VmCallable = vm
         .call_global(funcs::STEP, (state,))
         .unwrap_or_else(|e| vm_exit_err(e));
-    vm.call_closure(partial, (event,))
+    vm.call_closure(&partial, (event,))
         .unwrap_or_else(|e| vm_exit_err(e))
 }
 

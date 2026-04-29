@@ -37,8 +37,8 @@ fn call3<O: encore_vm::ffi::ValueDecode>(
     fuel: i32,
 ) -> Result<O, ExternError> {
     let f1: VmCallable = vm.call_global(global, (a,))?;
-    let f2: VmCallable = vm.call_closure(f1, (b,))?;
-    vm.call_closure(f2, (fuel,))
+    let f2: VmCallable = vm.call_closure(&f1, (b,))?;
+    vm.call_closure(&f2, (fuel,))
 }
 
 #[entry]
