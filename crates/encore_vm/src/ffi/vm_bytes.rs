@@ -59,15 +59,21 @@ impl VmBytes {
     /// Materialize the VM-heap bytes into a caller-supplied Rust buffer,
     /// returning the filled sub-slice.
     ///
-    /// If `buf` is shorter than the VM-side string, only the leading bytes
-    /// that fit are copied; any trailing capacity in `buf` is left untouched.
-    /// If `buf` is longer, the returned sub-slice reflects the actual string
-    /// length.
+    /// Fails with [`DecodeError::BufferTooShort`] if `buf` is shorter than
+    /// the VM-side string. If `buf` is longer, the returned sub-slice
+    /// reflects the actual string length.
     ///
     /// This is the bytes counterpart of
     /// [`VmList::materialize`](super::vm_list::VmList::materialize).
-    pub fn materialize<'b>(&self, vm: &Vm, buf: &'b mut [u8]) -> &'b [u8] {
-        vm.bytes_slice(self.0, buf)
+    pub fn materialize<'b>(&self, vm: &Vm, buf: &'b mut [u8]) -> Result<&'b [u8], DecodeError> {
+        let len = self.len(vm);
+        if buf.len() < len {
+            return Err(DecodeError::BufferTooShort {
+                needed: len,
+                provided: buf.len(),
+            });
+        }
+        Ok(vm.bytes_slice(self.0, buf))
     }
 
     /// The underlying `Value` handle — useful for passing into raw VM calls

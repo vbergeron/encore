@@ -213,6 +213,18 @@ impl<'a> Vm<'a> {
         O::decode(self, raw).map_err(ExternError::from)
     }
 
+    /// Root a heap value in the SELF register so it survives GC during
+    /// argument encoding. Returns the previous occupant for restoring later.
+    fn pin(&mut self, val: Value) -> Value {
+        core::mem::replace(&mut self.registers[SELF], val)
+    }
+
+    /// Read back a previously pinned value from the SELF register, restoring
+    /// the old occupant.
+    fn unpin(&mut self, saved: Value) -> Value {
+        core::mem::replace(&mut self.registers[SELF], saved)
+    }
+
     pub fn call_closure_raw(&mut self, callable: VmCallable, args: &[Value]) -> Result<Value, VmError> {
         self.call_raw(callable.raw(), args)
     }
@@ -222,8 +234,10 @@ impl<'a> Vm<'a> {
         Args: EncodeArgs,
         O: ValueDecode,
     {
+        let saved = self.pin(callable.raw());
         let encoded = args.encode_args(self)?;
-        let raw = self.call_closure_raw(callable, encoded.as_ref())?;
+        let func = self.unpin(saved);
+        let raw = self.call_raw(func, encoded.as_ref())?;
         O::decode(self, raw).map_err(ExternError::from)
     }
 

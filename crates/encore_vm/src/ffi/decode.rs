@@ -14,6 +14,10 @@ pub enum DecodeError {
         expected: &'static str,
         got: &'static str,
     },
+    BufferTooShort {
+        needed: usize,
+        provided: usize,
+    },
     Vm,
 }
 

@@ -66,17 +66,13 @@ impl<T> VmList<T> {
     /// returning the filled sub-slice.
     ///
     /// Walks the cons-chain, decoding each head into successive slots of
-    /// `buf`. Stops when either the list ends or the buffer fills; the
-    /// returned slice reflects how many elements were actually written.
-    ///
-    /// If decoding a head fails mid-traversal, this stops silently (mirroring
-    /// [`next`](Self::next)'s `Option`-based error handling). Existing `T`s
-    /// in unfilled tail slots of `buf` are left untouched; `T`s in written
-    /// slots are overwritten (and dropped if `T: Drop`).
+    /// `buf`. Fails with [`DecodeError::BufferTooShort`] if the list has
+    /// more elements than `buf` can hold. If `buf` is longer than the list,
+    /// the returned slice reflects how many elements were actually written.
     ///
     /// This is the list counterpart of
     /// [`VmBytes::materialize`](super::vm_bytes::VmBytes::materialize).
-    pub fn materialize<'b>(&self, vm: &Vm, buf: &'b mut [T]) -> &'b [T]
+    pub fn materialize<'b>(&self, vm: &Vm, buf: &'b mut [T]) -> Result<&'b [T], DecodeError>
     where
         T: ValueDecode,
     {
@@ -89,10 +85,16 @@ impl<T> VmList<T> {
                     cursor = tail;
                     written += 1;
                 }
-                None => break,
+                None => return Ok(&buf[..written]),
             }
         }
-        &buf[..written]
+        if !cursor.is_nil() {
+            return Err(DecodeError::BufferTooShort {
+                needed: written + 1,
+                provided: buf.len(),
+            });
+        }
+        Ok(&buf[..written])
     }
 }
 

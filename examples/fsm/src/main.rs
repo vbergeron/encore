@@ -84,7 +84,15 @@ fn main() -> ! {
 
         let _ = hprintln!("event: {} -> state={}", name, state);
 
-        for &effect in effects.materialize(&vm, &mut effect_buf) {
+        let materialized = match effects.materialize(&vm, &mut effect_buf) {
+            Ok(slice) => slice,
+            Err(_) => {
+                let _ = hprintln!("effect buffer too short");
+                debug::exit(debug::EXIT_FAILURE);
+                loop {}
+            }
+        };
+        for &effect in materialized {
             match effect {
                 Effect::Print(n) => { let _ = hprintln!("  [print] {}", n); }
                 Effect::Beep     => { let _ = hprintln!("  [beep!]"); }

@@ -134,7 +134,7 @@ fn test_bytes_decode_concat() {
     assert_eq!(result.len(&vm), 6);
 
     let mut buf = [0u8; 6];
-    let out = result.materialize(&vm, &mut buf);
+    let out = result.materialize(&vm, &mut buf).unwrap();
     assert_eq!(out, b"foobar");
 }
 
@@ -274,20 +274,18 @@ fn test_vmlist_materialize_exact_fit() {
 
     let list: VmList<i32> = vm.call_global(GlobalAddress::new(0), (AsVmList(&[10, 20, 30]),)).unwrap();
     let mut buf = [0i32; 3];
-    let out = list.materialize(&vm, &mut buf);
+    let out = list.materialize(&vm, &mut buf).unwrap();
     assert_eq!(out, &[10, 20, 30]);
 }
 
 #[test]
 fn test_vmlist_materialize_buffer_shorter_than_list() {
-    // Buffer caps the traversal: we only see the prefix that fits.
     let mut mem = [Value::from_u32(0); 256];
     let mut vm = make_vm(&mut mem, &IDENTITY_CODE, &[]);
 
     let list: VmList<i32> = vm.call_global(GlobalAddress::new(0), (AsVmList(&[1, 2, 3, 4, 5]),)).unwrap();
     let mut buf = [0i32; 3];
-    let out = list.materialize(&vm, &mut buf);
-    assert_eq!(out, &[1, 2, 3]);
+    assert!(list.materialize(&vm, &mut buf).is_err());
 }
 
 #[test]
@@ -299,7 +297,7 @@ fn test_vmlist_materialize_buffer_longer_than_list() {
 
     let list: VmList<i32> = vm.call_global(GlobalAddress::new(0), (AsVmList(&[7, 8]),)).unwrap();
     let mut buf = [-1i32; 5];
-    let out = list.materialize(&vm, &mut buf);
+    let out = list.materialize(&vm, &mut buf).unwrap();
     assert_eq!(out, &[7, 8]);
     assert_eq!(&buf[2..], &[-1, -1, -1]);
 }
@@ -313,7 +311,7 @@ fn test_vmlist_materialize_nil_yields_empty_slice() {
 
     let nil = VmList::<i32>::nil();
     let mut buf = [0i32; 4];
-    let out = nil.materialize(&vm, &mut buf);
+    let out = nil.materialize(&vm, &mut buf).unwrap();
     assert!(out.is_empty());
 }
 
@@ -363,7 +361,7 @@ fn test_vmbytes_build_direct_roundtrip() {
 
     assert_eq!(returned.len(&vm), 5);
     let mut buf = [0u8; 5];
-    assert_eq!(returned.materialize(&vm, &mut buf), b"hello");
+    assert_eq!(returned.materialize(&vm, &mut buf).unwrap(), b"hello");
 }
 
 #[test]
@@ -391,7 +389,7 @@ fn test_vmbytes_encode_passthrough_is_stable() {
     assert_eq!(first.as_value().to_u32(), second.as_value().to_u32());
     assert_eq!(second.len(&vm), 4);
     let mut buf = [0u8; 4];
-    assert_eq!(second.materialize(&vm, &mut buf), b"pass");
+    assert_eq!(second.materialize(&vm, &mut buf).unwrap(), b"pass");
 }
 
 // ── AsVmBytes: deferred-encoding writer ────────────────────────────────────
@@ -405,7 +403,7 @@ fn test_asvmbytes_argument() {
 
     assert_eq!(returned.len(&vm), 5);
     let mut buf = [0u8; 5];
-    assert_eq!(returned.materialize(&vm, &mut buf), b"world");
+    assert_eq!(returned.materialize(&vm, &mut buf).unwrap(), b"world");
 }
 
 #[test]
