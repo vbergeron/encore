@@ -1,10 +1,17 @@
 [package]
 name = "encore_compiler"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Compiler pipeline (CPS transform + optimizer + code gen) for the Fleche language"
+keywords = ["compiler", "cps", "functional", "bytecode", "fleche"]
+categories = ["compilers"]
 
 [dependencies]
-encore_vm = { path = "../encore_vm" }
+encore_vm = { path = "../encore_vm", version = "0.1.0" }
 
 [dev-dependencies]
-encore_scheme = { path = "../encore_scheme" }
+encore_scheme = { path = "../encore_scheme", version = "0.1.0" }

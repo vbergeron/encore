@@ -1,11 +1,18 @@
 [package]
 name = "encore_vm"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "No-std bytecode virtual machine for the Fleche functional language"
+keywords = ["vm", "bytecode", "no-std", "functional", "interpreter"]
+categories = ["no-std", "compilers"]
 
 [features]
 stats = []
 derive = ["dep:encore_derive"]
 
 [dependencies]
-encore_derive = { path = "../encore_derive", optional = true }
+encore_derive = { path = "../encore_derive", version = "0.1.0", optional = true }

@@ -14,3 +14,11 @@ exclude = [
     "examples/tree",
     "examples/fsm",
 ]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Valentin Bergeron <valentin.bergeron@ledger.fr>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/vbergeron/encore"
+homepage = "https://github.com/vbergeron/encore"
