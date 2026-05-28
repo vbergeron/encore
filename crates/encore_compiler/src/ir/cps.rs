@@ -113,7 +113,7 @@ fn fmt_val(val: &Val, ind: &Indent, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "{op}({})", args.join(", "))
         }
         Val::Cont(cont) => {
-            write!(f, "cont({}) =>\n", cont.params.join(", "))?;
+            writeln!(f, "cont({}) =>", cont.params.join(", "))?;
             fmt_expr(&cont.body, &ind.next(), f)
         }
     }
@@ -128,14 +128,14 @@ fn fmt_expr(expr: &Expr, ind: &Indent, f: &mut fmt::Formatter<'_>) -> fmt::Resul
         Expr::Let(name, val, body) => {
             write!(f, "{ind}let {name} = ")?;
             fmt_val(val, ind, f)?;
-            write!(f, "\n")?;
+            writeln!(f)?;
             fmt_expr(body, ind, f)
         }
         Expr::Letrec(name, fun, body) => {
-            write!(f, "{ind}letrec {name}({}) -> {} =\n",
+            writeln!(f, "{ind}letrec {name}({}) -> {} =",
                 fun.args.join(", "), fun.cont)?;
             fmt_expr(&fun.body, &ind.next(), f)?;
-            write!(f, "\n")?;
+            writeln!(f)?;
             fmt_expr(body, ind, f)
         }
         Expr::Match(scrut, base_tag, cases) => {

@@ -1,5 +1,4 @@
 use encore_compiler::pipeline;
-use encore_scheme;
 use encore_vm::program::Program;
 use encore_vm::value::{Value, GlobalAddress};
 use encore_vm::vm::Vm;

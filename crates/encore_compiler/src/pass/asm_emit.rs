@@ -14,6 +14,10 @@ pub struct Emitter<'a> {
     extern_stubs: Vec<(u16, u16)>,
 }
 
+impl<'a> Default for Emitter<'a> {
+    fn default() -> Self { Self::new() }
+}
+
 impl<'a> Emitter<'a> {
     pub fn new() -> Self {
         Self { buf: Vec::new(), arity_table: Vec::new(), deferred: Vec::new(), extern_stubs: Vec::new() }

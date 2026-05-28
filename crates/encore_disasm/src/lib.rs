@@ -11,8 +11,8 @@ fn reg_name(r: u8) -> String {
     match r {
         0 => "SELF".to_string(),
         1 => "CONT".to_string(),
-        r if r >= 2 && r <= 9 => format!("A{}", r - 1),
-        r if r >= 10 && r <= 31 => format!("X{:02}", r - 9),
+        r if (2..=9).contains(&r) => format!("A{}", r - 1),
+        r if (10..=31).contains(&r) => format!("X{:02}", r - 9),
         0xFF => "NULL".to_string(),
         r => format!("r{r}"),
     }

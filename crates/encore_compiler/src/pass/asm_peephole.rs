@@ -99,9 +99,9 @@ fn val_reads(val: &Val, reg: Reg) -> bool {
         Val::Reg(r) => *r == reg,
         Val::Capture(_) | Val::Global(_) | Val::Int(_) | Val::Bytes(_) | Val::Extern(_) => false,
         Val::ContLam(cont) => expr_reads(&cont.body, reg),
-        Val::Ctor(_, fields) => fields.iter().any(|&f| f == reg),
+        Val::Ctor(_, fields) => fields.contains(&reg),
         Val::Field(r, _) => *r == reg,
-        Val::Prim(_, regs) => regs.iter().any(|&r| r == reg),
+        Val::Prim(_, regs) => regs.contains(&reg),
     }
 }
 
@@ -114,7 +114,7 @@ fn expr_reads(expr: &Expr, reg: Reg) -> bool {
             expr_reads(&fun.body, reg) || (*rd != reg && expr_reads(body, reg))
         }
         Expr::Encore(rf, args, rk) => {
-            *rf == reg || *rk == reg || args.iter().any(|&a| a == reg)
+            *rf == reg || *rk == reg || args.contains(&reg)
         }
         Expr::Match(rs, _, cases) => {
             *rs == reg || cases.iter().any(|c| expr_reads(&c.body, reg))

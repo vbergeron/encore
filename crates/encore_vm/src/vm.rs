@@ -73,9 +73,9 @@ impl<'a> Vm<'a> {
             F: Fn(&mut Vm, Args) -> Result<O, ExternError>,
         {
             // SAFETY: `F` is statically enforced to be zero-sized at the
-            // registration site, so producing an `F` out of uninitialised
-            // memory has no bytes to initialise.
-            let f: F = unsafe { core::mem::MaybeUninit::<F>::uninit().assume_init() };
+            // registration site; zeroed memory is a valid representation for
+            // any ZST (there are no bytes to have a wrong value).
+            let f: F = unsafe { core::mem::zeroed() };
             let args = Args::decode(vm, arg)?;
             let out = f(vm, args)?;
             out.encode(vm).map_err(ExternError::from)
@@ -122,7 +122,7 @@ impl<'a> Vm<'a> {
     }
 
     pub fn alloc_bytes(&mut self, data: &[u8]) -> Result<Value, VmError> {
-        let n_data_words = (data.len() + 3) / 4;
+        let n_data_words = data.len().div_ceil(4);
         let total = 2 + n_data_words;
         let addr = self.alloc(total)?;
         self.arena[addr + 0] = Value::gc_header(total as u8);
@@ -154,8 +154,8 @@ impl<'a> Vm<'a> {
     pub fn bytes_slice<'b>(&self, val: Value, buf: &'b mut [u8]) -> &'b [u8] {
         let len = self.bytes_len(val);
         let n = if len < buf.len() { len } else { buf.len() };
-        for i in 0..n {
-            buf[i] = self.bytes_read(val, i);
+        for (i, slot) in buf.iter_mut().enumerate().take(n) {
+            *slot = self.bytes_read(val, i);
         }
         &buf[..n]
     }
@@ -452,7 +452,7 @@ impl<'a> Vm<'a> {
                     let rd = self.code.read_reg();
                     let rs = self.code.read_reg();
                     let n = self.registers[rs].int_value()?;
-                    if n < 0 || n > 255 {
+                    if !(0..=255).contains(&n) {
                         return Err(VmError::ByteRange { value: n, pc });
                     }
                     let addr = self.alloc(3)?;
@@ -478,7 +478,7 @@ impl<'a> Vm<'a> {
                 opcode::BYTES => {
                     let rd = self.code.read_reg();
                     let len = self.code.read_u8() as usize;
-                    let n_data_words = (len + 3) / 4;
+                    let n_data_words = len.div_ceil(4);
                     let total = 2 + n_data_words;
                     let addr = self.alloc(total)?;
                     self.arena[addr + 0] = Value::gc_header(total as u8);
@@ -527,7 +527,7 @@ impl<'a> Vm<'a> {
                     let a_len = self.arena[a_addr + 1].bytes_hdr_len();
                     let b_len = self.arena[b_addr + 1].bytes_hdr_len();
                     let new_len = a_len + b_len;
-                    let n_data_words = (new_len + 3) / 4;
+                    let n_data_words = new_len.div_ceil(4);
                     let total = 2 + n_data_words;
                     let addr = self.alloc(total)?;
                     self.arena[addr + 0] = Value::gc_header(total as u8);
@@ -563,7 +563,7 @@ impl<'a> Vm<'a> {
                     let rn = self.code.read_reg();
                     let start = self.registers[ri].int_value()? as usize;
                     let slice_len = self.registers[rn].int_value()? as usize;
-                    let n_data_words = (slice_len + 3) / 4;
+                    let n_data_words = slice_len.div_ceil(4);
                     let total = 2 + n_data_words;
                     let addr = self.alloc(total)?;
                     self.arena[addr + 0] = Value::gc_header(total as u8);
@@ -598,7 +598,7 @@ impl<'a> Vm<'a> {
                     let eq = if a_len != b_len {
                         false
                     } else {
-                        let n_words = (a_len + 3) / 4;
+                        let n_words = a_len.div_ceil(4);
                         let mut equal = true;
                         for i in 0..n_words {
                             if self.arena[a_addr + 2 + i].to_u32()

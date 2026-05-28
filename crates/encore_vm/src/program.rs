@@ -61,10 +61,10 @@ impl<'a> Program<'a> {
         let code_end = code_start + code_len;
 
         let mut globals = [CodeAddress::new(0); 64];
-        for i in 0..n_globals {
+        for (i, slot) in globals.iter_mut().enumerate().take(n_globals) {
             let off = globals_start + i * 2;
             let raw = u16::from_le_bytes([bytes[off], bytes[off + 1]]);
-            globals[i] = CodeAddress::new(raw);
+            *slot = CodeAddress::new(raw);
         }
 
         Ok(Self {
@@ -104,7 +104,7 @@ fn parse_name_section<'a>(data: &'a [u8]) -> NameEntryIter<'a> {
     NameEntryIter { data, pos: 2, remaining: n }
 }
 
-fn skip_name_section<'a>(data: &'a [u8]) -> &'a [u8] {
+fn skip_name_section(data: &[u8]) -> &[u8] {
     if data.len() < 2 { return &[]; }
     let n = u16::from_le_bytes([data[0], data[1]]) as usize;
     let mut pos = 2;

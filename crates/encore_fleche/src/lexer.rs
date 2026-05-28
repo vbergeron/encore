@@ -47,7 +47,7 @@ impl Lexer {
 
         match self.input[self.pos] {
             '-' if self.lookahead() == Some('>') => { self.pos += 2; Ok(Token::Arrow) }
-            '-' if self.lookahead().map_or(false, |c| c.is_ascii_digit()) => {
+            '-' if self.lookahead().is_some_and(|c| c.is_ascii_digit()) => {
                 self.pos += 1;
                 Ok(self.read_number(-1))
             }
@@ -169,6 +169,7 @@ impl TokenStream {
         Ok(self.peeked.as_ref().unwrap())
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn next(&mut self) -> Result<Token, ParseError> {
         if let Some(tok) = self.peeked.take() {
             return Ok(tok);

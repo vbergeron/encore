@@ -226,6 +226,7 @@ impl Parser {
         }))
     }
 
+    #[allow(clippy::type_complexity)]
     fn parse_if_binding(&mut self) -> Result<ds::Expr, ParseError> {
         self.tokens.expect(&Token::If)?;
 

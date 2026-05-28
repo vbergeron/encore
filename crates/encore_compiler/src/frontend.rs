@@ -49,6 +49,10 @@ pub struct CtorRegistry {
     next_type_id: u8,
 }
 
+impl Default for CtorRegistry {
+    fn default() -> Self { Self::new() }
+}
+
 impl CtorRegistry {
     pub fn new() -> Self {
         let mut ctors = BTreeMap::new();
