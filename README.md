@@ -17,20 +17,20 @@ extracted .scm
 
 ## Why Encore?
 
-The name comes from the VM's single calling opcode: `ENCORE`. There is no call stack — every function call sets the callee and continuation registers and jumps, never returning. The word fits: in French *encore* means *again*, *still*, *more* — the machine just keeps going.
+The name comes from the VM's single calling opcode: `ENCORE`. Every function call sets the callee and continuation registers and jumps without returning; there is no call stack. In French, *encore* means *again*, *still*, *more*. It fits.
 
-On the practical side, Rocq's extraction mechanism produces correct-by-construction Scheme code, but running it anywhere below a full Lisp runtime has historically meant a large porting effort. Encore provides the missing link: a tiny, allocation-controlled, garbage-collected bytecode interpreter that compiles to a `no_std` Rust crate and can be linked into firmware with a fixed heap budget.
+Rocq's extraction mechanism produces correct-by-construction Scheme code, but running it anywhere below a full Lisp runtime has historically meant a large porting effort. Encore fills that gap: a bytecode interpreter with a built-in GC that compiles to a `no_std` Rust crate and links into firmware with a fixed heap budget.
 
 ## Crates
 
 ### `encore_vm`
 
-The VM itself. `#![no_std]`, no heap allocator required beyond the arena you hand it.
+The VM itself. Requires only a fixed arena; `#![no_std]`, brings its own GC.
 
-- Packed 32-bit values — closures, constructors, integers, byte strings
+- Packed 32-bit values: closures, constructors, integers, byte strings
 - 256-register file, bump-allocation heap arena
-- Mark-compact garbage collector (no external allocator needed)
-- Single calling convention: `ENCORE` opcode — set callee and continuation, jump, never return
+- Mark-compact garbage collector
+- Single calling convention: `ENCORE` opcode, set callee and continuation, jump without returning
 
 See [VM.md](VM.md) for the value encoding, opcode table, and binary format. See [AOT.md](AOT.md) for the native/ahead-of-time compilation design.
 
@@ -42,15 +42,15 @@ See [SCHEME.md](SCHEME.md) for the frontend reference.
 
 ### `encore_compiler`
 
-The compiler backend — IR types and all transformation passes:
+The compiler backend. Owns all IR types and transformation passes:
 
-- **DS uncurry** — flattens curried lambdas into multi-argument functions
-- **DSI resolve** — named binders → de Bruijn indices
-- **CPS transform** — converts the indexed AST into continuation-passing style
-- **CPS optimizer** — shrinking reductions and growth-enabling passes (inlining, hoisting, CSE, contification)
-- **ASM resolve** — closure conversion, register assignment
-- **ASM peephole** — sinks redundant `MOV` instructions
-- **ASM emit** — serializes to the ENCR binary format consumed by `encore_vm`
+- **DS uncurry**: flattens curried lambdas into multi-argument functions
+- **DSI resolve**: named binders to de Bruijn indices
+- **CPS transform**: converts the indexed AST into continuation-passing style
+- **CPS optimizer**: shrinking reductions and growth-enabling passes (inlining, hoisting, CSE, contification)
+- **ASM resolve**: closure conversion, register assignment
+- **ASM peephole**: sinks redundant `MOV` instructions
+- **ASM emit**: serializes to the ENCR binary format consumed by `encore_vm`
 
 See [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
 
@@ -58,10 +58,10 @@ See [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
 
 Command-line interface. Useful for development and inspection on a host machine before deploying to a target:
 
-- **`encore compile scheme`** — compile a Rocq-extracted `.scm` file to `.encr` bytecode
-- **`encore run`** — load and execute a compiled `.encr` program on the host
-- **`encore disasm`** — disassemble a binary (plain listing or interactive TUI)
-- **`encore compile fleche`** — compile a Fleche source file (see below)
+- **`encore compile scheme`**: compile a Rocq-extracted `.scm` file to `.encr` bytecode
+- **`encore run`**: load and execute a compiled `.encr` program on the host
+- **`encore disasm`**: disassemble a binary (plain listing or interactive TUI)
+- **`encore compile fleche`**: compile a Fleche source file (see below)
 
 ### `encore_disasm`
 
@@ -127,7 +127,7 @@ encore compile scheme extracted.scm --cps-optimize-fuel 200 --cps-optimize-inlin
 
 ## Fleche
 
-[Fleche](FLECHE.md) is a small functional language included in the repository as a test vehicle for the VM and compiler pipeline. It is not the intended production input — Rocq extraction is — but it is convenient for writing targeted unit tests and validating new compiler passes without going through a full Rocq proof cycle.
+[Fleche](FLECHE.md) is a small functional language included in the repository as a test vehicle for the VM and compiler pipeline. It is not the intended production input (Rocq extraction is), but it is useful for writing targeted unit tests and validating new compiler passes without a full Rocq proof cycle.
 
 ```
 data Zero | Succ(n)
