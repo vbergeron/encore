@@ -1,86 +1,67 @@
 # Encore!
 
-Encore is a lightweight bytecode virtual machine where every function call is a tail call. There is no call stack — continuations are first-class values and control flow is expressed entirely through the `ENCORE` opcode, which sets the callee and continuation registers, jumps, and never returns. A CPS-transforming compiler targeting the VM is included, along with [Fleche](FLECHE.md), a small functional language that serves as its frontend.
+Encore is a lightweight bytecode VM that runs **Rocq-extracted functional programs on bare-metal targets** — microcontrollers, embedded systems, or any `no_std` Rust environment. The VM has no call stack: every function call is a tail call, expressed through a single `ENCORE` opcode that sets callee and continuation registers and jumps. Continuations are first-class values; the included CPS-transforming compiler makes them explicit.
 
-## Architecture
+The primary workflow is:
 
 ```
-Fleche source
-    │  encore_fleche::parse
+Rocq proof / program
+    │  Extraction (Scheme)
     ▼
- ds::Module        direct-style AST (nested expressions, named binders)
-    │  ds_uncurry
+extracted .scm
+    │  encore compile scheme
     ▼
- ds::Module        uncurried (multi-arg lambdas and saturated applications)
-    │  dsi_resolve
+  .encr bytecode
+    │  encore_vm  (#![no_std])
     ▼
-dsi::Module        de Bruijn-indexed AST (nameless, capture-safe)
-    │  cps_transform
-    ▼
-cps::Module        continuation-passing style (explicit continuations)
-    │  cps_optimize
-    ▼
-cps::Module        optimized CPS
-    │  asm_resolve
-    ▼
-asm::Module        resolved locations (registers, captures, globals — no names)
-    │  asm_emit
-    ▼
-  bytecode         binary format consumed by encore_vm
-    │  run
-    ▼
-  Value            packed 32-bit runtime value
+  Value  (packed 32-bit runtime value, runs on microcontroller)
 ```
+
+## Why this exists
+
+Rocq's extraction mechanism produces correct-by-construction Scheme code, but running it anywhere below a full Lisp runtime has historically meant a large porting effort. Encore provides the missing link: a tiny, allocation-controlled, garbage-collected bytecode interpreter that compiles to a `no_std` Rust crate and can be linked into firmware with a fixed heap budget.
 
 ## Crates
 
-### `encore`
-
-Command-line interface that ties the frontend and backend together. Provides subcommands:
-
-- **`encore run`** — load and execute a compiled `.bin` program
-- **`encore compile fleche`** — parse Fleche source and compile to bytecode
-- **`encore compile scheme`** — parse Rocq-extracted Scheme and compile to bytecode
-- **`encore disasm`** — disassemble a compiled `.bin` program (plain or interactive TUI)
-
-See [CLI usage](#cli-usage) below.
-
-### `encore_fleche`
-
-The Fleche language frontend — lexer and recursive-descent parser producing a direct-style AST (`ds::Module`). Depends on `encore_compiler` for the IR type definitions.
-
-See [FLECHE.md](FLECHE.md) for the language reference.
-
-### `encore_compiler`
-
-The compiler backend. Owns all IR types (`ds`, `dsi`, `prim`, `cps`, `asm`) and all transformation passes:
-
-- **DS uncurry** — flattens curried lambdas into multi-argument functions, resolves application arities
-- **DSI resolve** — converts named binders to de Bruijn indices for capture-safe CPS transform
-- **CPS transform** — converts the indexed AST into continuation-passing style
-- **CPS optimizer** — shrinking reductions and growth-enabling passes (inlining, hoisting, CSE, contification)
-- **ASM resolve** — closure conversion and name resolution to machine registers
-- **ASM peephole** — register sinking to reduce unnecessary `MOV` instructions
-- **ASM emit** — generates VM bytecode and serializes the program binary
-
-See [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
-
 ### `encore_vm`
 
-A `#![no_std]` bytecode interpreter with:
+The VM itself. `#![no_std]`, no heap allocator required beyond the arena you hand it.
 
-- Packed 32-bit values (closures, constructors, integers, byte strings)
-- 256-register file and heap arena with bump allocation
-- Mark-compact garbage collector
-- Single-opcode calling convention: `ENCORE` (set callee and continuation registers, jump). Continuation resumption uses `ENCORE` with the `NULL` register as the dead continuation
+- Packed 32-bit values — closures, constructors, integers, byte strings
+- 256-register file, bump-allocation heap arena
+- Mark-compact garbage collector (no external allocator needed)
+- Single calling convention: `ENCORE` opcode — set callee and continuation, jump, never return
 
-See [VM.md](VM.md) for details and [AOT.md](AOT.md) for the native compilation design.
+See [VM.md](VM.md) for the value encoding, opcode table, and binary format. See [AOT.md](AOT.md) for the native/ahead-of-time compilation design.
 
 ### `encore_scheme`
 
-Scheme/S-expression frontend for Rocq-extracted `.scm` files. Parses S-expressions, desugars special forms (`lambda`, `match`, `if`, `letrec`, etc.), and lowers to the same `ds::Module` as Fleche. Used by `encore compile scheme` and by bare-metal example build scripts.
+Scheme/S-expression frontend for Rocq-extracted `.scm` files. Parses S-expressions, desugars `lambda`, `match`, `if`, `letrec`, and other special forms, then lowers to the same intermediate representation used by all compiler passes. This is the primary input path.
 
 See [SCHEME.md](SCHEME.md) for the frontend reference.
+
+### `encore_compiler`
+
+The compiler backend — IR types and all transformation passes:
+
+- **DS uncurry** — flattens curried lambdas into multi-argument functions
+- **DSI resolve** — named binders → de Bruijn indices
+- **CPS transform** — converts the indexed AST into continuation-passing style
+- **CPS optimizer** — shrinking reductions and growth-enabling passes (inlining, hoisting, CSE, contification)
+- **ASM resolve** — closure conversion, register assignment
+- **ASM peephole** — sinks redundant `MOV` instructions
+- **ASM emit** — serializes to the ENCR binary format consumed by `encore_vm`
+
+See [OPTIMIZER.md](OPTIMIZER.md) for the optimization passes.
+
+### `encore`
+
+Command-line interface. Useful for development and inspection on a host machine before deploying to a target:
+
+- **`encore compile scheme`** — compile a Rocq-extracted `.scm` file to `.encr` bytecode
+- **`encore run`** — load and execute a compiled `.encr` program on the host
+- **`encore disasm`** — disassemble a binary (plain listing or interactive TUI)
+- **`encore compile fleche`** — compile a Fleche source file (see below)
 
 ### `encore_disasm`
 
@@ -89,72 +70,45 @@ Bytecode disassembler and inspector. Decodes ENCR binaries into a human-readable
 ### Dependency graph
 
 ```
-encore ──► encore_fleche ──► encore_compiler ──► encore_vm
+encore ──► encore_scheme ──► encore_compiler ──► encore_vm
   │
-  ├──► encore_scheme ──► encore_compiler
+  ├──► encore_fleche ──► encore_compiler
   │
-  ├──► encore_disasm ──► encore_vm
-  └──► encore_compiler
+  └──► encore_disasm ──► encore_vm
 ```
 
-## Quick example
+## Quick start
 
-```
-data Zero | Succ(n)
-
-let rec countdown n =
-  match n
-  | Zero -> 0
-  | Succ(pred) -> builtin add 1 (countdown pred)
-  end
-
-let main = countdown Succ(Succ(Succ(Zero)))
-```
-
-## CLI usage
-
-### Compile a Fleche program
+### Compile a Rocq-extracted Scheme file
 
 ```bash
-encore compile fleche hello.fleche --out hello.bin
+encore compile scheme extracted.scm --out program.encr
 ```
 
-### Run a compiled binary
+### Run on host
 
 ```bash
-encore run hello.bin
+encore run program.encr
+encore run program.encr --entry 1          # run the second define (0-based)
+encore run program.encr --heap-size 131072  # 128 K words of heap
 ```
 
-### Options for `run`
+### Inspect the bytecode
 
 ```bash
-encore run hello.bin --entry 1          # run the second define (0-based)
-encore run hello.bin --heap-size 131072  # 128K words of heap
+encore disasm program.encr                 # plain text listing
+encore disasm program.encr --interactive   # ratatui TUI browser
 ```
 
-### Disassemble a binary
+### Optimizer flags
+
+Every CPS optimization pass can be toggled individually. All default to `on`.
 
 ```bash
-encore disasm hello.bin                 # plain text listing
-encore disasm hello.bin --interactive   # ratatui TUI browser
+encore compile scheme extracted.scm --cps-optimize=off            # disable entirely
+encore compile scheme extracted.scm --cps-optimize-rewrite-inlining=off
+encore compile scheme extracted.scm --cps-optimize-fuel 200 --cps-optimize-inline-threshold 10
 ```
-
-### Optimizer flags for `compile fleche`
-
-Every CPS optimization pass can be toggled individually with `--cps-optimize-<pass>=on/off`. All default to `on`. The optimizer as a whole can be disabled with `--cps-optimize=off`.
-
-```bash
-# Disable dead code elimination
-encore compile fleche hello.fleche --cps-optimize-simplify-dead-code=off
-
-# Disable all inlining
-encore compile fleche hello.fleche --cps-optimize-rewrite-inlining=off
-
-# Tune optimizer iterations and inline threshold
-encore compile fleche hello.fleche --cps-optimize-fuel 200 --cps-optimize-inline-threshold 10
-```
-
-Available flags:
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -169,10 +123,32 @@ Available flags:
 | `--cps-optimize-rewrite-inlining` | `on` | Function inlining |
 | `--cps-optimize-rewrite-hoisting` | `on` | Loop-invariant hoisting |
 | `--cps-optimize-rewrite-cse` | `on` | Common subexpression elimination |
-| `--cps-optimize-rewrite-contification` | `on` | Contification (turn escaping functions into local continuations) |
+| `--cps-optimize-rewrite-contification` | `on` | Contification |
+
+## Fleche
+
+[Fleche](FLECHE.md) is a small functional language included in the repository as a test vehicle for the VM and compiler pipeline. It is not the intended production input — Rocq extraction is — but it is convenient for writing targeted unit tests and validating new compiler passes without going through a full Rocq proof cycle.
+
+```
+data Zero | Succ(n)
+
+let rec countdown n =
+  match n
+  | Zero -> 0
+  | Succ(pred) -> builtin add 1 (countdown pred)
+  end
+
+let main = countdown Succ(Succ(Succ(Zero)))
+```
+
+```bash
+encore compile fleche hello.fleche --out hello.encr
+encore run hello.encr
+```
 
 ## Building and testing
 
 ```bash
+cargo build
 cargo test
 ```
