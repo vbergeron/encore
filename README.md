@@ -1,8 +1,6 @@
 # Encore!
 
-Encore is a lightweight bytecode VM that runs **Rocq-extracted functional programs on bare-metal targets** — microcontrollers, embedded systems, or any `no_std` Rust environment. The VM has no call stack: every function call is a tail call, expressed through a single `ENCORE` opcode that sets callee and continuation registers and jumps. Continuations are first-class values; the included CPS-transforming compiler makes them explicit.
-
-The primary workflow is:
+Encore is a lightweight bytecode VM and CPS-transforming compiler designed to run **Rocq-extracted functional programs on resource-constrained targets**. The runtime is a `#![no_std]` Rust crate that fits in firmware; the compiler pipeline takes Rocq-extracted Scheme as its primary input and produces compact bytecode.
 
 ```
 Rocq proof / program
@@ -14,12 +12,14 @@ extracted .scm
   .encr bytecode
     │  encore_vm  (#![no_std])
     ▼
-  Value  (packed 32-bit runtime value, runs on microcontroller)
+  Value
 ```
 
-## Why this exists
+## Why Encore?
 
-Rocq's extraction mechanism produces correct-by-construction Scheme code, but running it anywhere below a full Lisp runtime has historically meant a large porting effort. Encore provides the missing link: a tiny, allocation-controlled, garbage-collected bytecode interpreter that compiles to a `no_std` Rust crate and can be linked into firmware with a fixed heap budget.
+The name comes from the VM's single calling opcode: `ENCORE`. There is no call stack — every function call sets the callee and continuation registers and jumps, never returning. The word fits: in French *encore* means *again*, *still*, *more* — the machine just keeps going.
+
+On the practical side, Rocq's extraction mechanism produces correct-by-construction Scheme code, but running it anywhere below a full Lisp runtime has historically meant a large porting effort. Encore provides the missing link: a tiny, allocation-controlled, garbage-collected bytecode interpreter that compiles to a `no_std` Rust crate and can be linked into firmware with a fixed heap budget.
 
 ## Crates
 
