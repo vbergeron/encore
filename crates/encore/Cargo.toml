@@ -1,5 +1,5 @@
 [package]
-name = "encore"
+name = "encore-toolchain"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -9,13 +9,17 @@ description = "Compiler and bytecode VM for Fleche, a functional language with f
 keywords = ["compiler", "vm", "functional", "cps", "bytecode"]
 categories = ["compilers", "command-line-utilities"]
 
+[[bin]]
+name = "encore"
+path = "src/main.rs"
+
 [features]
 stats = ["encore_vm/stats"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
-encore_compiler = { path = "../encore_compiler", version = "0.1.2" }
-encore_disasm = { path = "../encore_disasm", version = "0.1.2" }
-encore_fleche = { path = "../encore_fleche", version = "0.1.2" }
-encore_scheme = { path = "../encore_scheme", version = "0.1.2" }
-encore_vm = { path = "../encore_vm", version = "0.1.2" }
+encore_compiler = { path = "../encore_compiler", version = "0.1.3" }
+encore_disasm = { path = "../encore_disasm", version = "0.1.3" }
+encore_fleche = { path = "../encore_fleche", version = "0.1.3" }
+encore_scheme = { path = "../encore_scheme", version = "0.1.3" }
+encore_vm = { path = "../encore_vm", version = "0.1.3" }

@@ -10,4 +10,4 @@ keywords = ["compiler", "cps", "bytecode", "functional", "ir"]
 categories = ["compilers"]
 
 [dependencies]
-encore_vm = { path = "../encore_vm", version = "0.1.2" }
+encore_vm = { path = "../encore_vm", version = "0.1.3" }

@@ -29,4 +29,4 @@ jobs:
           cargo publish -p encore_fleche
           cargo publish -p encore_scheme
           sleep 30
-          cargo publish -p encore
+          cargo publish -p encore-toolchain
