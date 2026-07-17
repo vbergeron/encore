@@ -14,8 +14,8 @@ stats = ["encore_vm/stats"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
-encore_compiler = { path = "../encore_compiler", version = "0.1.1" }
-encore_disasm = { path = "../encore_disasm", version = "0.1.1" }
-encore_fleche = { path = "../encore_fleche", version = "0.1.1" }
-encore_scheme = { path = "../encore_scheme", version = "0.1.1" }
-encore_vm = { path = "../encore_vm", version = "0.1.1" }
+encore_compiler = { path = "../encore_compiler", version = "0.1.2" }
+encore_disasm = { path = "../encore_disasm", version = "0.1.2" }
+encore_fleche = { path = "../encore_fleche", version = "0.1.2" }
+encore_scheme = { path = "../encore_scheme", version = "0.1.2" }
+encore_vm = { path = "../encore_vm", version = "0.1.2" }
