@@ -10,5 +10,5 @@ keywords = ["parser", "compiler", "functional", "language", "cps"]
 categories = ["compilers", "parser-implementations"]
 
 [dependencies]
-encore_compiler = { path = "../encore_compiler", version = "0.1.0" }
-encore_vm = { path = "../encore_vm", version = "0.1.0" }
+encore_compiler = { path = "../encore_compiler", version = "0.1.1" }
+encore_vm = { path = "../encore_vm", version = "0.1.1" }
