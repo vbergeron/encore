@@ -1,10 +1,13 @@
 [package]
 name = "encore_compiler"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Encore compiler — CPS IR pipeline for the Fleche functional language"
 
 [dependencies]
-encore_vm = { path = "../encore_vm" }
+encore_vm = { path = "../encore_vm", version = "0.1.0" }
 
 [dev-dependencies]
-encore_scheme = { path = "../encore_scheme" }
+encore_scheme = { path = "../encore_scheme", version = "0.1.0" }

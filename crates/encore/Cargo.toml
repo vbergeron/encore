@@ -1,15 +1,18 @@
 [package]
 name = "encore"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Compiler and bytecode VM for Fleche, a functional language with first-class continuations"
 
 [features]
 stats = ["encore_vm/stats"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
-encore_compiler = { path = "../encore_compiler" }
-encore_disasm = { path = "../encore_disasm" }
-encore_fleche = { path = "../encore_fleche" }
-encore_scheme = { path = "../encore_scheme" }
-encore_vm = { path = "../encore_vm" }
+encore_compiler = { path = "../encore_compiler", version = "0.1.0" }
+encore_disasm = { path = "../encore_disasm", version = "0.1.0" }
+encore_fleche = { path = "../encore_fleche", version = "0.1.0" }
+encore_scheme = { path = "../encore_scheme", version = "0.1.0" }
+encore_vm = { path = "../encore_vm", version = "0.1.0" }
