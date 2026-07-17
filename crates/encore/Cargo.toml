@@ -4,7 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme.workspace = true
 description = "Compiler and bytecode VM for Fleche, a functional language with first-class continuations"
+keywords = ["compiler", "vm", "functional", "cps", "bytecode"]
+categories = ["compilers", "command-line-utilities"]
 
 [features]
 stats = ["encore_vm/stats"]

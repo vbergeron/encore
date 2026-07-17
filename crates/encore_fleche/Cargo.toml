@@ -4,7 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme.workspace = true
 description = "Fleche language parser — lexer and parser producing Encore compiler IR"
+keywords = ["parser", "compiler", "functional", "language", "cps"]
+categories = ["compilers", "parser-implementations"]
 
 [dependencies]
 encore_compiler = { path = "../encore_compiler", version = "0.1.0" }

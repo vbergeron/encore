@@ -4,7 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme.workspace = true
 description = "Encore bytecode VM — no_std, 32-bit packed values, mark-compact GC"
+keywords = ["vm", "bytecode", "no-std", "functional", "embedded"]
+categories = ["no-std", "embedded"]
 
 [features]
 stats = []

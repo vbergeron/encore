@@ -4,7 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+readme.workspace = true
 description = "S-expression frontend for Encore — parses Rocq-extracted Scheme into Encore IR"
+keywords = ["parser", "scheme", "compiler", "rocq", "cps"]
+categories = ["compilers", "parser-implementations"]
 
 [dependencies]
 encore_compiler = { path = "../encore_compiler", version = "0.1.0" }
