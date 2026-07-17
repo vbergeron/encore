@@ -1,0 +1,32 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Publish crates
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          cargo publish -p encore_derive
+          sleep 30
+          cargo publish -p encore_vm
+          sleep 30
+          cargo publish -p encore_compiler
+          sleep 30
+          cargo publish -p encore_disasm
+          cargo publish -p encore_fleche
+          cargo publish -p encore_scheme
+          sleep 30
+          cargo publish -p encore

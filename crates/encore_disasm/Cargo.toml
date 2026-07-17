@@ -1,9 +1,12 @@
 [package]
 name = "encore_disasm"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Encore bytecode disassembler with interactive ratatui TUI"
 
 [dependencies]
-encore_vm = { path = "../encore_vm" }
+encore_vm = { path = "../encore_vm", version = "0.1.0" }
 ratatui = "0.29"
 crossterm = "0.28"
