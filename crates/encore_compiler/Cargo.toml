@@ -11,6 +11,3 @@ categories = ["compilers"]
 
 [dependencies]
 encore_vm = { path = "../encore_vm", version = "0.1.0" }
-
-[dev-dependencies]
-encore_scheme = { path = "../encore_scheme", version = "0.1.0" }
