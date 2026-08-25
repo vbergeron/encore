@@ -114,3 +114,19 @@ fn test_scheme_bytes_of_list_nat_boundary_values() {
     ");
     assert_eq!(run_scheme_bytes(&source), vec![0, 127, 255]);
 }
+
+// -- Scheme: Rocq-extracted (String (Ascii ...)) folding (issue #7) --
+
+#[test]
+fn test_scheme_folds_rocq_string_literal() {
+    // Default Rocq extraction of the two-character string "Hi": nested
+    // `String`/`Ascii`/`EmptyString` constructor applications, with each
+    // `Ascii` bit spelled out as a `True`/`False` constructor (b0 = LSB).
+    let source = r#"
+        (define main
+          `(String ,`(Ascii ,`(False) ,`(False) ,`(False) ,`(True) ,`(False) ,`(False) ,`(True) ,`(False))
+             ,`(String ,`(Ascii ,`(True) ,`(False) ,`(False) ,`(True) ,`(False) ,`(True) ,`(True) ,`(False))
+                ,`(EmptyString))))
+    "#;
+    assert_eq!(run_scheme_bytes(source), b"Hi".to_vec());
+}
