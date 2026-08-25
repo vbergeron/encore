@@ -559,6 +559,130 @@ pub fn fold_module_strings(module: ir::Module) -> ir::Module {
 }
 
 // ---------------------------------------------------------------------------
+// Phase 1.6: fold Rocq-extracted Peano `nat` chains into integer literals.
+//
+// `Extract Inductive nat` (see issue #6) makes Rocq emit `nat` constants as
+// nested applications of a hand-rolled successor lambda over the literal
+// `0`, rather than using the default `(O)`/`(S ,n)` constructor form:
+//
+//   0        =>  `(0)
+//   S n      =>  `((lambda (n) (+ n 1)) ,n)
+//
+// So a `Definition` of a small `nat` constant extracts to a chain like
+// `((lambda (n) (+ n 1)) ,((lambda (n) (+ n 1)) ,(0)))` (depth = the value).
+// `(0)` already parses straight to `Expr::Int(0)` (see `parse_quasiquote`),
+// but the successor applications are genuine `App(Lambda, ..)` nodes, and
+// folding a chain hundreds deep relies on the CPS optimizer's fuel-limited
+// inlining/simplify fixpoint — which runs out of fuel long before the chain
+// bottoms out, leaving the value as dozens of unfolded runtime additions.
+// Each link is closed and fully evaluable at compile time, so fold the whole
+// chain here instead, the same way `fold_string_literals` handles issue #7.
+// ---------------------------------------------------------------------------
+
+/// Try to fold a single already-child-folded `App` node matching
+/// `(lambda (n) (+ n 1)) applied-to arg` into `Int(n + 1)`, given `arg` has
+/// already folded to a known integer.
+fn try_fold_succ_app(func: &ir::Expr, arg: &ir::Expr) -> Option<ir::Expr> {
+    let ir::Expr::Int(n) = arg else { return None };
+    let ir::Expr::Lambda(param, body) = func else {
+        return None;
+    };
+    let ir::Expr::Prim(PrimOp::Int(IntOp::Add), add_args) = body.as_ref() else {
+        return None;
+    };
+    let [a, b] = add_args.as_slice() else {
+        return None;
+    };
+    let is_param = |e: &ir::Expr| matches!(e, ir::Expr::Var(v) if v == param);
+    let one_lit = |e: &ir::Expr| matches!(e, ir::Expr::Int(1));
+    let matches_pattern = (is_param(a) && one_lit(b)) || (one_lit(a) && is_param(b));
+    if !matches_pattern {
+        return None;
+    }
+    Some(ir::Expr::Int(n.wrapping_add(1)))
+}
+
+/// Bottom-up rewrite: fold every Peano successor-application chain
+/// reachable in `expr` into integer literals, leaving everything else
+/// (including successor applications to a non-constant argument, which stay
+/// genuine runtime calls) untouched.
+fn fold_nat_literals(expr: ir::Expr) -> ir::Expr {
+    match expr {
+        ir::Expr::Var(_)
+        | ir::Expr::Int(_)
+        | ir::Expr::Bytes(_)
+        | ir::Expr::Error
+        | ir::Expr::Extern(_) => expr,
+
+        ir::Expr::Lambda(param, body) => {
+            ir::Expr::Lambda(param, Box::new(fold_nat_literals(*body)))
+        }
+        ir::Expr::Lambdas(params, body) => {
+            ir::Expr::Lambdas(params, Box::new(fold_nat_literals(*body)))
+        }
+        ir::Expr::App(f, arg) => {
+            let f = fold_nat_literals(*f);
+            let arg = fold_nat_literals(*arg);
+            match try_fold_succ_app(&f, &arg) {
+                Some(folded) => folded,
+                None => ir::Expr::App(Box::new(f), Box::new(arg)),
+            }
+        }
+        ir::Expr::AppN(f, args) => ir::Expr::AppN(
+            Box::new(fold_nat_literals(*f)),
+            args.into_iter().map(fold_nat_literals).collect(),
+        ),
+        ir::Expr::If(cond, then_br, else_br) => ir::Expr::If(
+            Box::new(fold_nat_literals(*cond)),
+            Box::new(fold_nat_literals(*then_br)),
+            Box::new(fold_nat_literals(*else_br)),
+        ),
+        ir::Expr::Let(name, val, body) => ir::Expr::Let(
+            name,
+            Box::new(fold_nat_literals(*val)),
+            Box::new(fold_nat_literals(*body)),
+        ),
+        ir::Expr::Letrec(name, val, body) => ir::Expr::Letrec(
+            name,
+            Box::new(fold_nat_literals(*val)),
+            Box::new(fold_nat_literals(*body)),
+        ),
+        ir::Expr::Ctor(tag, fields) => {
+            ir::Expr::Ctor(tag, fields.into_iter().map(fold_nat_literals).collect())
+        }
+        ir::Expr::Match(scrutinee, cases) => ir::Expr::Match(
+            Box::new(fold_nat_literals(*scrutinee)),
+            cases
+                .into_iter()
+                .map(|c| ir::MatchCase {
+                    tag: c.tag,
+                    bindings: c.bindings,
+                    body: fold_nat_literals(c.body),
+                })
+                .collect(),
+        ),
+        ir::Expr::Prim(op, args) => {
+            ir::Expr::Prim(op, args.into_iter().map(fold_nat_literals).collect())
+        }
+    }
+}
+
+/// Fold Rocq-extracted Peano `nat` chains into integer literals across every
+/// definition in the module.
+pub fn fold_module_nats(module: ir::Module) -> ir::Module {
+    ir::Module {
+        defines: module
+            .defines
+            .into_iter()
+            .map(|d| ir::Define {
+                name: d.name,
+                body: fold_nat_literals(d.body),
+            })
+            .collect(),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Phase 2: ir::Module -> ds::Module (lowering)
 // ---------------------------------------------------------------------------
 
@@ -741,6 +865,7 @@ mod tests {
         let sexps = parser::parse(src).unwrap();
         let scheme_module = parse_program(&sexps).unwrap();
         let scheme_module = fold_module_strings(scheme_module);
+        let scheme_module = fold_module_nats(scheme_module);
         let (ds_module, _) = lower_module(scheme_module);
         ds_module
     }
@@ -1005,6 +1130,74 @@ mod tests {
                     assert_eq!(fields.len(), 2);
                 }
                 other => panic!("expected untouched String Ctor, got {other:?}"),
+            },
+            other => panic!("expected Lambda, got {other:?}"),
+        }
+    }
+
+    // -- issue #6: Rocq-extracted Peano `nat` chain folding --
+
+    /// Build a Peano-encoded `nat` literal for `n`, in the shape emitted by
+    /// `Extract Inductive nat` (see the issue's reproduction).
+    fn nat_sexp(n: u32) -> String {
+        let mut out = "`(0)".to_string();
+        for _ in 0..n {
+            out = format!("`((lambda (n) (+ n 1)) ,{out})");
+        }
+        out
+    }
+
+    #[test]
+    fn fold_rocq_nat_zero() {
+        // `(0)` already parses straight to Int(0), but check it survives
+        // the nat-folding pass unchanged.
+        let src = format!("(define z {})", nat_sexp(0));
+        let m = parse_and_lower(&src);
+        assert!(matches!(&m.defines[0].body, ds::Expr::Int(0)));
+    }
+
+    #[test]
+    fn fold_rocq_nat_one_step() {
+        let src = format!("(define one {})", nat_sexp(1));
+        let m = parse_and_lower(&src);
+        assert!(matches!(&m.defines[0].body, ds::Expr::Int(1)));
+    }
+
+    #[test]
+    fn fold_rocq_nat_chain_from_issue() {
+        // The exact reproduction from issue #6: a 3-deep successor chain
+        // should fold to a single Int(3) global, not three separate
+        // `let _i = 1` bindings.
+        let src = "(define aN_R `((lambda (n) (+ n 1)) ,`((lambda (n) (+ n 1)) ,`((lambda (n) (+ n 1)) ,`(0)))))";
+        let m = parse_and_lower(src);
+        assert!(matches!(&m.defines[0].body, ds::Expr::Int(3)));
+    }
+
+    #[test]
+    fn fold_rocq_nat_deep_chain() {
+        // A chain far deeper than the CPS optimizer's fixed fuel budget
+        // (see cps_optimize::OptimizeConfig::fuel) must still fold, since
+        // this pass runs before the CPS optimizer even sees the chain.
+        let src = format!("(define aN_R {})", nat_sexp(82));
+        let m = parse_and_lower(&src);
+        assert!(matches!(&m.defines[0].body, ds::Expr::Int(82)));
+    }
+
+    #[test]
+    fn fold_rocq_nat_leaves_non_constant_arg_untouched() {
+        // The successor lambda applied to a runtime variable isn't a
+        // compile-time constant, so it must remain a genuine call.
+        let src = "(define f (lambda (rest) ((lambda (n) (+ n 1)) rest)))";
+        let sexps = parser::parse(src).unwrap();
+        let scheme_module = parse_program(&sexps).unwrap();
+        let scheme_module = fold_module_nats(scheme_module);
+        match &scheme_module.defines[0].body {
+            ir::Expr::Lambda(_, body) => match body.as_ref() {
+                ir::Expr::App(func, arg) => {
+                    assert!(matches!(func.as_ref(), ir::Expr::Lambda(_, _)));
+                    assert!(matches!(arg.as_ref(), ir::Expr::Var(v) if v == "rest"));
+                }
+                other => panic!("expected untouched App, got {other:?}"),
             },
             other => panic!("expected Lambda, got {other:?}"),
         }
