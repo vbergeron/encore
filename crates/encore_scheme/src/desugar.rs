@@ -411,6 +411,154 @@ fn parse_application(items: &[Sexp]) -> Result<ir::Expr, String> {
 }
 
 // ---------------------------------------------------------------------------
+// Phase 1.5: fold Rocq-extracted (String (Ascii b0..b7) rest) chains into
+// native byte literals.
+//
+// Rocq's default extraction represents `string` as nested applications of
+// the `String`/`EmptyString` constructors, and `ascii` as `Ascii` applied to
+// eight `True`/`False`-tagged bools (see issue #7). Each character is a
+// closed expression over constant bits, so the whole chain can be collapsed
+// to a single `Expr::Bytes` literal at parse time — no runtime dependency,
+// no CPS optimizer support required.
+// ---------------------------------------------------------------------------
+
+/// Combine eight `True`/`False` constructor fields (`b0` = LSB .. `b7` =
+/// MSB, matching Coq's `nat_of_ascii`) into a single byte, or `None` if any
+/// field isn't a closed bool constructor.
+fn try_fold_ascii_bits(fields: &[ir::Expr]) -> Option<u8> {
+    if fields.len() != 8 {
+        return None;
+    }
+    let mut byte: u8 = 0;
+    for (i, field) in fields.iter().enumerate() {
+        let bit = match field {
+            ir::Expr::Ctor(tag, args) if args.is_empty() && tag == "True" => 1u8,
+            ir::Expr::Ctor(tag, args) if args.is_empty() && tag == "False" => 0u8,
+            _ => return None,
+        };
+        byte |= bit << i;
+    }
+    Some(byte)
+}
+
+/// After bottom-up folding, the tail of a `String` chain is either an
+/// already-folded `Bytes` literal (the previously-folded suffix) or the
+/// `EmptyString` terminator. Anything else means the tail isn't fully
+/// known at compile time, so folding must stop.
+fn try_fold_string_tail(tail: &ir::Expr) -> Option<Vec<u8>> {
+    match tail {
+        ir::Expr::Bytes(bytes) => Some(bytes.clone()),
+        ir::Expr::Ctor(tag, fields) if fields.is_empty() && tag == "EmptyString" => {
+            Some(Vec::new())
+        }
+        _ => None,
+    }
+}
+
+/// Try to fold a single already-child-folded `Ctor` node matching
+/// `(String (Ascii b0..b7) rest)` into a `Bytes` literal.
+fn try_fold_string_ctor(tag: &str, fields: &[ir::Expr]) -> Option<ir::Expr> {
+    if tag != "String" || fields.len() != 2 {
+        return None;
+    }
+    let byte = match &fields[0] {
+        ir::Expr::Ctor(ascii_tag, ascii_fields) if ascii_tag == "Ascii" => {
+            try_fold_ascii_bits(ascii_fields)?
+        }
+        _ => return None,
+    };
+    let mut bytes = try_fold_string_tail(&fields[1])?;
+    bytes.insert(0, byte);
+    Some(ir::Expr::Bytes(bytes))
+}
+
+/// Bottom-up rewrite: fold every `String`/`Ascii`/`EmptyString` chain
+/// reachable in `expr` into `Bytes` literals, leaving everything else
+/// untouched.
+fn fold_string_literals(expr: ir::Expr) -> ir::Expr {
+    match expr {
+        ir::Expr::Var(_)
+        | ir::Expr::Int(_)
+        | ir::Expr::Bytes(_)
+        | ir::Expr::Error
+        | ir::Expr::Extern(_) => expr,
+
+        ir::Expr::Lambda(param, body) => {
+            ir::Expr::Lambda(param, Box::new(fold_string_literals(*body)))
+        }
+        ir::Expr::Lambdas(params, body) => {
+            ir::Expr::Lambdas(params, Box::new(fold_string_literals(*body)))
+        }
+        ir::Expr::App(f, arg) => ir::Expr::App(
+            Box::new(fold_string_literals(*f)),
+            Box::new(fold_string_literals(*arg)),
+        ),
+        ir::Expr::AppN(f, args) => ir::Expr::AppN(
+            Box::new(fold_string_literals(*f)),
+            args.into_iter().map(fold_string_literals).collect(),
+        ),
+        ir::Expr::If(cond, then_br, else_br) => ir::Expr::If(
+            Box::new(fold_string_literals(*cond)),
+            Box::new(fold_string_literals(*then_br)),
+            Box::new(fold_string_literals(*else_br)),
+        ),
+        ir::Expr::Let(name, val, body) => ir::Expr::Let(
+            name,
+            Box::new(fold_string_literals(*val)),
+            Box::new(fold_string_literals(*body)),
+        ),
+        ir::Expr::Letrec(name, val, body) => ir::Expr::Letrec(
+            name,
+            Box::new(fold_string_literals(*val)),
+            Box::new(fold_string_literals(*body)),
+        ),
+        ir::Expr::Ctor(tag, fields) => {
+            let fields: Vec<ir::Expr> = fields.into_iter().map(fold_string_literals).collect();
+            if tag == "EmptyString" && fields.is_empty() {
+                // The empty string literal folds to an empty byte sequence
+                // directly, so it can also serve as the terminator for an
+                // enclosing `String` chain (see `try_fold_string_tail`).
+                ir::Expr::Bytes(Vec::new())
+            } else {
+                match try_fold_string_ctor(&tag, &fields) {
+                    Some(folded) => folded,
+                    None => ir::Expr::Ctor(tag, fields),
+                }
+            }
+        }
+        ir::Expr::Match(scrutinee, cases) => ir::Expr::Match(
+            Box::new(fold_string_literals(*scrutinee)),
+            cases
+                .into_iter()
+                .map(|c| ir::MatchCase {
+                    tag: c.tag,
+                    bindings: c.bindings,
+                    body: fold_string_literals(c.body),
+                })
+                .collect(),
+        ),
+        ir::Expr::Prim(op, args) => {
+            ir::Expr::Prim(op, args.into_iter().map(fold_string_literals).collect())
+        }
+    }
+}
+
+/// Fold Rocq-extracted string constructor chains into byte literals across
+/// every definition in the module.
+pub fn fold_module_strings(module: ir::Module) -> ir::Module {
+    ir::Module {
+        defines: module
+            .defines
+            .into_iter()
+            .map(|d| ir::Define {
+                name: d.name,
+                body: fold_string_literals(d.body),
+            })
+            .collect(),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Phase 2: ir::Module -> ds::Module (lowering)
 // ---------------------------------------------------------------------------
 
@@ -592,6 +740,7 @@ mod tests {
     fn parse_and_lower(src: &str) -> ds::Module {
         let sexps = parser::parse(src).unwrap();
         let scheme_module = parse_program(&sexps).unwrap();
+        let scheme_module = fold_module_strings(scheme_module);
         let (ds_module, _) = lower_module(scheme_module);
         ds_module
     }
@@ -799,5 +948,65 @@ mod tests {
         let nil_tag = ctor_names.iter().find(|(_, n)| n == "Nil").unwrap().0;
         let cons_tag = ctor_names.iter().find(|(_, n)| n == "Cons").unwrap().0;
         assert_ne!(nil_tag, cons_tag);
+    }
+
+    // -- issue #7: Rocq-extracted (String (Ascii ...)) folding --
+
+    /// `(Ascii b0..b7)` fields for the given byte, `b0` = LSB, as they'd
+    /// appear in default Rocq extraction (`True`/`False` constructors).
+    fn ascii_sexp(byte: u8) -> String {
+        let bits: Vec<&str> = (0..8)
+            .map(|i| if byte & (1 << i) != 0 { "True" } else { "False" })
+            .collect();
+        format!("`(Ascii ,`({}) ,`({}) ,`({}) ,`({}) ,`({}) ,`({}) ,`({}) ,`({}))",
+            bits[0], bits[1], bits[2], bits[3], bits[4], bits[5], bits[6], bits[7])
+    }
+
+    fn string_sexp(s: &str) -> String {
+        let mut out = "`(EmptyString)".to_string();
+        for &byte in s.as_bytes().iter().rev() {
+            out = format!("`(String ,{} ,{})", ascii_sexp(byte), out);
+        }
+        out
+    }
+
+    #[test]
+    fn fold_rocq_string_literal() {
+        let src = format!("(define greeting {})", string_sexp("Hi"));
+        let m = parse_and_lower(&src);
+        match &m.defines[0].body {
+            ds::Expr::Bytes(bytes) => assert_eq!(bytes, b"Hi"),
+            _ => panic!("expected folded Bytes literal"),
+        }
+    }
+
+    #[test]
+    fn fold_rocq_empty_string_literal() {
+        let src = format!("(define s {})", string_sexp(""));
+        let m = parse_and_lower(&src);
+        match &m.defines[0].body {
+            ds::Expr::Bytes(bytes) => assert!(bytes.is_empty()),
+            _ => panic!("expected folded Bytes literal"),
+        }
+    }
+
+    #[test]
+    fn fold_rocq_string_leaves_non_constant_tail_untouched() {
+        // The tail is a variable, not `EmptyString` or another `String`
+        // chain link, so it can't be folded to a compile-time constant.
+        let src = format!("(define f (lambda (rest) `(String ,{} ,rest)))", ascii_sexp(b'x'));
+        let sexps = parser::parse(&src).unwrap();
+        let scheme_module = parse_program(&sexps).unwrap();
+        let scheme_module = fold_module_strings(scheme_module);
+        match &scheme_module.defines[0].body {
+            ir::Expr::Lambda(_, body) => match body.as_ref() {
+                ir::Expr::Ctor(tag, fields) => {
+                    assert_eq!(tag, "String");
+                    assert_eq!(fields.len(), 2);
+                }
+                other => panic!("expected untouched String Ctor, got {other:?}"),
+            },
+            other => panic!("expected Lambda, got {other:?}"),
+        }
     }
 }

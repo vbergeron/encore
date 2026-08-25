@@ -13,6 +13,7 @@ impl Frontend for SchemeFrontend {
             .map_err(|e| ParseError::from(format!("parse: {e}")))?;
         let scheme_module = desugar::parse_program(&sexps)
             .map_err(|e| ParseError::from(format!("desugar: {e}")))?;
+        let scheme_module = desugar::fold_module_strings(scheme_module);
         let (module, ctor_names) = desugar::lower_module(scheme_module);
         Ok(ParseOutput { module, ctor_names })
     }
