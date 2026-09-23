@@ -35,3 +35,54 @@ jobs:
 
       - name: Test
         run: cargo test --workspace ${{ matrix.features == 'all-features' && '--all-features' || '' }}
+
+  rocq:
+    name: Rocq extraction
+    runs-on: ubuntu-24.04
+    # The image's opam switch belongs to its non-root user (uid 1000), but
+    # actions/checkout needs root to write the runner's files: run the
+    # container as root and drop to that user for the build.
+    container:
+      image: rocq/rocq-prover:9.1
+      options: --user root
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build rocq/ and re-extract the examples
+        run: |
+          user="$(getent passwd 1000 | cut -d: -f1)"
+          echo "building as ${user:?no uid 1000 user in the image}"
+          chown -R "$user" "$GITHUB_WORKSPACE"
+          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && rocq --version && dune build"
+      - name: Committed extraction is up to date
+        run: git -c safe.directory='*' diff --exit-code -- 'examples/*/*.scm' rocq-encore.opam
+
+  extracted:
+    name: Run extracted examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: extracted
+
+      - name: Build the CLI
+        run: cargo build --release --bin encore
+
+      # The .scm files are the committed extraction, which the rocq job
+      # checks is what ExtrEncore.v produces today.
+      - name: Compile and run
+        run: |
+          check() {
+            ./target/release/encore compile scheme "examples/$1/$1.scm" --out "out/$1" --include-metadata
+            got="$(./target/release/encore run "out/$1" --entry check)"
+            echo "$1: check = $got"
+            [ "$got" = "$2" ] || { echo "::error::$1: expected check = $2, got $got"; exit 1; }
+          }
+          check gcd 6
+          check digits 5

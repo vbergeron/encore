@@ -1,0 +1,18 @@
+(dirs :standard \ target)
+
+(rocq.theory
+ (name EncoreExamples.Gcd)
+ (modules Gcd)
+ (theories Stdlib))
+
+; Extraction is a separate rule because dune's rocq.extraction stanza only
+; knows OCaml. The .scm is promoted into the source tree and committed, so
+; the firmware build does not need Rocq; `dune build` keeps it in sync.
+(rule
+ (targets gcd.scm)
+ (mode promote)
+ (deps Gcd.vo %{project_root}/rocq/ExtrEncore.vo)
+ (action
+  (run rocq compile -w -extraction-default-directory
+   -Q %{project_root}/rocq Encore.Extraction -Q . EncoreExamples.Gcd
+   %{dep:Extract.v})))

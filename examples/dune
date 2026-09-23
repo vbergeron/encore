@@ -1,0 +1,2 @@
+; Only the examples with Rocq sources; the others are plain Cargo crates.
+(dirs gcd digits)

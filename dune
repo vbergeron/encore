@@ -1,0 +1,2 @@
+; Rocq sources: the extraction library and the examples extracted through it.
+(dirs rocq examples)

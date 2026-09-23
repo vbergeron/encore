@@ -1,0 +1,6 @@
+; The supported way to extract Rocq programs for Encore. See SCHEME.md,
+; "Extracting from Rocq".
+(rocq.theory
+ (name Encore.Extraction)
+ (package rocq-encore)
+ (theories Stdlib))

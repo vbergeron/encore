@@ -41,6 +41,10 @@ Scheme/S-expression frontend for Rocq-extracted `.scm` files. Parses S-expressio
 
 See [SCHEME.md](SCHEME.md) for the frontend reference.
 
+### `rocq/` (opam package `rocq-encore`)
+
+The supported way to extract Rocq programs for Encore: the `Encore.Extraction` theory (`ExtrEncore.v`) maps `nat` and its operations to VM integers and primitives, pins the `bool`/`list`/`prod` constructor names, and provides byte strings and host externs. Import it before `Extraction`, then compile the `.scm` with `encore compile scheme`. See [SCHEME.md](SCHEME.md#extracting-from-rocq), including the trust assumptions every extracted program relies on.
+
 ### `encore_compiler`
 
 The compiler backend. Owns all IR types and transformation passes:
