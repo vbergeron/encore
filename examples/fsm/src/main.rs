@@ -6,7 +6,7 @@ use cortex_m_semihosting::{debug, hprintln};
 use panic_halt as _;
 
 use encore_vm::error::ExternError;
-use encore_vm::ffi::{VmCallable, VmList};
+use encore_vm::ffi::VmList;
 use encore_vm::vm::Vm;
 
 encore_vm::encore_program!(env!("OUT_DIR"));
@@ -51,10 +51,8 @@ fn vm_exit_err(e: ExternError) -> ! {
 }
 
 fn run_step(vm: &mut Vm, state: i32, event: Event) -> StepResult {
-    let partial: VmCallable = vm
-        .call_global(funcs::STEP, (state,))
-        .unwrap_or_else(|e| vm_exit_err(e));
-    vm.call_closure(&partial, (event,))
+    // STEP : State -> Event -> Pair, uncurried into a 2-ary function.
+    vm.call_global(funcs::STEP, (state, event))
         .unwrap_or_else(|e| vm_exit_err(e))
 }
 
