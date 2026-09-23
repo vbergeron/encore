@@ -235,6 +235,32 @@ fn test_int_lt_false() {
     assert_eq!(result.ctor_tag(), 0);
 }
 
+#[test]
+fn test_int_add_at_max() {
+    // (2^23 - 2) + 1 = 2^23 - 1
+    let code = [
+        INT, X01, 0xFE, 0xFF, 0x7F,
+        INT_1, X02,
+        INT_ADD, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert_eq!(result.int_value().unwrap(), (1 << 23) - 1);
+}
+
+#[test]
+fn test_int_sub_at_min() {
+    // (-2^23 + 1) - 1 = -2^23
+    let code = [
+        INT, X01, 0x01, 0x00, 0x80,
+        INT_1, X02,
+        INT_SUB, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert_eq!(result.int_value().unwrap(), -(1 << 23));
+}
+
 // -- Error tests --
 
 #[test]
@@ -247,6 +273,70 @@ fn test_heap_overflow() {
     let mut vm = Vm::init(&mut mem);
     let result = vm.load(&prog);
     assert!(matches!(result, Err(VmError::HeapOverflow)));
+}
+
+#[test]
+fn test_int_add_overflow() {
+    // (2^23 - 1) + 1
+    let code = [
+        INT, X01, 0xFF, 0xFF, 0x7F,
+        INT_1, X02,
+        INT_ADD, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 7 })));
+}
+
+#[test]
+fn test_int_sub_overflow() {
+    // -2^23 - 1
+    let code = [
+        INT, X01, 0x00, 0x00, 0x80,
+        INT_1, X02,
+        INT_SUB, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 7 })));
+}
+
+#[test]
+fn test_int_mul_overflow() {
+    // 2^12 * 2^11 = 2^23
+    let code = [
+        INT, X01, 0x00, 0x10, 0x00,
+        INT, X02, 0x00, 0x08, 0x00,
+        INT_MUL, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 10 })));
+}
+
+#[test]
+fn test_int_mul_overflow_i32() {
+    // (2^23 - 1)^2 overflows i32 too
+    let code = [
+        INT, X01, 0xFF, 0xFF, 0x7F,
+        INT_MUL, X03, X01, X01,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 5 })));
+}
+
+#[test]
+fn test_int_mul_at_min() {
+    // -2^12 * 2^11 = -2^23
+    let code = [
+        INT, X01, 0x00, 0xF0, 0xFF,
+        INT, X02, 0x00, 0x08, 0x00,
+        INT_MUL, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert_eq!(result.int_value().unwrap(), -(1 << 23));
 }
 
 #[test]

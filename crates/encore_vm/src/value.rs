@@ -11,6 +11,16 @@ const TYP_BYTES_HDR: u32 = 7;
 
 const GC_MARK_BIT: u32 = 0x80 << 8;
 
+/// Smallest integer representable in a `Value` (24-bit signed payload).
+pub const INT_MIN: i32 = -(1 << 23);
+/// Largest integer representable in a `Value` (24-bit signed payload).
+pub const INT_MAX: i32 = (1 << 23) - 1;
+
+/// Whether `n` fits in the 24-bit signed payload of an integer `Value`.
+pub const fn int_in_range(n: i32) -> bool {
+    n >= INT_MIN && n <= INT_MAX
+}
+
 #[derive(Clone, Copy)]
 pub struct HeapAddress(u16);
 
