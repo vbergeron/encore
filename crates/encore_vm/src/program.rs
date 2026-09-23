@@ -19,6 +19,10 @@ pub const MAGIC: [u8; 4] = *b"ENCR";
 ///   Section 2 - global/define names:
 ///     [n_globals: u16 LE]
 ///     For each: [idx: u16 LE] [name_len: u8] [name: name_len bytes, UTF-8]
+///
+/// `parse` checks the header only, so tools such as the disassembler can
+/// still open malformed code. [`Vm::load`](crate::vm::Vm::load) runs the full
+/// [`validate`](Self::validate) pass before executing anything.
 #[derive(Debug)]
 pub struct Program<'a> {
     pub arity_table: &'a [u8],
@@ -83,6 +87,11 @@ impl<'a> Program<'a> {
             Globals::Slice(s) => s[idx],
             Globals::Raw(raw) => CodeAddress::new(u16::from_le_bytes([raw[idx * 2], raw[idx * 2 + 1]])),
         }
+    }
+
+    /// Check that the code is safe to execute; see [`crate::validate`].
+    pub fn validate(&self) -> Result<(), VmError> {
+        crate::validate::validate(self)
     }
 
     pub fn has_metadata(&self) -> bool {

@@ -12,7 +12,7 @@ macro_rules! stat { ($($t:tt)*) => {} }
 
 pub mod arena;
 pub mod builtins;
-pub mod code;
+mod code;
 pub mod error;
 pub mod ffi;
 pub mod gc;
@@ -22,6 +22,7 @@ pub mod program;
 mod registers;
 #[cfg(feature = "stats")]
 pub mod stats;
+pub mod validate;
 pub mod value;
 pub mod vm;
 

@@ -216,10 +216,30 @@ Section 2 — global/define names:
 | Byte-string literal | 255 bytes (`u8` length of `BYTES`) | `CompileError::BytesLiteralTooLong` |
 | Heap | 65,535 words (`u16` addresses, `0xFFFF` = `NULL`) | a larger buffer is used only up to that size |
 
+## Load-time validation
+
+The interpreter reads the code stream without bounds checks, so `Vm::load` first runs `Program::validate`, a single `no_std`, allocation-free pass that returns `VmError::Invalid { pc, reason }` (or `VmError::InvalidOpcode`) for malformed code. `Program::parse` checks only the header, so the disassembler can still open broken files.
+
+Validation rejects a program when:
+
+- an opcode is unknown, or an instruction's operands run past `code_len`;
+- the last instruction can fall through (it must be `FIN`, `ENCORE`, `MATCH` or `BRANCH`);
+- a static jump target (a `MATCH` table entry, a `BRANCH` target, a `CLOSURE`/`FUNCTION` code pointer, or a global entry point) is outside the code or does not land on an instruction boundary;
+- a `PACK`/`UNPACK` tag is `>= n_arities`, or `UNPACK` would write past the register file (`rd + arity > 256`);
+- a `GLOBAL`/`GLOBAL_W` index is `>= n_globals`;
+- an `EXTERN` slot is `>= 32`;
+- the code is longer than `0xFFFF` bytes (code pointers are 16-bit, and `0xFFFF` is the `NULL` continuation).
+
+`MATCH`/`BRANCH` tags are only compared, never used as indices, so they are not checked against the arity table.
+
+At run time, `ENCORE` also checks that a dynamic call target lies inside the code. This catches a call to the `NULL` continuation. Together, the two checks keep the program counter on an instruction boundary of validated code. This invariant backs the unchecked reads in `Code`.
+
+**Remaining trust assumption:** values are not type-checked at run time. The compiler only emits `FIELD`/`UNPACK` after a `MATCH` on a constructor, `CAPTURE` inside a closure body with enough captures, and so on. A hand-crafted file can still apply `FIELD`, `CAPTURE`, `ENCORE` or a bytes operation to a value of the wrong type or shape (for example `FIELD` on an integer, a field index past the constructor's arity, or a capture index past the closure's environment). The resulting heap access is unchecked. Only load bytecode produced by the Encore compiler, or bytecode from a source you trust to the same degree.
+
 ## Entry points
 
 - **`Vm::init(mem)`** — create a VM instance with a heap arena.
-- **`vm.load(&prog)`** — parse a program binary, initialize globals by running each define's thunk.
+- **`vm.load(&prog)`** — validate the program (see above), then initialize globals by running each define's thunk.
 - **`vm.call(global_idx, arg)`** — call a global function with an argument, return the result.
 - **`vm.call_value(func, arg)`** — call an arbitrary function value with an argument.
 - **`vm.register_extern(slot, f)`** — register a host function at a given extern slot.
