@@ -34,6 +34,9 @@ pub const BYTES_EQ: u8 = 0x35;
 
 pub const NULL: u8 = 0xFF;
 
+/// Opcodes occupy `0x00..OPCODE_SLOTS` (`NULL` is a register operand, not an opcode).
+pub const OPCODE_SLOTS: usize = 0x40;
+
 #[cfg(feature = "stats")]
 pub fn name(op: u8) -> &'static str {
     match op {

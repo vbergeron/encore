@@ -55,8 +55,8 @@ impl GcStats {
 #[derive(Clone, Copy, Debug)]
 pub struct VmStats {
     pub op_count: u64,
-    /// Executions per opcode byte.
-    pub op_counts: [u64; 256],
+    /// Executions per opcode byte (see [`crate::opcode::OPCODE_SLOTS`]).
+    pub op_counts: [u64; crate::opcode::OPCODE_SLOTS],
     /// Time inside the interpreter loop (outermost entry only), in clock
     /// units. Includes GC pauses and extern calls that happen during it.
     pub run_time: u64,
@@ -71,7 +71,7 @@ impl Default for VmStats {
     fn default() -> Self {
         Self {
             op_count: 0,
-            op_counts: [0; 256],
+            op_counts: [0; crate::opcode::OPCODE_SLOTS],
             run_time: 0,
             extern_calls: 0,
             extern_time: 0,
@@ -124,7 +124,7 @@ impl core::fmt::Display for VmStats {
         writeln!(f, "gc_reclaimed: {} B", gc.reclaimed as usize * word)?;
         writeln!(f, "gc_last_live: {} B", gc.last_live * word)?;
         write!(f, "ops:          {}", self.op_count)?;
-        // Nonzero opcodes, most frequent first (selection over 256 slots; no alloc).
+        // Nonzero opcodes, most frequent first (selection sort; no alloc).
         let mut last = u64::MAX;
         let mut last_op = 0usize;
         loop {

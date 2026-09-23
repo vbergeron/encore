@@ -298,7 +298,7 @@ impl<'a> Vm<'a> {
             let op = self.code.read_u8();
             stat! {
                 self.stats.op_count += 1;
-                self.stats.op_counts[op as usize] += 1;
+                if let Some(n) = self.stats.op_counts.get_mut(op as usize) { *n += 1; }
             }
             match op {
                 opcode::MOV => {
