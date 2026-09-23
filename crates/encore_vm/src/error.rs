@@ -52,6 +52,9 @@ pub enum VmError {
     Extern { error: ExternError, slot: u16, pc: u16 },
     TypeError { expected: &'static str, got: &'static str },
     GlobalsOverflow { needed: usize, available: usize },
+    /// Malformed bytecode, rejected at load time (or a call to a target
+    /// outside the code). `pc` is the offending code offset.
+    Invalid { pc: u16, reason: &'static str },
 }
 
 impl VmError {
@@ -67,6 +70,7 @@ impl VmError {
             VmError::Extern { .. } => "extern call failed",
             VmError::TypeError { .. } => "type error",
             VmError::GlobalsOverflow { .. } => "globals do not fit in the heap",
+            VmError::Invalid { reason, .. } => *reason,
         }
     }
 }
@@ -91,6 +95,8 @@ impl fmt::Display for VmError {
                 write!(f, "type error: expected {expected}, got {got}"),
             VmError::GlobalsOverflow { needed, available } =>
                 write!(f, "globals overflow: program needs {needed} global slots, heap has {available} free words"),
+            VmError::Invalid { pc, reason } =>
+                write!(f, "invalid bytecode at pc=0x{pc:04x}: {reason}"),
         }
     }
 }

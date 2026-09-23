@@ -16,7 +16,7 @@ const CONT: Reg = Reg::new(1);
 const A1: Reg = Reg::new(2);
 
 pub type ExternFn = fn(&mut Vm, Value) -> Result<Value, ExternError>;
-const MAX_EXTERN: usize = 32;
+pub const MAX_EXTERN: usize = 32;
 
 fn unregistered(_: &mut Vm, _: Value) -> Result<Value, ExternError> {
     Err(ExternError::Unregistered)
@@ -42,7 +42,7 @@ pub struct Vm<'a> {
 impl<'a> Vm<'a> {
     pub fn init(mem: &'a mut [Value]) -> Self {
         Self {
-            code: Code::new(&[]),
+            code: Code::empty(),
             arity_table: &[],
             globals: &mut [],
             extern_fns: [unregistered; MAX_EXTERN],
@@ -98,7 +98,11 @@ impl<'a> Vm<'a> {
     /// so there is no fixed global limit: a program whose globals do not fit
     /// beside what is already allocated fails with [`VmError::GlobalsOverflow`].
     /// Globals of a previous `load` are not reclaimed.
+    ///
+    /// `prog` is validated first; malformed code fails with
+    /// [`VmError::Invalid`] or [`VmError::InvalidOpcode`] before anything runs.
     pub fn load(&mut self, prog: &Program<'a>) -> Result<(), VmError> {
+        prog.validate()?;
         let n = prog.n_globals();
         let mem = core::mem::take(&mut self.arena.mem);
         let len = mem.len();
@@ -110,7 +114,9 @@ impl<'a> Vm<'a> {
         globals.fill(Value::int(0));
         self.arena.mem = heap;
         self.globals = globals;
-        self.code = Code::new(prog.code);
+        // SAFETY: `prog` passed validation above, which is the invariant
+        // `Code::new` requires.
+        self.code = unsafe { Code::new(prog.code) };
         self.arity_table = prog.arity_table;
         for i in 0..n {
             let addr = prog.global(i);
@@ -204,18 +210,28 @@ impl<'a> Vm<'a> {
         self.arena.try_alloc(n)
     }
 
-    fn resolve_code_ptr(&self, func: Value) -> CodeAddress {
-        if func.is_function() {
+    /// Code pointer of a function or closure. Static code pointers are
+    /// validated at load time, but a register can also hold the `NULL`
+    /// continuation (0xFFFF) or `RETURN_CONT` over empty code, so the target
+    /// is range-checked here to keep `pc` inside the code.
+    #[inline(always)]
+    fn resolve_code_ptr(&self, func: Value, pc: u16) -> Result<CodeAddress, VmError> {
+        let code_ptr = if func.is_function() {
             func.code_ptr()
         } else {
             self.arena[func.closure_addr() + 1].header_code_ptr()
+        };
+        if (code_ptr.raw() as usize) < self.code.len() {
+            Ok(code_ptr)
+        } else {
+            Err(VmError::Invalid { pc, reason: "call target outside code" })
         }
     }
 
     const RETURN_CONT: Value = Value::function_const(0);
 
     fn call_raw(&mut self, func: Value, args: &[Value]) -> Result<Value, VmError> {
-        let code_ptr = self.resolve_code_ptr(func);
+        let code_ptr = self.resolve_code_ptr(func, self.code.pc() as u16)?;
         self.registers[SELF] = func;
         self.registers[CONT] = Self::RETURN_CONT;
         for (i, arg) in args.iter().enumerate() {
@@ -226,7 +242,9 @@ impl<'a> Vm<'a> {
     }
 
     pub fn call_global_raw(&mut self, global_idx: GlobalAddress, args: &[Value]) -> Result<Value, VmError> {
-        let func = self.globals[global_idx.raw() as usize];
+        let Some(&func) = self.globals.get(global_idx.raw() as usize) else {
+            return Err(VmError::Invalid { pc: 0, reason: "global index out of range" });
+        };
         self.call_raw(func, args)
     }
 
@@ -269,6 +287,7 @@ impl<'a> Vm<'a> {
         O::decode(self, raw).map_err(ExternError::from)
     }
 
+    /// `entry` must be a validated global entry point.
     fn call_address(&mut self, entry: CodeAddress, arg: Value) -> Result<Value, VmError> {
         self.registers[SELF] = Value::function(entry);
         self.registers[CONT] = Self::RETURN_CONT;
@@ -443,7 +462,7 @@ impl<'a> Vm<'a> {
                     let rk = self.code.read_reg();
                     let fun = self.registers[rf];
                     let cont = self.registers[rk];
-                    let code_ptr = self.resolve_code_ptr(fun);
+                    let code_ptr = self.resolve_code_ptr(fun, pc)?;
                     self.registers[SELF] = fun;
                     self.registers[CONT] = cont;
                     self.code.jump(code_ptr);

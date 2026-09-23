@@ -1,13 +1,36 @@
+//! Cursor over the code stream, read without bounds checks.
+//!
+//! SAFETY: a `Code` is only built over bytes that passed
+//! [`validate`](crate::validate), and the interpreter only moves `pc` by
+//! decoding one instruction at a time from a boundary or by jumping to a
+//! validated target (static targets are checked at load, dynamic `ENCORE`
+//! targets by `Vm::resolve_code_ptr`). Validation guarantees every operand of
+//! an instruction starting at a boundary lies inside the code and that no
+//! instruction falls through past its end, so each unchecked read below is
+//! in bounds.
+
 use crate::value::{CodeAddress, Reg};
 
-pub struct Code<'a> {
+pub(crate) struct Code<'a> {
     bytes: &'a [u8],
     pc: usize,
 }
 
 impl<'a> Code<'a> {
-    pub fn new(bytes: &'a [u8]) -> Self {
+    /// A cursor over no code. Nothing can execute: every call target is
+    /// out of range.
+    pub fn empty() -> Self {
+        Self { bytes: &[], pc: 0 }
+    }
+
+    /// # Safety
+    /// `bytes` must be the code of a program that passed validation.
+    pub unsafe fn new(bytes: &'a [u8]) -> Self {
         Self { bytes, pc: 0 }
+    }
+
+    pub fn len(&self) -> usize {
+        self.bytes.len()
     }
 
     pub fn read_u8(&mut self) -> u8 {
