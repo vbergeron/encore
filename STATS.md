@@ -67,9 +67,47 @@ fn clock_ns() -> u64 {
 vm.set_clock(clock_ns);
 ```
 
+### QEMU (`examples/eval`, `examples/rbtree`)
+
+The bare-metal examples run on QEMU's `lm3s6965evb` board and already install
+a clock from [`examples/common/qemu_clock.rs`](examples/common/qemu_clock.rs):
+
+```rust
+qemu_clock::start(cortex_m::Peripherals::take().unwrap().SYST);
+let mut vm = boot(HEAP())?;
+vm.set_clock(qemu_clock::now_ns);
+```
+
+- **Source.** QEMU does not emulate the DWT cycle counter (it always reads 0),
+  but it does emulate SysTick. The module runs SysTick as a free-running
+  24-bit counter and counts its wraps in the `SysTick` exception handler,
+  giving a 64-bit clock.
+- **Unit.** QEMU models the board's reset system clock at 12.5 MHz, so one
+  tick is 80 ns. The examples never reprogram the clock, so `NS_PER_TICK`
+  is a constant.
+- **Determinism.** The runners in `.cargo/config.toml` pass
+  `-icount shift=0`. QEMU then advances virtual time by exactly 1 ns per guest
+  instruction, independent of the host. Reported times read as **guest
+  instructions executed**, at 80-instruction resolution, and are identical
+  from run to run. Without `-icount`, times follow the host's emulation
+  speed and vary between runs.
+
+```bash
+cd examples/rbtree && cargo run --release
+```
+
+```
+run_time:     1526400 ns
+  mutator:    1479600 ns (96.9%)
+  gc:         46800 ns (3.0%)
+  ...
+gc_phases:    mark 5120 (10.9%), forward 11520 (24.6%), update 17360 (37.0%), compact 12800 (27.3%)
+```
+
+### Real Cortex-M hardware
+
 On Cortex-M3 and later, the DWT cycle counter can serve as the clock. It then
-counts cycles, not nanoseconds, and wraps every 2³² cycles. Real hardware is
-needed: QEMU does not emulate the counter.
+counts cycles, not nanoseconds, and wraps every 2³² cycles.
 
 ```rust
 // once at startup:
@@ -118,7 +156,7 @@ ops:          32038
 | `extern_calls`, `extern_time` | `extern` | Number of `EXTERN` executions and time inside host handlers. |
 | `arena.peak_heap` | `peak_heap` | High-water mark of the heap pointer. |
 | `op_count` | `ops` | Total opcodes executed. |
-| `op_counts[op]` | lines under `ops` | Executions per opcode byte. Only nonzero entries are printed, most frequent first. |
+| `op_counts[op]` | lines under `ops` | Executions per opcode byte (`0x00..0x40`, see `opcode::OPCODE_SLOTS`). Only nonzero entries are printed, most frequent first. |
 
 `VmStats::gc` (`GcStats`):
 
@@ -150,6 +188,10 @@ its time passing over garbage.
   collection outside any interpreter run. Its pause counts in `gc` but not in
   `run_time`. `mutator_time()` saturates at zero, but the percentages can be
   slightly off in that case.
+- **Memory.** With `stats`, `VmStats` (about 600 B: 64 opcode counters plus
+  timings) lives inside `Vm`, and `vm.stats()` returns a copy. On small
+  targets, count it in your stack budget: `Vm` is often moved by value, for
+  example out of `boot()`.
 - **API change under the feature.** `gc::collect` takes two extra
   parameters (`&mut GcStats`, `Clock`) when `stats` is enabled.
 

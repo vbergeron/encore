@@ -10,6 +10,9 @@ use encore_vm::ffi::VmCallable;
 use encore_vm::value::GlobalAddress;
 use encore_vm::vm::Vm;
 
+#[path = "../../common/qemu_clock.rs"]
+mod qemu_clock;
+
 encore_vm::encore_program!(env!("OUT_DIR"));
 encore_vm::encore_heap!(HEAP, 40_000);
 
@@ -43,7 +46,10 @@ fn call3<O: encore_vm::ffi::ValueDecode>(
 
 #[entry]
 fn main() -> ! {
+    qemu_clock::start(cortex_m::Peripherals::take().unwrap().SYST);
+
     let mut vm = boot(HEAP()).unwrap_or_else(|e| vm_exit_err(e));
+    vm.set_clock(qemu_clock::now_ns);
 
     for &(a, b, fuel) in &[(1i32, 1i32, 500i32), (1, 2, 1000), (2, 2, 3000)] {
         let result: OptionNat = call3(&mut vm, funcs::TEST_ADD, a, b, fuel)

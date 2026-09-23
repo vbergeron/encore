@@ -8,6 +8,9 @@ use panic_halt as _;
 use encore_vm::error::ExternError;
 use encore_vm::value::Value;
 
+#[path = "../../common/qemu_clock.rs"]
+mod qemu_clock;
+
 encore_vm::encore_program!(env!("OUT_DIR"));
 encore_vm::encore_heap!(HEAP, 40_000);
 
@@ -19,7 +22,10 @@ fn vm_exit_err(e: ExternError) -> ! {
 
 #[entry]
 fn main() -> ! {
+    qemu_clock::start(cortex_m::Peripherals::take().unwrap().SYST);
+
     let mut vm = boot(HEAP()).unwrap_or_else(|e| vm_exit_err(e));
+    vm.set_clock(qemu_clock::now_ns);
 
     let n = 30i32;
 
