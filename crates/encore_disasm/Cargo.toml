@@ -10,6 +10,6 @@ keywords = ["disassembler", "bytecode", "tui", "debugger", "compiler"]
 categories = ["development-tools", "compilers"]
 
 [dependencies]
-encore_vm = { path = "../encore_vm", version = "0.1.3" }
+encore_vm = { path = "../encore_vm", version = "0.1.5" }
 ratatui = "0.29"
 crossterm = "0.28"
