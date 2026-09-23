@@ -46,6 +46,7 @@ pub enum VmError {
     InvalidOpcode { opcode: u8, pc: u16 },
     MatchFail { tag: u8, pc: u16 },
     ByteRange { value: i32, pc: u16 },
+    IntOverflow { pc: u16 },
     BadMagic,
     Truncated,
     Extern { error: ExternError, slot: u16, pc: u16 },
@@ -60,6 +61,7 @@ impl VmError {
             VmError::InvalidOpcode { .. } => "invalid opcode",
             VmError::MatchFail { .. } => "match failure",
             VmError::ByteRange { .. } => "byte range error",
+            VmError::IntOverflow { .. } => "integer overflow",
             VmError::BadMagic => "bad magic",
             VmError::Truncated => "truncated program",
             VmError::Extern { .. } => "extern call failed",
@@ -79,6 +81,8 @@ impl fmt::Display for VmError {
                 write!(f, "match failure: no branch for tag {tag} at pc=0x{pc:04x}"),
             VmError::ByteRange { value, pc } =>
                 write!(f, "byte range error: value {value} out of 0..255 at pc=0x{pc:04x}"),
+            VmError::IntOverflow { pc } =>
+                write!(f, "integer overflow: result out of 24-bit range at pc=0x{pc:04x}"),
             VmError::BadMagic => write!(f, "bad magic bytes (expected ENCR)"),
             VmError::Truncated => write!(f, "truncated program"),
             VmError::Extern { error, slot, pc } =>

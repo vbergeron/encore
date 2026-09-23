@@ -167,7 +167,7 @@ Produces an infinite loop (`let __err = (lambda (x) x) in (__err __err)`). Used 
 | `(int-and a b)` | bitwise and |
 | `(int-or a b)` | bitwise or |
 | `(int-xor a b)` | bitwise xor |
-| `(int-shl a b)` | left shift (24-bit wrap; `b` outside `0..24` gives `0`) |
+| `(int-shl a b)` | left shift; traps with `IntOverflow` if the result leaves the 24-bit range |
 | `(int-shr a b)` | logical right shift (`b` outside `0..24` gives `0`) |
 | `(int->byte x)` | integer 0–255 to single-byte string |
 | `(bytes-len s)` | byte string length |
@@ -193,7 +193,7 @@ Extract Constant Nat.shiftr => "(lambda (a) (lambda (b) (int-shr a b)))".
 Extract Constant Nat.leb    => "(lambda (a) (lambda (b) (<= a b)))".
 ```
 
-`Nat.sub` (truncated) maps to `int-sub-sat`, through an opaque wrapper as in `examples/gcd/gcd.v`, since it is a fixpoint. These are exact only while values fit in 24 bits: `nat` is unbounded, while the VM wraps (`int-shl` loses high bits). Do not map `Z.div`/`Z.modulo` to `int-div`/`int-mod`: they floor, and differ on negative operands.
+`Nat.sub` (truncated) maps to `int-sub-sat`, through an opaque wrapper as in `examples/gcd/gcd.v`, since it is a fixpoint. These are exact only while values fit in 24 bits: `nat` is unbounded, while the VM traps with `IntOverflow` when a result leaves the range. Do not map `Z.div`/`Z.modulo` to `int-div`/`int-mod`: they floor, and differ on negative operands.
 
 ### Otherwise: application
 

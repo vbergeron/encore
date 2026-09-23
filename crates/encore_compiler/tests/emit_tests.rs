@@ -202,3 +202,31 @@ fn test_extern_stub_and_function() {
     assert_eq!(code[15], opcode::FIN);
     assert_eq!(code[16], X01);
 }
+
+#[test]
+fn test_int_literal_at_bounds() {
+    for n in [(1 << 23) - 1, -(1 << 23)] {
+        let expr = Expr::Let(X01, Val::Int(n), Box::new(Expr::Fin(X01)));
+        let mut emitter = Emitter::new();
+        emitter.emit_toplevel(&expr);
+        let code = emitter.into_bytes();
+        let bits = n as u32;
+        assert_eq!(code, [opcode::INT, X01, bits as u8, (bits >> 8) as u8, (bits >> 16) as u8, opcode::FIN, X01]);
+    }
+}
+
+#[test]
+#[should_panic(expected = "out of 24-bit range")]
+fn test_int_literal_above_range_rejected() {
+    let expr = Expr::Let(X01, Val::Int(1 << 23), Box::new(Expr::Fin(X01)));
+    let mut emitter = Emitter::new();
+    emitter.emit_toplevel(&expr);
+}
+
+#[test]
+#[should_panic(expected = "out of 24-bit range")]
+fn test_int_literal_below_range_rejected() {
+    let expr = Expr::Let(X01, Val::Int(-(1 << 23) - 1), Box::new(Expr::Fin(X01)));
+    let mut emitter = Emitter::new();
+    emitter.emit_toplevel(&expr);
+}

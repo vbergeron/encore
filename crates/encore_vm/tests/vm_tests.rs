@@ -269,10 +269,30 @@ fn test_int_div_by_zero_is_zero() {
     assert_eq!(int_binop(INT_DIV, 0, 0), 0);
 }
 
+/// Run `op` like [`binop`] and return the error.
+fn binop_err(op: u8, a: i32, b: i32) -> VmError {
+    let (a, b) = (a as u32, b as u32);
+    let code = [
+        INT, X01, a as u8, (a >> 8) as u8, (a >> 16) as u8,
+        INT, X02, b as u8, (b >> 8) as u8, (b >> 16) as u8,
+        op, X03, X01, X02,
+        FIN, X03,
+    ];
+    run(&code, &[]).unwrap_err()
+}
+
 #[test]
-fn test_int_div_min_by_minus_one_wraps() {
+fn test_int_div_min_by_minus_one_traps() {
     let min = -(1 << 23);
-    assert_eq!(int_binop(INT_DIV, min, -1), min);
+    assert!(matches!(binop_err(INT_DIV, min, -1), VmError::IntOverflow { .. }));
+    assert_eq!(int_binop(INT_MOD, min, -1), 0);
+}
+
+#[test]
+fn test_int_sub_sat_overflow_traps() {
+    let max = (1 << 23) - 1;
+    assert_eq!(int_binop(INT_SUB_SAT, max, 0), max);
+    assert!(matches!(binop_err(INT_SUB_SAT, max, -1), VmError::IntOverflow { .. }));
 }
 
 #[test]
@@ -317,16 +337,19 @@ fn test_int_bitwise() {
 fn test_int_shl() {
     assert_eq!(int_binop(INT_SHL, 1, 4), 16);
     assert_eq!(int_binop(INT_SHL, 3, 0), 3);
-    // bits shifted past bit 23 are lost; bit 23 is the sign bit
-    assert_eq!(int_binop(INT_SHL, 1, 23), -(1 << 23));
-    assert_eq!(int_binop(INT_SHL, 0x101, 16), 0x01_0000);
+    assert_eq!(int_binop(INT_SHL, 1, 22), 1 << 22);
+    assert_eq!(int_binop(INT_SHL, -1, 23), -(1 << 23));
+    assert_eq!(int_binop(INT_SHL, -3, 2), -12);
+    assert_eq!(int_binop(INT_SHL, 0, 100), 0);
+    assert_eq!(int_binop(INT_SHL, 1, -1), 0);
 }
 
 #[test]
-fn test_int_shl_out_of_range_is_zero() {
-    assert_eq!(int_binop(INT_SHL, 1, 24), 0);
-    assert_eq!(int_binop(INT_SHL, 1, 100), 0);
-    assert_eq!(int_binop(INT_SHL, 1, -1), 0);
+fn test_int_shl_overflow_traps() {
+    assert!(matches!(binop_err(INT_SHL, 1, 23), VmError::IntOverflow { .. }));
+    assert!(matches!(binop_err(INT_SHL, 0x101, 16), VmError::IntOverflow { .. }));
+    assert!(matches!(binop_err(INT_SHL, 1, 24), VmError::IntOverflow { .. }));
+    assert!(matches!(binop_err(INT_SHL, 1, 100), VmError::IntOverflow { .. }));
 }
 
 #[test]
@@ -386,6 +409,32 @@ fn test_globals_overflow_is_load_error() {
     ));
 }
 
+#[test]
+fn test_int_add_at_max() {
+    // (2^23 - 2) + 1 = 2^23 - 1
+    let code = [
+        INT, X01, 0xFE, 0xFF, 0x7F,
+        INT_1, X02,
+        INT_ADD, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert_eq!(result.int_value().unwrap(), (1 << 23) - 1);
+}
+
+#[test]
+fn test_int_sub_at_min() {
+    // (-2^23 + 1) - 1 = -2^23
+    let code = [
+        INT, X01, 0x01, 0x00, 0x80,
+        INT_1, X02,
+        INT_SUB, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert_eq!(result.int_value().unwrap(), -(1 << 23));
+}
+
 // -- Error tests --
 
 #[test]
@@ -398,6 +447,70 @@ fn test_heap_overflow() {
     let mut vm = Vm::init(&mut mem);
     let result = vm.load(&prog);
     assert!(matches!(result, Err(VmError::HeapOverflow)));
+}
+
+#[test]
+fn test_int_add_overflow() {
+    // (2^23 - 1) + 1
+    let code = [
+        INT, X01, 0xFF, 0xFF, 0x7F,
+        INT_1, X02,
+        INT_ADD, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 7 })));
+}
+
+#[test]
+fn test_int_sub_overflow() {
+    // -2^23 - 1
+    let code = [
+        INT, X01, 0x00, 0x00, 0x80,
+        INT_1, X02,
+        INT_SUB, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 7 })));
+}
+
+#[test]
+fn test_int_mul_overflow() {
+    // 2^12 * 2^11 = 2^23
+    let code = [
+        INT, X01, 0x00, 0x10, 0x00,
+        INT, X02, 0x00, 0x08, 0x00,
+        INT_MUL, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 10 })));
+}
+
+#[test]
+fn test_int_mul_overflow_i32() {
+    // (2^23 - 1)^2 overflows i32 too
+    let code = [
+        INT, X01, 0xFF, 0xFF, 0x7F,
+        INT_MUL, X03, X01, X01,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]);
+    assert!(matches!(result, Err(VmError::IntOverflow { pc: 5 })));
+}
+
+#[test]
+fn test_int_mul_at_min() {
+    // -2^12 * 2^11 = -2^23
+    let code = [
+        INT, X01, 0x00, 0xF0, 0xFF,
+        INT, X02, 0x00, 0x08, 0x00,
+        INT_MUL, X03, X01, X02,
+        FIN, X03,
+    ];
+    let result = run(&code, &[]).unwrap();
+    assert_eq!(result.int_value().unwrap(), -(1 << 23));
 }
 
 #[test]

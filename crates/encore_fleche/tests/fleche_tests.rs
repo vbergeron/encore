@@ -1235,8 +1235,9 @@ fn test_builtin_bitwise() {
 #[test]
 fn test_builtin_shifts() {
     assert_eq!(int_builtin("shl", 3, 4), 48);
-    assert_eq!(int_builtin("shl", 1, 23), -(1 << 23));
-    assert_eq!(int_builtin("shl", 1, 24), 0);
+    assert_eq!(int_builtin("shl", -1, 23), -(1 << 23));
+    assert_eq!(int_builtin("shl", 0, 30), 0);
+    assert_eq!(int_builtin("shl", 5, -1), 0);
     assert_eq!(int_builtin("shr", 256, 4), 16);
     assert_eq!(int_builtin("shr", -1, 20), 15);
     assert_eq!(int_builtin("shr", -1, 24), 0);

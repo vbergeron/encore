@@ -12,13 +12,18 @@
 //
 //   let s = bytes [68 69] in bytes_len s            ──►   2
 //
+// Integer arithmetic whose exact result falls outside the VM's 24-bit
+// range is left unfolded, so the VM traps with `IntOverflow` at runtime.
+//
 
 use std::collections::HashMap;
+
+use encore_vm::int;
+use encore_vm::value::int_in_range;
 
 use crate::ir::cps::{Case, Cont, Expr, Fun, Tag, Val};
 use crate::ir::cps_traversal::CPSTransformer;
 use crate::ir::prim::{BytesOp, IntOp, PrimOp};
-use encore_vm::int;
 use crate::pass::cps_subst::subst_expr;
 
 #[derive(Clone)]
@@ -163,7 +168,7 @@ fn try_fold_prim(op: PrimOp, args: &[String], env: &Env) -> Option<Val> {
         PrimOp::Int(op) => {
             let a = get_int(env, &args[0])?;
             let b = get_int(env, &args[1])?;
-            Some(eval_int_binop(op, a, b))
+            eval_int_binop(op, a, b)
         }
         PrimOp::Bytes(BytesOp::Len) => {
             let bs = get_bytes(env, &args[0])?;
@@ -196,23 +201,24 @@ fn try_fold_prim(op: PrimOp, args: &[String], env: &Env) -> Option<Val> {
     }
 }
 
-fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Val {
+fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Option<Val> {
+    let arith = |n: Option<i32>| n.filter(|&n| int_in_range(n)).map(Val::Int);
     match op {
-        IntOp::Add => Val::Int(a.wrapping_add(b)),
-        IntOp::Sub => Val::Int(a.wrapping_sub(b)),
-        IntOp::Mul => Val::Int(a.wrapping_mul(b)),
-        IntOp::Eq => if a == b { Val::TRUE } else { Val::FALSE },
-        IntOp::Lt => if a < b { Val::TRUE } else { Val::FALSE },
-        IntOp::Le => if a <= b { Val::TRUE } else { Val::FALSE },
-        // Same semantics as the VM, on operands wrapped to 24 bits.
-        IntOp::Div => Val::Int(int::div(int::wrap(a), int::wrap(b))),
-        IntOp::Mod => Val::Int(int::rem(int::wrap(a), int::wrap(b))),
-        IntOp::SubSat => Val::Int(int::sub_sat(int::wrap(a), int::wrap(b))),
-        IntOp::And => Val::Int(int::and(int::wrap(a), int::wrap(b))),
-        IntOp::Or => Val::Int(int::or(int::wrap(a), int::wrap(b))),
-        IntOp::Xor => Val::Int(int::xor(int::wrap(a), int::wrap(b))),
-        IntOp::Shl => Val::Int(int::shl(int::wrap(a), int::wrap(b))),
-        IntOp::Shr => Val::Int(int::shr(int::wrap(a), int::wrap(b))),
+        IntOp::Add => arith(a.checked_add(b)),
+        IntOp::Sub => arith(a.checked_sub(b)),
+        IntOp::Mul => arith(a.checked_mul(b)),
+        IntOp::Eq => Some(if a == b { Val::TRUE } else { Val::FALSE }),
+        IntOp::Lt => Some(if a < b { Val::TRUE } else { Val::FALSE }),
+        IntOp::Le => Some(if a <= b { Val::TRUE } else { Val::FALSE }),
+        // Same semantics as the VM; ops that would trap are left unfolded.
+        IntOp::Div => int::div(a, b).map(Val::Int),
+        IntOp::Mod => Some(Val::Int(int::rem(a, b))),
+        IntOp::SubSat => int::sub_sat(a, b).map(Val::Int),
+        IntOp::And => Some(Val::Int(int::and(a, b))),
+        IntOp::Or => Some(Val::Int(int::or(a, b))),
+        IntOp::Xor => Some(Val::Int(int::xor(a, b))),
+        IntOp::Shl => int::shl(a, b).map(Val::Int),
+        IntOp::Shr => Some(Val::Int(int::shr(a, b))),
         IntOp::Byte => unreachable!("Byte is unary and handled by try_fold_prim"),
     }
 }

@@ -287,7 +287,7 @@ Primitive operations with atom arguments only.
 | `div`, `mod` | 2 integers | integer; truncating, `div a 0 = 0`, `mod a 0 = a` |
 | `sub_sat` | 2 integers | integer; `a - b`, or `0` if `a <= b` |
 | `and`, `or`, `xor` | 2 integers | integer (bitwise on the 24-bit value) |
-| `shl`, `shr` | integer, shift amount | integer; `shr` is logical, a shift outside `0..24` gives `0` |
+| `shl`, `shr` | integer, shift amount | integer; `shl` traps on 24-bit overflow; `shr` is logical, a shift outside `0..24` gives `0` |
 | `int_byte` | 1 integer (0–255) | single-byte `Bytes` value |
 | `bytes_len` | 1 `Bytes` | integer (length) |
 | `bytes_get` | `Bytes`, integer index | integer (byte value) |

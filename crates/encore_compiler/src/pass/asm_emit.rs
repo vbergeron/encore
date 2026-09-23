@@ -1,4 +1,5 @@
 use encore_vm::opcode;
+use encore_vm::value::{int_in_range, INT_MAX, INT_MIN};
 use crate::error::CompileError;
 use crate::ir::asm::{ContLam, Expr, Fun, Module, Reg, Val};
 use crate::ir::prim::{PrimOp, IntOp, BytesOp};
@@ -202,6 +203,10 @@ impl<'a> Emitter<'a> {
                         self.emit_u8(dest);
                     }
                     _ => {
+                        assert!(
+                            int_in_range(*n),
+                            "integer literal {n} out of 24-bit range [{INT_MIN}, {INT_MAX}]",
+                        );
                         self.emit_u8(opcode::INT);
                         self.emit_u8(dest);
                         let bits = *n as u32;

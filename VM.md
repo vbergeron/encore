@@ -23,7 +23,7 @@ Every runtime value is a **packed 32-bit word**:
 
 **Functions** (`TYP_FUNC`) are bare function values with no captures. The code pointer is stored inline — no heap allocation needed. **Closures** (`TYP_CLOS`) always point to a heap object whose header carries `env_len` (capture count) and `code_ptr`.
 
-**Integers** use the upper 24 bits as a signed value (approx. ±8M range). `int_value()` recovers the `i32` via arithmetic right shift.
+**Integers** use the upper 24 bits as a signed value, range `[-2^23, 2^23 - 1]` (`INT_MIN`/`INT_MAX` in `value.rs`). `int_value()` recovers the `i32` via arithmetic right shift. Arithmetic does not wrap: `INT_ADD`, `INT_SUB` and `INT_MUL` return `VmError::IntOverflow { pc }` when the exact result falls outside this range. The compiler keeps the same contract: the constant folder leaves out-of-range arithmetic unfolded (so it traps at runtime), and the emitter rejects integer literals outside the range.
 
 **`HeapAddress::NULL`** (`0xFFFF`) marks nullary constructors that have no heap allocation.
 
@@ -129,25 +129,25 @@ Arguments `A1`–`A8` are staged by the compiler via `MOV` instructions before `
 | `INT_0` | `18` | `rd: Reg` | `regs[rd] = Value::int(0)` |
 | `INT_1` | `19` | `rd: Reg` | `regs[rd] = Value::int(1)` |
 | `INT_2` | `1A` | `rd: Reg` | `regs[rd] = Value::int(2)` |
-| `INT_ADD` | `11` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] + regs[rb])` (wrapping) |
-| `INT_SUB` | `12` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] - regs[rb])` (wrapping) |
-| `INT_MUL` | `13` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] * regs[rb])` (wrapping) |
+| `INT_ADD` | `11` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] + regs[rb])`; `IntOverflow` error if the result is out of 24-bit range |
+| `INT_SUB` | `12` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] - regs[rb])`; `IntOverflow` error if the result is out of 24-bit range |
+| `INT_MUL` | `13` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] * regs[rb])`; `IntOverflow` error if the result is out of 24-bit range |
 | `INT_EQ` | `14` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if equal, `ctor(0, NULL)` otherwise |
 | `INT_LT` | `15` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if `a < b`, `ctor(0, NULL)` otherwise |
 | `INT_LE` | `17` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if `a <= b`, `ctor(0, NULL)` otherwise |
 | `INT_BYTE` | `16` | `rd: Reg`, `rs: Reg` | Convert integer 0–255 to a single-byte `Bytes` value; error if out of range |
-| `INT_DIV` | `1B` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a / b)`, truncating toward zero; `a / 0 = 0` |
+| `INT_DIV` | `1B` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a / b)`, truncating toward zero; `a / 0 = 0`; `IntOverflow` for `INT_MIN / -1` |
 | `INT_MOD` | `1C` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a rem b)`, sign of `a`; `a mod 0 = a` |
-| `INT_SUB_SAT` | `1D` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a - b)` if `a > b`, else `int(0)` |
+| `INT_SUB_SAT` | `1D` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a - b)` if `a > b`, else `int(0)`; `IntOverflow` if out of 24-bit range |
 | `INT_AND` | `24` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a & b)` |
 | `INT_OR` | `25` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a \| b)` |
 | `INT_XOR` | `26` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a ^ b)` |
-| `INT_SHL` | `27` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a << b)`; bits past bit 23 are lost; `b` outside `0..24` gives `0` |
+| `INT_SHL` | `27` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a * 2^b)`; `IntOverflow` if out of 24-bit range (so any `b >= 24` with `a != 0`); `b < 0` gives `0` |
 | `INT_SHR` | `28` | `rd: Reg`, `ra: Reg`, `rb: Reg` | Logical (zero-fill) right shift of the 24-bit payload; `b` outside `0..24` gives `0` |
 
 Comparisons return nullary constructors: tag `1` = true, tag `0` = false.
 
-All integer ops work on the 24-bit two's-complement payload and wrap on overflow. `INT_DIV` and `INT_MOD` follow Rocq's `Nat.div`/`Nat.modulo` convention for a zero divisor, and truncate, which matches `nat` (never negative). They are **not** `Z.div`/`Z.modulo`, which floor: `Z.div (-7) 2 = -4` while `INT_DIV` gives `-3`, and `Z.modulo (-7) 2 = 1` while `INT_MOD` gives `-1`. `INT_SUB_SAT` is `nat` truncated subtraction (`Nat.sub`). The shared semantics live in `encore_vm::int`, which the compiler's constant folder also uses.
+All integer ops work on the 24-bit two's-complement payload. Like `INT_ADD`, the ops that can leave the range (`INT_DIV`, `INT_SUB_SAT`, `INT_SHL`) trap with `IntOverflow` rather than wrap. `INT_DIV` and `INT_MOD` follow Rocq's `Nat.div`/`Nat.modulo` convention for a zero divisor, and truncate, which matches `nat` (never negative). They are **not** `Z.div`/`Z.modulo`, which floor: `Z.div (-7) 2 = -4` while `INT_DIV` gives `-3`, and `Z.modulo (-7) 2 = 1` while `INT_MOD` gives `-1`. `INT_SUB_SAT` is `nat` truncated subtraction (`Nat.sub`). The shared semantics live in `encore_vm::int`, which the compiler's constant folder also uses.
 
 ### Byte string operations
 
