@@ -12,8 +12,13 @@
 //
 //   let s = bytes [68 69] in bytes_len s            ──►   2
 //
+// Integer arithmetic whose exact result falls outside the VM's 24-bit
+// range is left unfolded, so the VM traps with `IntOverflow` at runtime.
+//
 
 use std::collections::HashMap;
+
+use encore_vm::value::int_in_range;
 
 use crate::ir::cps::{Case, Cont, Expr, Fun, Tag, Val};
 use crate::ir::cps_traversal::CPSTransformer;
@@ -162,7 +167,7 @@ fn try_fold_prim(op: PrimOp, args: &[String], env: &Env) -> Option<Val> {
         PrimOp::Int(op) => {
             let a = get_int(env, &args[0])?;
             let b = get_int(env, &args[1])?;
-            Some(eval_int_binop(op, a, b))
+            eval_int_binop(op, a, b)
         }
         PrimOp::Bytes(BytesOp::Len) => {
             let bs = get_bytes(env, &args[0])?;
@@ -195,13 +200,14 @@ fn try_fold_prim(op: PrimOp, args: &[String], env: &Env) -> Option<Val> {
     }
 }
 
-fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Val {
+fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Option<Val> {
+    let arith = |n: Option<i32>| n.filter(|&n| int_in_range(n)).map(Val::Int);
     match op {
-        IntOp::Add => Val::Int(a.wrapping_add(b)),
-        IntOp::Sub => Val::Int(a.wrapping_sub(b)),
-        IntOp::Mul => Val::Int(a.wrapping_mul(b)),
-        IntOp::Eq => if a == b { Val::TRUE } else { Val::FALSE },
-        IntOp::Lt => if a < b { Val::TRUE } else { Val::FALSE },
+        IntOp::Add => arith(a.checked_add(b)),
+        IntOp::Sub => arith(a.checked_sub(b)),
+        IntOp::Mul => arith(a.checked_mul(b)),
+        IntOp::Eq => Some(if a == b { Val::TRUE } else { Val::FALSE }),
+        IntOp::Lt => Some(if a < b { Val::TRUE } else { Val::FALSE }),
         IntOp::Byte => unreachable!("Byte is unary and handled by try_fold_prim"),
     }
 }

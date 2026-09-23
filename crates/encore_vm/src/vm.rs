@@ -8,7 +8,7 @@ use crate::program::Program;
 use crate::registers::Registers;
 #[cfg(feature = "stats")]
 use crate::stats::{Clock, VmStats};
-use crate::value::{CodeAddress, GlobalAddress, HeapAddress, Reg, Value};
+use crate::value::{int_in_range, CodeAddress, GlobalAddress, HeapAddress, Reg, Value};
 
 const SELF: Reg = Reg::new(0);
 const CONT: Reg = Reg::new(1);
@@ -455,7 +455,10 @@ impl<'a> Vm<'a> {
                     let rb = self.code.read_reg();
                     let a = self.registers[ra].int_value()?;
                     let b = self.registers[rb].int_value()?;
-                    self.registers[rd] = Value::int(a.wrapping_add(b));
+                    match a.checked_add(b) {
+                        Some(n) if int_in_range(n) => self.registers[rd] = Value::int(n),
+                        _ => return Err(VmError::IntOverflow { pc }),
+                    }
                 }
 
                 opcode::INT_SUB => {
@@ -464,7 +467,10 @@ impl<'a> Vm<'a> {
                     let rb = self.code.read_reg();
                     let a = self.registers[ra].int_value()?;
                     let b = self.registers[rb].int_value()?;
-                    self.registers[rd] = Value::int(a.wrapping_sub(b));
+                    match a.checked_sub(b) {
+                        Some(n) if int_in_range(n) => self.registers[rd] = Value::int(n),
+                        _ => return Err(VmError::IntOverflow { pc }),
+                    }
                 }
 
                 opcode::INT_MUL => {
@@ -473,7 +479,10 @@ impl<'a> Vm<'a> {
                     let rb = self.code.read_reg();
                     let a = self.registers[ra].int_value()?;
                     let b = self.registers[rb].int_value()?;
-                    self.registers[rd] = Value::int(a.wrapping_mul(b));
+                    match a.checked_mul(b) {
+                        Some(n) if int_in_range(n) => self.registers[rd] = Value::int(n),
+                        _ => return Err(VmError::IntOverflow { pc }),
+                    }
                 }
 
                 opcode::INT_EQ => {

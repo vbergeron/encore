@@ -208,6 +208,50 @@ fn test_const_fold_mul() {
 }
 
 #[test]
+fn test_const_fold_add_at_max() {
+    let expr = let_("a", int((1 << 23) - 2),
+        let_("b", int(1),
+            let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
+                fin("c"))));
+    let result = constant_fold(expr);
+    let expected = let_("a", int((1 << 23) - 2),
+        let_("b", int(1),
+            let_("c", int((1 << 23) - 1),
+                fin("c"))));
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_const_fold_add_overflow_not_folded() {
+    let expr = let_("a", int((1 << 23) - 1),
+        let_("b", int(1),
+            let_("c", prim(PrimOp::Int(IntOp::Add), &["a", "b"]),
+                fin("c"))));
+    let result = constant_fold(expr.clone());
+    assert_eq!(result, expr);
+}
+
+#[test]
+fn test_const_fold_sub_underflow_not_folded() {
+    let expr = let_("a", int(-(1 << 23)),
+        let_("b", int(1),
+            let_("c", prim(PrimOp::Int(IntOp::Sub), &["a", "b"]),
+                fin("c"))));
+    let result = constant_fold(expr.clone());
+    assert_eq!(result, expr);
+}
+
+#[test]
+fn test_const_fold_mul_overflow_not_folded() {
+    let expr = let_("a", int(1 << 12),
+        let_("b", int(1 << 12),
+            let_("c", prim(PrimOp::Int(IntOp::Mul), &["a", "b"]),
+                fin("c"))));
+    let result = constant_fold(expr.clone());
+    assert_eq!(result, expr);
+}
+
+#[test]
 fn test_const_fold_chained() {
     // let a = 2 in let b = 3 in let c = add(a, b) in let d = mul(c, a) in fin d
     let expr = let_("a", int(2),
