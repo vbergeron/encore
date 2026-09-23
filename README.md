@@ -31,6 +31,7 @@ The VM itself. Requires only a fixed arena; `#![no_std]`, brings its own GC.
 - 256-register file, bump-allocation heap arena
 - Mark-compact garbage collector
 - Single calling convention: `ENCORE` opcode, set callee and continuation, jump without returning
+- Optional `stats` feature: opcode counts, GC pauses and phases, time breakdown — zero overhead when off ([STATS.md](STATS.md))
 
 See [VM.md](VM.md) for the value encoding, opcode table, and binary format. See [AOT.md](AOT.md) for the native/ahead-of-time compilation design.
 
@@ -92,6 +93,14 @@ encore run program.encr
 encore run program.encr --entry 1          # run the second define (0-based)
 encore run program.encr --heap-size 131072  # 128 K words of heap
 ```
+
+### Collect runtime statistics
+
+```bash
+cargo run --release --features stats --bin encore -- run program.encr --heap-size 1024
+```
+
+Prints opcode counts, GC count/pauses/phases and a mutator/GC/extern time split to stderr. See [STATS.md](STATS.md).
 
 ### Inspect the bytecode
 
