@@ -7,7 +7,7 @@ use crate::opcode;
 use crate::program::Program;
 use crate::registers::Registers;
 #[cfg(feature = "stats")]
-use crate::stats::VmStats;
+use crate::stats::{Clock, VmStats};
 use crate::value::{CodeAddress, GlobalAddress, HeapAddress, Reg, Value};
 
 const SELF: Reg = Reg::new(0);
@@ -32,6 +32,8 @@ pub struct Vm<'a> {
     executing_extern: bool,
     #[cfg(feature = "stats")]
     stats: VmStats,
+    #[cfg(feature = "stats")]
+    clock: Clock,
 }
 
 impl<'a> Vm<'a> {
@@ -47,6 +49,8 @@ impl<'a> Vm<'a> {
             executing_extern: false,
             #[cfg(feature = "stats")]
             stats: VmStats::default(),
+            #[cfg(feature = "stats")]
+            clock: crate::stats::no_clock,
         }
     }
 
@@ -173,7 +177,19 @@ impl<'a> Vm<'a> {
         }
         let roots = self.registers.as_mut_slice();
         let globals = &mut self.globals[..self.n_globals as usize];
+        #[cfg(feature = "stats")]
+        let (t0, hp0) = ((self.clock)(), self.arena.hp);
         gc::collect(&mut self.arena, roots, globals);
+        #[cfg(feature = "stats")]
+        {
+            let pause = (self.clock)().saturating_sub(t0);
+            let gc = &mut self.stats.gc;
+            gc.count += 1;
+            gc.total_pause += pause;
+            if pause > gc.max_pause { gc.max_pause = pause; }
+            gc.reclaimed += (hp0 - self.arena.hp) as u64;
+            gc.last_live = self.arena.hp;
+        }
         self.arena.try_alloc(n)
     }
 
@@ -250,11 +266,17 @@ impl<'a> Vm<'a> {
         self.run()
     }
 
+    /// Install the clock used to time GC pauses. Without one, pauses read 0.
+    #[cfg(feature = "stats")]
+    pub fn set_clock(&mut self, clock: Clock) {
+        self.clock = clock;
+    }
+
     #[cfg(feature = "stats")]
     pub fn stats(&self) -> VmStats {
         VmStats {
-            op_count: self.stats.op_count,
             arena: self.arena.stats,
+            ..self.stats
         }
     }
 

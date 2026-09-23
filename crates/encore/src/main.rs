@@ -217,6 +217,8 @@ fn cmd_run(path: &str, entry: Option<&str>, heap_size: usize) {
 
     let mut heap = vec![Value::from_u32(0); heap_size];
     let mut vm = Vm::init(&mut heap);
+    #[cfg(feature = "stats")]
+    vm.set_clock(clock_ns);
 
     vm.load(&prog).unwrap_or_else(|e| {
         eprintln!("runtime error: {e:?}");
@@ -341,4 +343,12 @@ fn cmd_disasm(path: &str, interactive: bool) {
     } else {
         print!("{disasm}");
     }
+}
+
+#[cfg(feature = "stats")]
+fn clock_ns() -> u64 {
+    use std::sync::OnceLock;
+    use std::time::Instant;
+    static START: OnceLock<Instant> = OnceLock::new();
+    START.get_or_init(Instant::now).elapsed().as_nanos() as u64
 }
