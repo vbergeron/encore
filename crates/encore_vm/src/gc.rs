@@ -1,4 +1,6 @@
 use crate::arena::Arena;
+#[cfg(feature = "stats")]
+use crate::stats::{Clock, GcStats};
 use crate::value::{HeapAddress, Value};
 
 /// Run a Lisp 2 mark-compact garbage collection cycle.
@@ -8,7 +10,18 @@ use crate::value::{HeapAddress, Value};
 ///   2. Forward — assign new (compacted) addresses to marked objects
 ///   3. Update — rewrite all heap pointers to use forwarding addresses
 ///   4. Compact — slide live objects down, reset heap pointer
-pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
+///
+/// With the `stats` feature, each phase is timed with `clock` and recorded
+/// in `stats`.
+pub fn collect(
+    arena: &mut Arena,
+    roots: &mut [Value],
+    globals: &mut [Value],
+    #[cfg(feature = "stats")] stats: &mut GcStats,
+    #[cfg(feature = "stats")] clock: Clock,
+) {
+    stat! { let hp_before = arena.hp; let t0 = clock(); }
+
     // Phase 1: Mark (iterative, using the fwd field as an intrusive worklist)
     let mut wl = HeapAddress::NULL;
     for root in roots.iter() {
@@ -28,8 +41,12 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
         }
     }
 
+    stat! { let t1 = clock(); }
+
     // Phase 2: Compute forwarding addresses
     let new_hp = forward(arena);
+
+    stat! { let t2 = clock(); }
 
     // Phase 3: Update references
     for root in roots.iter_mut() {
@@ -40,8 +57,12 @@ pub fn collect(arena: &mut Arena, roots: &mut [Value], globals: &mut [Value]) {
     }
     update_heap_refs(arena);
 
+    stat! { let t3 = clock(); }
+
     // Phase 4: Compact
     compact(arena, new_hp);
+
+    stat! { stats.record([t0, t1, t2, t3, clock()], hp_before, arena.hp); }
 }
 
 fn enqueue(arena: &mut Arena, wl: &mut HeapAddress, val: Value) {

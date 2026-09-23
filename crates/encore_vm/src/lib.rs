@@ -3,6 +3,13 @@
 #[cfg(feature = "derive")]
 pub use encore_derive::{ValueDecode, ValueEncode};
 
+/// Statements that exist only with the `stats` feature. Without it the
+/// macro expands to nothing, so instrumentation costs exactly zero.
+#[cfg(feature = "stats")]
+macro_rules! stat { ($($t:tt)*) => { $($t)* } }
+#[cfg(not(feature = "stats"))]
+macro_rules! stat { ($($t:tt)*) => {} }
+
 pub mod arena;
 pub mod builtins;
 pub mod code;

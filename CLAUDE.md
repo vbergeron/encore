@@ -23,6 +23,9 @@ cargo test <test_name> -- --nocapture
 cargo run --bin encore -- run <file.encr>
 cargo run --bin encore -- compile fleche <file.fleche> --out <dir>
 cargo run --bin encore -- disasm <file.encr> [--interactive]
+
+# Run with runtime statistics (opcode counts, GC pauses/phases, timings)
+cargo run --release --features stats --bin encore -- run <file.encr>
 ```
 
 ## Architecture
@@ -75,3 +78,4 @@ All passes are individually toggleable via CLI flags (e.g. `--cps-optimize-rewri
 - `FLECHE.md` — language syntax, keywords, data constructors
 - `VM.md` — value encoding, opcodes, binary format
 - `OPTIMIZER.md` — CPS pass descriptions and tuning
+- `STATS.md` — `stats` feature: runtime statistics, clock, zero-overhead rules (`stat!` macro)

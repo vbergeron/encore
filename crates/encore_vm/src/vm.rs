@@ -7,7 +7,7 @@ use crate::opcode;
 use crate::program::Program;
 use crate::registers::Registers;
 #[cfg(feature = "stats")]
-use crate::stats::VmStats;
+use crate::stats::{Clock, VmStats};
 use crate::value::{CodeAddress, GlobalAddress, HeapAddress, Reg, Value};
 
 const SELF: Reg = Reg::new(0);
@@ -32,6 +32,10 @@ pub struct Vm<'a> {
     executing_extern: bool,
     #[cfg(feature = "stats")]
     stats: VmStats,
+    #[cfg(feature = "stats")]
+    clock: Clock,
+    #[cfg(feature = "stats")]
+    run_depth: u32,
 }
 
 impl<'a> Vm<'a> {
@@ -47,6 +51,10 @@ impl<'a> Vm<'a> {
             executing_extern: false,
             #[cfg(feature = "stats")]
             stats: VmStats::default(),
+            #[cfg(feature = "stats")]
+            clock: crate::stats::no_clock,
+            #[cfg(feature = "stats")]
+            run_depth: 0,
         }
     }
 
@@ -173,6 +181,9 @@ impl<'a> Vm<'a> {
         }
         let roots = self.registers.as_mut_slice();
         let globals = &mut self.globals[..self.n_globals as usize];
+        #[cfg(feature = "stats")]
+        gc::collect(&mut self.arena, roots, globals, &mut self.stats.gc, self.clock);
+        #[cfg(not(feature = "stats"))]
         gc::collect(&mut self.arena, roots, globals);
         self.arena.try_alloc(n)
     }
@@ -195,7 +206,7 @@ impl<'a> Vm<'a> {
             self.registers[Reg::new(2 + i as u8)] = *arg;
         }
         self.code.jump(code_ptr);
-        self.run()
+        self.enter()
     }
 
     pub fn call_global_raw(&mut self, global_idx: GlobalAddress, args: &[Value]) -> Result<Value, VmError> {
@@ -247,23 +258,48 @@ impl<'a> Vm<'a> {
         self.registers[CONT] = Self::RETURN_CONT;
         self.registers[A1] = arg;
         self.code.jump(entry);
-        self.run()
+        self.enter()
+    }
+
+    /// Install the clock used for all timings. Without one, times read 0.
+    #[cfg(feature = "stats")]
+    pub fn set_clock(&mut self, clock: Clock) {
+        self.clock = clock;
     }
 
     #[cfg(feature = "stats")]
     pub fn stats(&self) -> VmStats {
         VmStats {
-            op_count: self.stats.op_count,
             arena: self.arena.stats,
+            ..self.stats
         }
+    }
+
+    /// Enter the interpreter loop; with `stats`, times the outermost entry
+    /// (re-entry from an extern is already counted as extern time).
+    #[inline(always)]
+    fn enter(&mut self) -> Result<Value, VmError> {
+        stat! {
+            let outer = self.run_depth == 0;
+            self.run_depth += 1;
+            let t0 = (self.clock)();
+        }
+        let result = self.run();
+        stat! {
+            self.run_depth -= 1;
+            if outer { self.stats.run_time += (self.clock)().saturating_sub(t0); }
+        }
+        result
     }
 
     fn run(&mut self) -> Result<Value, VmError> {
         loop {
-            #[cfg(feature = "stats")]
-            { self.stats.op_count += 1; }
             let pc = self.code.pc() as u16;
             let op = self.code.read_u8();
+            stat! {
+                self.stats.op_count += 1;
+                if let Some(n) = self.stats.op_counts.get_mut(op as usize) { *n += 1; }
+            }
             match op {
                 opcode::MOV => {
                     let rd = self.code.read_reg();
@@ -469,7 +505,12 @@ impl<'a> Vm<'a> {
                     let arg = self.registers[ra];
                     let f = self.extern_fns[idx as usize];
                     self.executing_extern = true;
+                    stat! { let t0 = (self.clock)(); }
                     let result = f(self, arg);
+                    stat! {
+                        self.stats.extern_calls += 1;
+                        self.stats.extern_time += (self.clock)().saturating_sub(t0);
+                    }
                     self.executing_extern = false;
                     let result = result.map_err(|error| VmError::Extern { error, slot: idx, pc })?;
                     self.registers[rd] = result;

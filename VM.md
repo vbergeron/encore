@@ -163,6 +163,8 @@ A **mark-compact** (Lisp-2 style) collector runs in-place when the heap cannot s
 3. **Update** — rewrite all pointers (roots and interior heap pointers) to forwarding addresses.
 4. **Compact** — slide marked objects to their new positions and reset `hp`.
 
+With the `stats` feature, each collection's pause and per-phase times are recorded — see [STATS.md](STATS.md).
+
 ## Program binary format
 
 ```

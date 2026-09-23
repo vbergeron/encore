@@ -33,3 +33,43 @@ pub const BYTES_SLICE: u8 = 0x34;
 pub const BYTES_EQ: u8 = 0x35;
 
 pub const NULL: u8 = 0xFF;
+
+/// Opcodes occupy `0x00..OPCODE_SLOTS` (`NULL` is a register operand, not an opcode).
+pub const OPCODE_SLOTS: usize = 0x40;
+
+#[cfg(feature = "stats")]
+pub fn name(op: u8) -> &'static str {
+    match op {
+        FIN => "FIN",
+        MOV => "MOV",
+        CAPTURE => "CAPTURE",
+        GLOBAL => "GLOBAL",
+        CLOSURE => "CLOSURE",
+        PACK => "PACK",
+        FIELD => "FIELD",
+        MATCH => "MATCH",
+        ENCORE => "ENCORE",
+        BRANCH => "BRANCH",
+        FUNCTION => "FUNCTION",
+        UNPACK => "UNPACK",
+        INT => "INT",
+        INT_ADD => "INT_ADD",
+        INT_SUB => "INT_SUB",
+        INT_MUL => "INT_MUL",
+        INT_EQ => "INT_EQ",
+        INT_LT => "INT_LT",
+        INT_BYTE => "INT_BYTE",
+        INT_0 => "INT_0",
+        INT_1 => "INT_1",
+        INT_2 => "INT_2",
+        EXTERN => "EXTERN",
+        BYTES => "BYTES",
+        BYTES_LEN => "BYTES_LEN",
+        BYTES_GET => "BYTES_GET",
+        BYTES_CONCAT => "BYTES_CONCAT",
+        BYTES_SLICE => "BYTES_SLICE",
+        BYTES_EQ => "BYTES_EQ",
+        NULL => "NULL",
+        _ => "?",
+    }
+}
