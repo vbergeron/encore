@@ -2,3 +2,4 @@
 examples/*/target
 *.bin
 .lia.cache
+_build/

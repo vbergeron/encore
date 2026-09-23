@@ -58,6 +58,7 @@ All IR types and compiler passes live in `crates/encore_compiler/src/`. IR repre
 | `encore_vm` | `#![no_std]` bytecode interpreter — `Vm`, `Value`, `Opcode`, GC |
 | `encore_disasm` | Bytecode disassembler with ratatui TUI |
 | `encore_derive` | Proc-macros: `ValueEncode` / `ValueDecode` for VM FFI |
+| `rocq/` | Rocq theory `Encore.Extraction` (`ExtrEncore.v`): the supported extraction directives. `dune build` (Rocq 9.1) builds it and re-extracts `examples/gcd`, `examples/digits` |
 
 ### VM
 
@@ -76,6 +77,7 @@ All passes are individually toggleable via CLI flags (e.g. `--cps-optimize-rewri
 ## Reference Docs
 
 - `FLECHE.md` — language syntax, keywords, data constructors
+- `SCHEME.md` — Scheme frontend, extracting from Rocq via `rocq/`, trust assumptions
 - `VM.md` — value encoding, opcodes, binary format
 - `OPTIMIZER.md` — CPS pass descriptions and tuning
 - `STATS.md` — `stats` feature: runtime statistics, clock, zero-overhead rules (`stat!` macro)

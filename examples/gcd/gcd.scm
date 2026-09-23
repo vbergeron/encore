@@ -3,14 +3,14 @@
 (load "macros_extr.scm")
 
 
-(define eqb (lambda (a) (lambda (b) (if (= a b) `(True) `(False)))))
+(define add (lambda (a) (lambda (b) (+ a b))))
   
-(define leb (lambda (a) (lambda (b) (if (< b a) `(False) `(True)))))
+(define sub (lambda (a) (lambda (b) (int-sub-sat a b))))
   
-(define nat_add (lambda (n) (lambda (m) (+ n m))))
-
-(define nat_sub (lambda (n) (lambda (m) (- n m))))
-
+(define eqb (lambda (a) (lambda (b) (= a b))))
+  
+(define leb (lambda (a) (lambda (b) (<= a b))))
+  
 (define gcd_aux (lambdas (fuel a b)
   ((lambdas (fO fS n) (if (= n 0) (fO 0) (fS (- n 1))))
      (lambda (_) a)
@@ -19,11 +19,38 @@
         ((True) a)
         ((False)
           (match (@ leb b a)
-             ((True) (@ gcd_aux fuel~ (@ nat_sub a b) b))
-             ((False) (@ gcd_aux fuel~ a (@ nat_sub b a)))))))
+             ((True) (@ gcd_aux fuel~ (@ sub a b) b))
+             ((False) (@ gcd_aux fuel~ a (@ sub b a)))))))
      fuel)))
   
-(define gcd (lambdas (a b) (@ gcd_aux (@ nat_add a b) a b)))
+(define gcd (lambdas (a b) (@ gcd_aux (@ add a b) a b)))
 
 (define main gcd)
+
+(define check
+  (@ gcd `((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1))
+    ,`(0)))))))))))))))))))))))))))))))))))))))))))))))))
+    `((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1)) ,`((lambda (x) (+ x 1))
+    ,`(0)))))))))))))))))))))
 

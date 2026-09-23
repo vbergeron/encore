@@ -1,0 +1,6 @@
+# Rocq build artifacts
+*.vo
+*.vos
+*.vok
+*.glob
+.*.aux

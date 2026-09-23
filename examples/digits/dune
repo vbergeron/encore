@@ -1,0 +1,17 @@
+(rocq.theory
+ (name EncoreExamples.Digits)
+ (modules Digits)
+ (theories Stdlib Encore.Extraction))
+
+; See examples/gcd/dune.
+(rule
+ (targets digits.scm)
+ (mode promote)
+ (deps
+  Digits.vo
+  %{project_root}/rocq/ExtrEncore.vo
+  %{project_root}/rocq/ExtrEncoreBytes.vo)
+ (action
+  (run rocq compile -w -extraction-default-directory
+   -Q %{project_root}/rocq Encore.Extraction -Q . EncoreExamples.Digits
+   %{dep:Extract.v})))

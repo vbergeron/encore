@@ -1,6 +1,6 @@
 # Scheme Frontend
 
-The Scheme frontend (`encore_scheme`) consumes Rocq-extracted `.scm` files. It is not a general-purpose Scheme implementation — it recognizes a fixed set of special forms with no macro expander, and uses non-standard conventions for constructors and multi-argument functions that match the output of Rocq's Scheme extraction.
+The Scheme frontend (`encore_scheme`) consumes Rocq-extracted `.scm` files. To produce them, extract through `rocq/ExtrEncore.v`; see [Extracting from Rocq](#extracting-from-rocq). It is not a general-purpose Scheme implementation — it recognizes a fixed set of special forms with no macro expander, and uses non-standard conventions for constructors and multi-argument functions that match the output of Rocq's Scheme extraction.
 
 ## S-expression surface
 
@@ -178,22 +178,7 @@ Produces an infinite loop (`let __err = (lambda (x) x) in (__err __err)`). Used 
 
 Integer semantics are those of the VM opcodes; see [VM.md](VM.md#integer-operations).
 
-#### Mapping Rocq `nat` operations
-
-With `nat` extracted to `integer`, the `nat` library functions can be replaced by primitives instead of running as extracted Gallina:
-
-```coq
-Extract Constant Nat.div    => "(lambda (a) (lambda (b) (int-div a b)))".
-Extract Constant Nat.modulo => "(lambda (a) (lambda (b) (int-mod a b)))".
-Extract Constant Nat.land   => "(lambda (a) (lambda (b) (int-and a b)))".
-Extract Constant Nat.lor    => "(lambda (a) (lambda (b) (int-or a b)))".
-Extract Constant Nat.lxor   => "(lambda (a) (lambda (b) (int-xor a b)))".
-Extract Constant Nat.shiftl => "(lambda (a) (lambda (b) (int-shl a b)))".
-Extract Constant Nat.shiftr => "(lambda (a) (lambda (b) (int-shr a b)))".
-Extract Constant Nat.leb    => "(lambda (a) (lambda (b) (<= a b)))".
-```
-
-`Nat.sub` (truncated) maps to `int-sub-sat`, through an opaque wrapper as in `examples/gcd/gcd.v`, since it is a fixpoint. These are exact only while values fit in 24 bits: `nat` is unbounded, while the VM traps with `IntOverflow` when a result leaves the range. Do not map `Z.div`/`Z.modulo` to `int-div`/`int-mod`: they floor, and differ on negative operands.
+With `nat` extracted to `integer`, `rocq/ExtrEncore.v` maps the `nat` library functions (`Nat.div`, `Nat.modulo`, `Nat.land`, `Nat.shiftl`, ...) onto these primitives instead of running them as extracted Gallina. See [Extracting from Rocq](#extracting-from-rocq). Do not map `Z.div`/`Z.modulo` to `int-div`/`int-mod`: they floor, and differ on negative operands.
 
 ### Otherwise: application
 
@@ -217,3 +202,49 @@ This is **not** an R5RS/R7RS implementation. Key restrictions:
 - **No `define` shorthand** — `(define (f x) ...)` is not supported; write `(define f (lambda (x) ...))`.
 - **`load` is ignored** — there is no module or file inclusion system.
 - **`quote` is very restricted** — it cannot build constructors with fields; use quasiquote for that.
+
+## Extracting from Rocq
+
+The supported way to extract a Rocq program for Encore is the `Encore.Extraction` theory in [`rocq/`](rocq/) (opam package `rocq-encore`, Rocq 9.1, dune ≥ 3.21). It contains:
+
+| Module | Contents |
+|--------|----------|
+| `ExtrEncore` | Sets `Extraction Language Scheme`. Maps `nat` to VM integers and its operations to primitives, and pins the `bool`/`list`/`prod` constructor names. |
+| `ExtrEncoreBytes` | An abstract `bytes` type whose operations are VM byte-string primitives, plus `bytes_of_string` for `string` literals. |
+| `ExtrEncoreInput` | The extern idiom: `input_byte : nat -> nat` realised by `(extern (slot 0) i)`, and `read_bytes`. |
+
+```coq
+From Encore.Extraction Require Import ExtrEncore.
+Require Import MyProgram.
+Extraction "my_program.scm" MyProgram.main.
+```
+
+```bash
+encore compile scheme my_program.scm --out out
+```
+
+To depend on it from another dune project, pin the package: `opam pin add rocq-encore git+https://github.com/vbergeron/encore`, then add `Encore.Extraction` to your theory's `(theories ...)`. Inside this repository, `dune build` builds the theory and re-extracts the examples (`examples/gcd`, `examples/digits`). The extracted `.scm` files are promoted into the source tree and committed, so building the firmware does not need Rocq. CI rebuilds them, fails if they differ from the committed ones, and compiles and runs them with `encore`.
+
+### What `ExtrEncore` maps
+
+- **`nat`** becomes `integer`: `O` is `0`, `S` is `(+ x 1)`, and a `match` on `nat` is an eliminator that tests for zero.
+- **`nat` operations**: `add`, `mul`, `sub` (`int-sub-sat`), `pred`, `min`, `max`, `eqb`, `leb`, `ltb`, `even`, `odd`, `div`, `modulo`, `div2`, `land`, `lor`, `lxor`, `shiftl` and `shiftr` all become primitives. Each one is mapped **twice**, once as `Init.Nat.*` and once as `PeanoNat.Nat.*`. The notations `+`, `*`, `-` unfold to `Init.Nat`, but once `Arith` is imported, `Nat.eqb`, `=?`, `<=?`, `/`, `mod`, ... resolve to `PeanoNat.Nat`. Its constants are aliases that extraction treats as distinct. If only one set is mapped, the directives silently do not apply to the other. `=?` then extracts to the recursive Gallina `eqb`. It is still correct through the `nat` eliminator, but it takes time linear in its arguments instead of one instruction, and nothing warns about it.
+- **`bool`, `list`, `prod`** keep their constructor representation, with names pinned to the pre-registered constructors: `False`/`True` (tags 0/1), `Nil`/`Cons` (2/3), `Pair` (4). Pinning matters. Without it, Rocq renames a constructor whose name clashes with one from another inductive. For example, `Decimal.uint` also has a `Nil`, which would turn `list`'s `nil` into `Nil1`. `crates/encore_scheme/tests/rocq_extraction.rs` checks these names and tags against `CtorRegistry`.
+- **`ascii`, `string`** keep their default extraction, as recommended in #7. The frontend folds every closed `String`/`Ascii` chain into a byte-string literal (see `fold_string_literals`), and `ExtrEncoreBytes.bytes_of_string` is the identity on it.
+
+`nat` literals above 5000 are not extracted as successor chains. Rocq abstracts them as `Nat.of_num_uint` applied to a decimal digit list, which is correct but converted at run time and large. Keep literals below 5000 or build them arithmetically.
+
+## Trust assumptions
+
+Every directive in `rocq/` replaces a Gallina definition with unproven Scheme. A program extracted through it is correct only if these preconditions hold:
+
+| Directive | Precondition | If violated |
+|-----------|--------------|-------------|
+| `nat` → `integer`, and all `nat` operations | Every `nat` the program builds stays below 2^23 (8,388,608). `nat` is unbounded; VM integers are 24-bit. | The VM traps with `IntOverflow` on the operation that leaves the range, so it never returns a wrong value. It fails instead of returning the Gallina result. |
+| `bool`/`list`/`prod` names | No other constructor in the extracted program is named `False`, `True`, `Nil`, `Cons` or `Pair`. The frontend resolves tags by name. | Constructors of different types share a tag. This is harmless while their arities agree (for example `Decimal.uint`'s `Nil`). |
+| `ExtrEncoreBytes.bytes_of_string` (identity) | Applied only to `string` literals, or to constants defined as literals. | A `string` computed at run time is still a `String` constructor chain, not a byte string. |
+| `string`/`ascii` literal folding | The program never computes on `string` or `ascii` values: no `match`, no `String.append`/`length`/`eqb`, ... | A folded literal is a byte string, and matching on it as a `String` constructor is miscompiled. |
+| `ExtrEncoreBytes.bytes_get b i` | `i < bytes_len b` | The VM does not check the bound and reads past the end. |
+| `ExtrEncoreBytes.byte_of_nat n` | `n <= 255` | The VM traps with `ByteRange`. |
+| `ExtrEncoreBytes` axioms | The VM primitives satisfy the stated equations (`bytes_len_concat`, `bytes_eqb_spec`, ...). | Proofs that use the axioms say nothing about the VM. |
+| `ExtrEncoreInput.input_byte` (`extern (slot 0)`) | The host registers a function in slot 0 that returns a value in `[0, 255]` for every index read, and the same value every time for the same index. | Anything: the extern is outside Rocq's model. |
