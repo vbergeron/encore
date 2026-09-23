@@ -306,6 +306,28 @@ fn test_gc_preserves_live_data() {
     assert_eq!(result.ctor_tag(), 1);
 }
 
+#[test]
+fn test_gc_ignores_registers_of_finished_calls() {
+    let code = [
+        // global 0 thunk: produce function(@6)
+        FUNCTION, X01, 6, 0, FIN, X01,
+        // function body at offset 6:
+        PACK, X01, 0, 2,            // X01 = ctor(0, [A1]), 2 words, left in X01
+        FIN, 2,                     // FIN A1
+    ];
+    let arity_table = [1];
+    let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
+    // Room for one ctor only: each call must reclaim the previous call's,
+    // which only its stale X01 still points to.
+    let mut mem = [Value::from_u32(0); 3];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    for i in 0..3 {
+        let result = vm.call_global_raw(GlobalAddress::new(0), &[Value::int(i)]).unwrap();
+        assert_eq!(result.int_value().unwrap(), i);
+    }
+}
+
 // -- call() API test --
 
 #[test]

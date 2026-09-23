@@ -206,7 +206,7 @@ impl<'a> Vm<'a> {
             self.registers[Reg::new(2 + i as u8)] = *arg;
         }
         self.code.jump(code_ptr);
-        self.enter()
+        self.run_to_completion()
     }
 
     pub fn call_global_raw(&mut self, global_idx: GlobalAddress, args: &[Value]) -> Result<Value, VmError> {
@@ -258,7 +258,19 @@ impl<'a> Vm<'a> {
         self.registers[CONT] = Self::RETURN_CONT;
         self.registers[A1] = arg;
         self.code.jump(entry);
-        self.enter()
+        self.run_to_completion()
+    }
+
+    /// Run from the current code pointer until `FIN` or an error, then clear
+    /// the registers: they are GC roots, and whatever a finished call left in
+    /// them would otherwise stay live until the next call overwrote it.
+    /// Not cleared inside an extern, whose caller's registers are still in use.
+    fn run_to_completion(&mut self) -> Result<Value, VmError> {
+        let result = self.enter();
+        if !self.executing_extern {
+            self.registers = Registers::new();
+        }
+        result
     }
 
     /// Install the clock used for all timings. Without one, times read 0.
