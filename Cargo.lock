@@ -212,7 +212,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "encore-toolchain"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "clap",
  "encore_compiler",
@@ -224,14 +224,14 @@ dependencies = [
 
 [[package]]
 name = "encore_compiler"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "encore_vm",
 ]
 
 [[package]]
 name = "encore_derive"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -240,7 +240,7 @@ dependencies = [
 
 [[package]]
 name = "encore_disasm"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "crossterm",
  "encore_vm",
@@ -249,7 +249,7 @@ dependencies = [
 
 [[package]]
 name = "encore_fleche"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "encore_compiler",
  "encore_vm",
@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "encore_scheme"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "encore_compiler",
  "encore_vm",
@@ -265,7 +265,7 @@ dependencies = [
 
 [[package]]
 name = "encore_vm"
-version = "0.1.3"
+version = "0.1.5"
 dependencies = [
  "encore_derive",
 ]
