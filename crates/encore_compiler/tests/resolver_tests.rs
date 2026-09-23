@@ -28,7 +28,7 @@ fn reg(r: asm::Reg) -> asm::Val {
     asm::Val::Reg(r)
 }
 
-fn global(idx: u8) -> asm::Val {
+fn global(idx: u16) -> asm::Val {
     asm::Val::Global(idx)
 }
 

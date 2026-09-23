@@ -18,6 +18,7 @@
 
 use std::collections::HashMap;
 
+use encore_vm::int;
 use encore_vm::value::int_in_range;
 
 use crate::ir::cps::{Case, Cont, Expr, Fun, Tag, Val};
@@ -208,6 +209,16 @@ fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Option<Val> {
         IntOp::Mul => arith(a.checked_mul(b)),
         IntOp::Eq => Some(if a == b { Val::TRUE } else { Val::FALSE }),
         IntOp::Lt => Some(if a < b { Val::TRUE } else { Val::FALSE }),
+        IntOp::Le => Some(if a <= b { Val::TRUE } else { Val::FALSE }),
+        // Same semantics as the VM; ops that would trap are left unfolded.
+        IntOp::Div => int::div(a, b).map(Val::Int),
+        IntOp::Mod => Some(Val::Int(int::rem(a, b))),
+        IntOp::SubSat => int::sub_sat(a, b).map(Val::Int),
+        IntOp::And => Some(Val::Int(int::and(a, b))),
+        IntOp::Or => Some(Val::Int(int::or(a, b))),
+        IntOp::Xor => Some(Val::Int(int::xor(a, b))),
+        IntOp::Shl => int::shl(a, b).map(Val::Int),
+        IntOp::Shr => Some(Val::Int(int::shr(a, b))),
         IntOp::Byte => unreachable!("Byte is unary and handled by try_fold_prim"),
     }
 }

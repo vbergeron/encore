@@ -18,28 +18,31 @@ pub const MAGIC: [u8; 4] = *b"ENCR";
 ///     For each: [tag: u8] [name_len: u8] [name: name_len bytes, UTF-8]
 ///   Section 2 - global/define names:
 ///     [n_globals: u16 LE]
-///     For each: [idx: u8] [name_len: u8] [name: name_len bytes, UTF-8]
+///     For each: [idx: u16 LE] [name_len: u8] [name: name_len bytes, UTF-8]
 #[derive(Debug)]
 pub struct Program<'a> {
     pub arity_table: &'a [u8],
     pub code: &'a [u8],
-    globals: [CodeAddress; 64],
-    n_globals: u8,
+    globals: Globals<'a>,
     metadata: &'a [u8],
+}
+
+/// Global entry points: either given directly, or the raw `u16 LE` table of
+/// a parsed binary. Neither form has a capacity limit.
+#[derive(Debug)]
+enum Globals<'a> {
+    Slice(&'a [CodeAddress]),
+    Raw(&'a [u8]),
 }
 
 const HEADER: usize = 4 + 6;
 
 impl<'a> Program<'a> {
-    pub fn new(code: &'a [u8], arity_table: &'a [u8], globals: &[CodeAddress]) -> Self {
-        let mut arr = [CodeAddress::new(0); 64];
-        let n = globals.len().min(64);
-        arr[..n].copy_from_slice(&globals[..n]);
+    pub fn new(code: &'a [u8], arity_table: &'a [u8], globals: &'a [CodeAddress]) -> Self {
         Self {
             arity_table,
             code,
-            globals: arr,
-            n_globals: n as u8,
+            globals: Globals::Slice(globals),
             metadata: &[],
         }
     }
@@ -60,58 +63,64 @@ impl<'a> Program<'a> {
         let code_start = globals_start + n_globals * 2;
         let code_end = code_start + code_len;
 
-        let mut globals = [CodeAddress::new(0); 64];
-        for i in 0..n_globals {
-            let off = globals_start + i * 2;
-            let raw = u16::from_le_bytes([bytes[off], bytes[off + 1]]);
-            globals[i] = CodeAddress::new(raw);
-        }
-
         Ok(Self {
             arity_table: &bytes[arity_start..globals_start],
             code: &bytes[code_start..code_end],
-            globals,
-            n_globals: n_globals as u8,
+            globals: Globals::Raw(&bytes[globals_start..code_start]),
             metadata: &bytes[code_end..],
         })
     }
 
-    pub fn n_globals(&self) -> usize { self.n_globals as usize }
+    pub fn n_globals(&self) -> usize {
+        match self.globals {
+            Globals::Slice(s) => s.len(),
+            Globals::Raw(raw) => raw.len() / 2,
+        }
+    }
 
     pub fn global(&self, idx: usize) -> CodeAddress {
-        self.globals[idx]
+        match self.globals {
+            Globals::Slice(s) => s[idx],
+            Globals::Raw(raw) => CodeAddress::new(u16::from_le_bytes([raw[idx * 2], raw[idx * 2 + 1]])),
+        }
     }
 
     pub fn has_metadata(&self) -> bool {
         self.metadata.len() >= 2
     }
 
-    pub fn ctor_names(&self) -> NameEntryIter<'a> {
-        parse_name_section(self.metadata)
+    /// Constructor names: `(tag, name)`.
+    pub fn ctor_names(&self) -> impl Iterator<Item = (u8, &'a str)> {
+        parse_name_section(self.metadata, CTOR_IDX_WIDTH).map(|(tag, name)| (tag as u8, name))
     }
 
+    /// Global/define names: `(global index, name)`.
     pub fn global_names(&self) -> NameEntryIter<'a> {
-        let rest = skip_name_section(self.metadata);
-        parse_name_section(rest)
+        let rest = skip_name_section(self.metadata, CTOR_IDX_WIDTH);
+        parse_name_section(rest, GLOBAL_IDX_WIDTH)
     }
 }
 
-fn parse_name_section<'a>(data: &'a [u8]) -> NameEntryIter<'a> {
+/// Width in bytes of the index field of a name entry.
+const CTOR_IDX_WIDTH: usize = 1;
+const GLOBAL_IDX_WIDTH: usize = 2;
+
+fn parse_name_section<'a>(data: &'a [u8], idx_width: usize) -> NameEntryIter<'a> {
     if data.len() < 2 {
-        return NameEntryIter { data, pos: 0, remaining: 0 };
+        return NameEntryIter { data, pos: 0, remaining: 0, idx_width };
     }
     let n = u16::from_le_bytes([data[0], data[1]]) as usize;
-    NameEntryIter { data, pos: 2, remaining: n }
+    NameEntryIter { data, pos: 2, remaining: n, idx_width }
 }
 
-fn skip_name_section<'a>(data: &'a [u8]) -> &'a [u8] {
+fn skip_name_section<'a>(data: &'a [u8], idx_width: usize) -> &'a [u8] {
     if data.len() < 2 { return &[]; }
     let n = u16::from_le_bytes([data[0], data[1]]) as usize;
     let mut pos = 2;
     for _ in 0..n {
-        if pos + 2 > data.len() { return &[]; }
-        let name_len = data[pos + 1] as usize;
-        pos += 2 + name_len;
+        if pos + idx_width + 1 > data.len() { return &[]; }
+        let name_len = data[pos + idx_width] as usize;
+        pos += idx_width + 1 + name_len;
         if pos > data.len() { return &[]; }
     }
     &data[pos..]
@@ -121,17 +130,22 @@ pub struct NameEntryIter<'a> {
     data: &'a [u8],
     pos: usize,
     remaining: usize,
+    idx_width: usize,
 }
 
 impl<'a> Iterator for NameEntryIter<'a> {
-    type Item = (u8, &'a str);
+    type Item = (u16, &'a str);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.remaining == 0 { return None; }
-        if self.pos + 2 > self.data.len() { return None; }
-        let idx = self.data[self.pos];
-        let name_len = self.data[self.pos + 1] as usize;
-        self.pos += 2;
+        if self.pos + self.idx_width + 1 > self.data.len() { return None; }
+        let idx = if self.idx_width == 2 {
+            u16::from_le_bytes([self.data[self.pos], self.data[self.pos + 1]])
+        } else {
+            self.data[self.pos] as u16
+        };
+        let name_len = self.data[self.pos + self.idx_width] as usize;
+        self.pos += self.idx_width + 1;
         if self.pos + name_len > self.data.len() { return None; }
         let name = core::str::from_utf8(&self.data[self.pos..self.pos + name_len]).ok()?;
         self.pos += name_len;

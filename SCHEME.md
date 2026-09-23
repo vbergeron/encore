@@ -160,12 +160,40 @@ Produces an infinite loop (`let __err = (lambda (x) x) in (__err __err)`). Used 
 | `(* a b)` | integer multiplication |
 | `(= a b)` | integer equality (returns `True`/`False` constructor) |
 | `(< a b)` | integer less-than (returns `True`/`False` constructor) |
+| `(<= a b)` | integer less-or-equal (returns `True`/`False` constructor) |
+| `(int-div a b)` | truncating division; `(int-div a 0)` = `0` |
+| `(int-mod a b)` | truncating remainder; `(int-mod a 0)` = `a` |
+| `(int-sub-sat a b)` | `nat` subtraction: `a - b`, or `0` if `a <= b` |
+| `(int-and a b)` | bitwise and |
+| `(int-or a b)` | bitwise or |
+| `(int-xor a b)` | bitwise xor |
+| `(int-shl a b)` | left shift; traps with `IntOverflow` if the result leaves the 24-bit range |
+| `(int-shr a b)` | logical right shift (`b` outside `0..24` gives `0`) |
 | `(int->byte x)` | integer 0–255 to single-byte string |
 | `(bytes-len s)` | byte string length |
 | `(bytes-get s i)` | byte at index |
 | `(bytes-concat a b)` | concatenate byte strings |
 | `(bytes-slice s i n)` | substring from index, length n |
 | `(bytes-eq a b)` | byte string equality (returns `True`/`False` constructor) |
+
+Integer semantics are those of the VM opcodes; see [VM.md](VM.md#integer-operations).
+
+#### Mapping Rocq `nat` operations
+
+With `nat` extracted to `integer`, the `nat` library functions can be replaced by primitives instead of running as extracted Gallina:
+
+```coq
+Extract Constant Nat.div    => "(lambda (a) (lambda (b) (int-div a b)))".
+Extract Constant Nat.modulo => "(lambda (a) (lambda (b) (int-mod a b)))".
+Extract Constant Nat.land   => "(lambda (a) (lambda (b) (int-and a b)))".
+Extract Constant Nat.lor    => "(lambda (a) (lambda (b) (int-or a b)))".
+Extract Constant Nat.lxor   => "(lambda (a) (lambda (b) (int-xor a b)))".
+Extract Constant Nat.shiftl => "(lambda (a) (lambda (b) (int-shl a b)))".
+Extract Constant Nat.shiftr => "(lambda (a) (lambda (b) (int-shr a b)))".
+Extract Constant Nat.leb    => "(lambda (a) (lambda (b) (<= a b)))".
+```
+
+`Nat.sub` (truncated) maps to `int-sub-sat`, through an opaque wrapper as in `examples/gcd/gcd.v`, since it is a fixpoint. These are exact only while values fit in 24 bits: `nat` is unbounded, while the VM traps with `IntOverflow` when a result leaves the range. Do not map `Z.div`/`Z.modulo` to `int-div`/`int-mod`: they floor, and differ on negative operands.
 
 ### Otherwise: application
 

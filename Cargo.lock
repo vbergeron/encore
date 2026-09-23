@@ -252,6 +252,7 @@ name = "encore_fleche"
 version = "0.1.5"
 dependencies = [
  "encore_compiler",
+ "encore_disasm",
  "encore_vm",
 ]
 

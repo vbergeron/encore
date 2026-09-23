@@ -51,6 +51,7 @@ pub enum VmError {
     Truncated,
     Extern { error: ExternError, slot: u16, pc: u16 },
     TypeError { expected: &'static str, got: &'static str },
+    GlobalsOverflow { needed: usize, available: usize },
 }
 
 impl VmError {
@@ -65,6 +66,7 @@ impl VmError {
             VmError::Truncated => "truncated program",
             VmError::Extern { .. } => "extern call failed",
             VmError::TypeError { .. } => "type error",
+            VmError::GlobalsOverflow { .. } => "globals do not fit in the heap",
         }
     }
 }
@@ -87,6 +89,8 @@ impl fmt::Display for VmError {
                 write!(f, "extern {slot} failed at pc=0x{pc:04x}: {error}"),
             VmError::TypeError { expected, got } =>
                 write!(f, "type error: expected {expected}, got {got}"),
+            VmError::GlobalsOverflow { needed, available } =>
+                write!(f, "globals overflow: program needs {needed} global slots, heap has {available} free words"),
         }
     }
 }

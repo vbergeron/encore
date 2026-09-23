@@ -7,7 +7,7 @@ use encore_vm::vm::Vm;
 
 fn run(source: &str) -> Value {
     let module = encore_fleche::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let mut mem = [Value::from_u32(0); 4096];
     let mut vm = Vm::init(&mut mem);
@@ -17,7 +17,7 @@ fn run(source: &str) -> Value {
 
 fn run_multi(source: &str) -> Value {
     let module = encore_fleche::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let last = prog.n_globals() - 1;
     let mut mem = [Value::from_u32(0); 4096];
@@ -446,7 +446,7 @@ fn test_letrec_as_value() {
 
 fn run_with_externs(source: &str, externs: &[(u16, encore_vm::vm::ExternFn)]) -> Value {
     let module = encore_fleche::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let last = prog.n_globals() - 1;
     let mut mem = [Value::from_u32(0); 4096];
@@ -621,7 +621,7 @@ fn test_list_nat_of_bytes_hello() {
         let main = list_nat_of_bytes \"hello\"
     ";
     let module = encore_fleche::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let last = prog.n_globals() - 1;
     let mut mem = [Value::from_u32(0); 4096];
@@ -659,7 +659,7 @@ fn test_list_nat_of_bytes_with_extern() {
         let main = list_nat_of_bytes (get_buf 0)
     ";
     let module = encore_fleche::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let last = prog.n_globals() - 1;
     let mut mem = [Value::from_u32(0); 4096];
@@ -690,10 +690,10 @@ fn test_compilation_deterministic() {
             ctor_names,
             global_names: module.defines.iter()
                 .enumerate()
-                .map(|(i, d)| (i as u8, d.name.clone()))
+                .map(|(i, d)| (i as u16, d.name.clone()))
                 .collect(),
         };
-        pipeline::compile_module(module, None, Some(&metadata))
+        pipeline::compile_module(module, None, Some(&metadata)).unwrap()
     };
     let reference = compile();
     for _ in 0..20 {
@@ -1179,4 +1179,129 @@ fn test_match_exhaustive_all_covered() {
           end
     ");
     assert_eq!(result.int_value().unwrap(), 2);
+}
+
+// -- Division, bitwise and shift builtins --
+
+/// Evaluate `main` both unoptimized (the VM computes the op) and optimized
+/// (the constant folder computes it); both must agree.
+fn eval_int_both_ways(source: &str) -> i32 {
+    let mut results = Vec::new();
+    for config in [None, Some(encore_compiler::pass::cps_optimize::OptimizeConfig::default())] {
+        let module = encore_fleche::parse(source);
+        let binary = pipeline::compile_module(module, config, None).unwrap();
+        let prog = Program::parse(&binary).unwrap();
+        let last = prog.n_globals() - 1;
+        let mut mem = [Value::from_u32(0); 4096];
+        let mut vm = Vm::init(&mut mem);
+        vm.load(&prog).unwrap();
+        results.push(vm.global_raw(GlobalAddress::new(last as u16)).int_value().unwrap());
+    }
+    assert_eq!(results[0], results[1], "VM and constant folder disagree on {source}");
+    results[0]
+}
+
+fn int_builtin(op: &str, a: i32, b: i32) -> i32 {
+    // Literals are non-negative, so operands are built with `add`/`sub` from 0.
+    let lit = |n: i32| if n < 0 { format!("builtin sub 0 {}", -n) } else { format!("builtin add 0 {n}") };
+    let src = format!("let main = let a = {} in let b = {} in builtin {op} a b", lit(a), lit(b));
+    eval_int_both_ways(&src)
+}
+
+#[test]
+fn test_builtin_div_mod() {
+    assert_eq!(int_builtin("div", 17, 5), 3);
+    assert_eq!(int_builtin("div", -17, 5), -3);
+    assert_eq!(int_builtin("div", 17, 0), 0);
+    assert_eq!(int_builtin("mod", 17, 5), 2);
+    assert_eq!(int_builtin("mod", -17, 5), -2);
+    assert_eq!(int_builtin("mod", 17, 0), 17);
+}
+
+#[test]
+fn test_builtin_sub_sat() {
+    assert_eq!(int_builtin("sub_sat", 7, 3), 4);
+    assert_eq!(int_builtin("sub_sat", 3, 7), 0);
+}
+
+#[test]
+fn test_builtin_bitwise() {
+    assert_eq!(int_builtin("and", 12, 10), 8);
+    assert_eq!(int_builtin("or", 12, 10), 14);
+    assert_eq!(int_builtin("xor", 12, 10), 6);
+    assert_eq!(int_builtin("and", -1, 1234), 1234);
+}
+
+#[test]
+fn test_builtin_shifts() {
+    assert_eq!(int_builtin("shl", 3, 4), 48);
+    assert_eq!(int_builtin("shl", -1, 23), -(1 << 23));
+    assert_eq!(int_builtin("shl", 0, 30), 0);
+    assert_eq!(int_builtin("shl", 5, -1), 0);
+    assert_eq!(int_builtin("shr", 256, 4), 16);
+    assert_eq!(int_builtin("shr", -1, 20), 15);
+    assert_eq!(int_builtin("shr", -1, 24), 0);
+    assert_eq!(int_builtin("shr", 5, -1), 0);
+}
+
+#[test]
+fn test_builtin_le() {
+    let src = |a: i32, b: i32| format!("
+        let main =
+          let r = builtin le {a} {b} in
+          match r
+          | False -> 0
+          | True -> 1
+          end
+    ");
+    assert_eq!(eval_int_both_ways(&src(3, 5)), 1);
+    assert_eq!(eval_int_both_ways(&src(5, 5)), 1);
+    assert_eq!(eval_int_both_ways(&src(6, 5)), 0);
+}
+
+// -- Many globals --
+
+#[test]
+fn test_300_defines_compile_and_run() {
+    // d0 = 0, d{i} = d{i-1} + 1; main sums an early and a late define so
+    // both GLOBAL and GLOBAL_W are exercised.
+    let mut src = String::from("let d0 = 0\n");
+    for i in 1..300 {
+        src.push_str(&format!("let d{i} = builtin add d{} 1\n", i - 1));
+    }
+    src.push_str("let main = builtin add d3 d299\n");
+    let (module, ctor_names) = encore_fleche::parse_with_metadata(&src);
+    let metadata = encore_compiler::pass::asm_emit::Metadata {
+        ctor_names,
+        global_names: module.defines.iter()
+            .enumerate()
+            .map(|(i, d)| (i as u16, d.name.clone()))
+            .collect(),
+    };
+    let binary = pipeline::compile_module(module, None, Some(&metadata)).unwrap();
+    let prog = Program::parse(&binary).unwrap();
+    assert_eq!(prog.n_globals(), 301);
+    let names: Vec<(u16, &str)> = prog.global_names().collect();
+    assert_eq!(names[299], (299, "d299"));
+    assert_eq!(names[300], (300, "main"));
+
+    let mut mem = [Value::from_u32(0); 4096];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    assert_eq!(vm.global_raw(GlobalAddress::new(300)).int_value().unwrap(), 302);
+
+    let listing = encore_disasm::disasm(&binary).unwrap();
+    assert!(listing.contains("GLOBAL_W"), "expected a wide global load:\n{listing}");
+}
+
+#[test]
+fn test_too_many_ctors_is_parse_error() {
+    let mut src = String::from("data");
+    for i in 0..300 {
+        src.push_str(&format!(" | C{i}"));
+    }
+    src.push_str("\nlet main = C0\n");
+    use encore_compiler::frontend::Frontend;
+    let err = encore_fleche::FlecheFrontend.parse(&src).err().expect("expected an error");
+    assert!(err.message.contains("too many constructors"), "{}", err.message);
 }

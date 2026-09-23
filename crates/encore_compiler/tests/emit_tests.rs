@@ -1,3 +1,4 @@
+use encore_compiler::error::CompileError;
 use encore_compiler::pass::asm_emit::Emitter;
 use encore_compiler::ir::asm::*;
 use encore_vm::opcode;
@@ -18,6 +19,65 @@ fn test_let_global_fin() {
     emitter.emit_toplevel(&expr);
     let code = emitter.into_bytes();
     assert_eq!(code, [opcode::GLOBAL, X01, 0, opcode::FIN, X01]);
+}
+
+#[test]
+fn test_let_wide_global_fin() {
+    let expr = Expr::Let(X01, Val::Global(0x0123), Box::new(Expr::Fin(X01)));
+    let mut emitter = Emitter::new();
+    emitter.emit_toplevel(&expr);
+    let code = emitter.into_bytes();
+    assert_eq!(code, [opcode::GLOBAL_W, X01, 0x23, 0x01, opcode::FIN, X01]);
+}
+
+#[test]
+fn test_bytes_literal_too_long_is_error() {
+    let body = Expr::Let(X01, Val::Bytes(vec![0; 300]), Box::new(Expr::Fin(X01)));
+    let module = Module { defines: vec![Define { global: 0, body }] };
+    assert_eq!(
+        Emitter::emit_module(&module, None),
+        Err(CompileError::BytesLiteralTooLong { len: 300, max: 255 }),
+    );
+}
+
+#[test]
+fn test_too_many_captures_is_error() {
+    let fun = Fun { captures: vec![X01; 200], body: Box::new(Expr::Fin(A1)) };
+    let body = Expr::Letrec(X01, fun, Box::new(Expr::Fin(X01)));
+    let module = Module { defines: vec![Define { global: 0, body }] };
+    assert_eq!(
+        Emitter::emit_module(&module, None),
+        Err(CompileError::TooManyCaptures { count: 200, max: 125 }),
+    );
+}
+
+#[test]
+fn test_code_too_large_is_error() {
+    // Each define is a 5-byte `INT`/`FIN`; 14k of them overflow 64 KB.
+    let defines = (0..14_000)
+        .map(|i| Define {
+            global: i as u16,
+            body: Expr::Let(X01, Val::Int(1000), Box::new(Expr::Fin(X01))),
+        })
+        .collect();
+    let module = Module { defines };
+    assert!(matches!(
+        Emitter::emit_module(&module, None),
+        Err(CompileError::CodeTooLarge { max: 65535, .. }),
+    ));
+}
+
+#[test]
+fn test_too_many_globals_is_error() {
+    use encore_compiler::ir::ds;
+    let defines = (0..70_000)
+        .map(|i| ds::Define { name: format!("d{i}"), body: ds::Expr::Int(0) })
+        .collect();
+    let module = ds::Module { defines };
+    assert_eq!(
+        encore_compiler::pipeline::compile_module(module, None, None),
+        Err(CompileError::TooManyGlobals { count: 70_000, max: 65535 }),
+    );
 }
 
 #[test]

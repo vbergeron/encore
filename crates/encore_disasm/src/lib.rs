@@ -24,7 +24,7 @@ pub enum Op {
     Fin { rs: u8 },
     Mov { rd: u8, rs: u8 },
     Capture { rd: u8, idx: u8 },
-    Global { rd: u8, idx: u8 },
+    Global { rd: u8, idx: u16, wide: bool },
     Closure { rd: u8, target: u16, ncap: u8, caps: Vec<u8> },
     Function { rd: u8, target: u16 },
     Pack { rd: u8, tag: u8, fields: Vec<u8> },
@@ -43,6 +43,8 @@ pub enum Op {
     IntEq { rd: u8, ra: u8, rb: u8 },
     IntLt { rd: u8, ra: u8, rb: u8 },
     IntByte { rd: u8, rs: u8 },
+    /// Binary integer ops without a dedicated variant (`INT_DIV`, `INT_AND`, ...).
+    IntBin { name: &'static str, rd: u8, ra: u8, rb: u8 },
     Extern { rd: u8, slot: u16, ra: u8 },
     Bytes { rd: u8, data: Vec<u8> },
     BytesLen { rd: u8, rs: u8 },
@@ -66,7 +68,7 @@ pub struct Disasm {
     pub instructions: Vec<Instr>,
     pub code_len: usize,
     pub ctor_names: BTreeMap<u8, String>,
-    pub global_names: BTreeMap<u8, String>,
+    pub global_names: BTreeMap<u16, String>,
 }
 
 // --- Public API ---
@@ -97,7 +99,7 @@ pub fn decode_program(prog: &Program) -> Disasm {
         .map(|(tag, name)| (tag, name.to_owned()))
         .collect();
 
-    let global_names: BTreeMap<u8, String> = prog
+    let global_names: BTreeMap<u16, String> = prog
         .global_names()
         .map(|(idx, name)| (idx, name.to_owned()))
         .collect();
@@ -106,7 +108,7 @@ pub fn decode_program(prog: &Program) -> Disasm {
         .map(|i| {
             let addr = prog.global(i);
             let addr_desc = format!("@{:04x}", addr.raw());
-            match global_names.get(&(i as u8)) {
+            match global_names.get(&(i as u16)) {
                 Some(name) => (i, format!("{name} = {addr_desc}")),
                 None => (i, addr_desc),
             }
@@ -119,7 +121,7 @@ pub fn decode_program(prog: &Program) -> Disasm {
     let mut labels: BTreeMap<u16, String> = BTreeMap::new();
     for i in 0..prog.n_globals() {
         let addr = prog.global(i).raw();
-        let name = match global_names.get(&(i as u8)) {
+        let name = match global_names.get(&(i as u16)) {
             Some(n) => n.clone(),
             None => format!("g{i}"),
         };
@@ -212,7 +214,10 @@ impl fmt::Display for Op {
             Op::Fin { rs } => write!(f, "FIN {}", reg_name(*rs)),
             Op::Mov { rd, rs } => write!(f, "MOV {}, {}", reg_name(*rd), reg_name(*rs)),
             Op::Capture { rd, idx } => write!(f, "CAPTURE {}, {idx}", reg_name(*rd)),
-            Op::Global { rd, idx } => write!(f, "GLOBAL {}, g{idx}", reg_name(*rd)),
+            Op::Global { rd, idx, wide } => {
+                let name = if *wide { "GLOBAL_W" } else { "GLOBAL" };
+                write!(f, "{name} {}, g{idx}", reg_name(*rd))
+            }
             Op::Closure { rd, target, ncap, caps } => {
                 write!(f, "CLOSURE {}, @{target:04x}, {ncap}", reg_name(*rd))?;
                 for c in caps {
@@ -250,6 +255,7 @@ impl fmt::Display for Op {
             Op::IntEq { rd, ra, rb } => write!(f, "EQ {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
             Op::IntLt { rd, ra, rb } => write!(f, "LT {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
             Op::IntByte { rd, rs } => write!(f, "INT_BYTE {}, {}", reg_name(*rd), reg_name(*rs)),
+            Op::IntBin { name, rd, ra, rb } => write!(f, "{name} {}, {}, {}", reg_name(*rd), reg_name(*ra), reg_name(*rb)),
             Op::Extern { rd, slot, ra } => write!(f, "EXTERN {}, {slot}, {}", reg_name(*rd), reg_name(*ra)),
             Op::Bytes { rd, data } => {
                 write!(f, "BYTES {}, {}", reg_name(*rd), data.len())?;
@@ -326,6 +332,7 @@ fn collect_fn_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16> {
             opcode::FIN => { pc += 1; }
             opcode::MOV => { pc += 2; }
             opcode::CAPTURE | opcode::GLOBAL => { pc += 2; }
+            opcode::GLOBAL_W => { pc += 3; }
             opcode::CLOSURE => {
                 let _rd = code[pc]; pc += 1;
                 let lo = code[pc] as u16;
@@ -361,7 +368,10 @@ fn collect_fn_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16> {
             opcode::INT => { pc += 4; }
             opcode::INT_0 | opcode::INT_1 | opcode::INT_2 => { pc += 1; }
             opcode::INT_ADD | opcode::INT_SUB | opcode::INT_MUL
-            | opcode::INT_EQ | opcode::INT_LT => { pc += 3; }
+            | opcode::INT_EQ | opcode::INT_LT | opcode::INT_LE
+            | opcode::INT_DIV | opcode::INT_MOD | opcode::INT_SUB_SAT
+            | opcode::INT_AND | opcode::INT_OR | opcode::INT_XOR
+            | opcode::INT_SHL | opcode::INT_SHR => { pc += 3; }
             opcode::INT_BYTE => { pc += 2; }
             opcode::EXTERN => { pc += 4; }
             opcode::BYTES => {
@@ -390,6 +400,7 @@ fn collect_match_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16>
             opcode::FIN => { pc += 1; }
             opcode::MOV => { pc += 2; }
             opcode::CAPTURE | opcode::GLOBAL => { pc += 2; }
+            opcode::GLOBAL_W => { pc += 3; }
             opcode::CLOSURE => {
                 pc += 1;
                 pc += 2;
@@ -429,7 +440,10 @@ fn collect_match_targets(code: &[u8], arity_table: &[(u8, u8)]) -> BTreeSet<u16>
             opcode::INT => { pc += 4; }
             opcode::INT_0 | opcode::INT_1 | opcode::INT_2 => { pc += 1; }
             opcode::INT_ADD | opcode::INT_SUB | opcode::INT_MUL
-            | opcode::INT_EQ | opcode::INT_LT => { pc += 3; }
+            | opcode::INT_EQ | opcode::INT_LT | opcode::INT_LE
+            | opcode::INT_DIV | opcode::INT_MOD | opcode::INT_SUB_SAT
+            | opcode::INT_AND | opcode::INT_OR | opcode::INT_XOR
+            | opcode::INT_SHL | opcode::INT_SHR => { pc += 3; }
             opcode::INT_BYTE => { pc += 2; }
             opcode::EXTERN => { pc += 4; }
             opcode::BYTES => {
@@ -482,8 +496,13 @@ fn decode_instructions(code: &[u8], arity_table: &[(u8, u8)]) -> Vec<Instr> {
             }
             opcode::GLOBAL => {
                 let rd = read_u8(&mut pc);
-                let idx = read_u8(&mut pc);
-                Op::Global { rd, idx }
+                let idx = read_u8(&mut pc) as u16;
+                Op::Global { rd, idx, wide: false }
+            }
+            opcode::GLOBAL_W => {
+                let rd = read_u8(&mut pc);
+                let idx = read_u16(&mut pc);
+                Op::Global { rd, idx, wide: true }
             }
             opcode::CLOSURE => {
                 let rd = read_u8(&mut pc);
@@ -589,6 +608,25 @@ fn decode_instructions(code: &[u8], arity_table: &[(u8, u8)]) -> Vec<Instr> {
                 let rd = read_u8(&mut pc);
                 let rs = read_u8(&mut pc);
                 Op::IntByte { rd, rs }
+            }
+            opcode::INT_LE | opcode::INT_DIV | opcode::INT_MOD | opcode::INT_SUB_SAT
+            | opcode::INT_AND | opcode::INT_OR | opcode::INT_XOR
+            | opcode::INT_SHL | opcode::INT_SHR => {
+                let name = match op_byte {
+                    opcode::INT_LE => "LE",
+                    opcode::INT_DIV => "DIV",
+                    opcode::INT_MOD => "MOD",
+                    opcode::INT_SUB_SAT => "SUB_SAT",
+                    opcode::INT_AND => "AND",
+                    opcode::INT_OR => "OR",
+                    opcode::INT_XOR => "XOR",
+                    opcode::INT_SHL => "SHL",
+                    _ => "SHR",
+                };
+                let rd = read_u8(&mut pc);
+                let ra = read_u8(&mut pc);
+                let rb = read_u8(&mut pc);
+                Op::IntBin { name, rd, ra, rb }
             }
             opcode::EXTERN => {
                 let rd = read_u8(&mut pc);

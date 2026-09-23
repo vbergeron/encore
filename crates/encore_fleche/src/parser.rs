@@ -53,7 +53,7 @@ impl Parser {
         let name = self.tokens.expect_upper_identifier()?;
         let binds = self.parse_paren_binds()?;
         self.ctors.resolve_with_type(&name, binds.len() as u8, type_id);
-        Ok(())
+        self.ctors.check_capacity()
     }
 
     // -- Shared helpers --
@@ -348,6 +348,15 @@ impl Parser {
             "mul"          => (PrimOp::Int(IntOp::Mul), 2),
             "eq"           => (PrimOp::Int(IntOp::Eq), 2),
             "lt"           => (PrimOp::Int(IntOp::Lt), 2),
+            "le"           => (PrimOp::Int(IntOp::Le), 2),
+            "div"          => (PrimOp::Int(IntOp::Div), 2),
+            "mod"          => (PrimOp::Int(IntOp::Mod), 2),
+            "sub_sat"      => (PrimOp::Int(IntOp::SubSat), 2),
+            "and"          => (PrimOp::Int(IntOp::And), 2),
+            "or"           => (PrimOp::Int(IntOp::Or), 2),
+            "xor"          => (PrimOp::Int(IntOp::Xor), 2),
+            "shl"          => (PrimOp::Int(IntOp::Shl), 2),
+            "shr"          => (PrimOp::Int(IntOp::Shr), 2),
             "int_byte"     => (PrimOp::Int(IntOp::Byte), 1),
             "bytes_len"    => (PrimOp::Bytes(BytesOp::Len), 1),
             "bytes_get"    => (PrimOp::Bytes(BytesOp::Get), 2),

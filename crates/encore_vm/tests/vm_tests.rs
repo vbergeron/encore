@@ -4,8 +4,10 @@ use encore_vm::program::Program;
 use encore_vm::value::{CodeAddress, GlobalAddress, HeapAddress, Value};
 use encore_vm::vm::Vm;
 
+const MAIN: &[CodeAddress] = &[CodeAddress::new(0)];
+
 fn run(code: &[u8], arity_table: &[u8]) -> Result<Value, VmError> {
-    let prog = Program::new(code, arity_table, &[CodeAddress::new(0)]);
+    let prog = Program::new(code, arity_table, MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog)?;
@@ -88,7 +90,8 @@ fn test_load_global() {
         GLOBAL, X01, 0, FIN, X01,
     ];
     let arity_table = [0; 43];
-    let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0), CodeAddress::new(5)]);
+    let globals = [CodeAddress::new(0), CodeAddress::new(5)];
+    let prog = Program::new(&code, &arity_table, &globals);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -235,6 +238,177 @@ fn test_int_lt_false() {
     assert_eq!(result.ctor_tag(), 0);
 }
 
+// -- Division, bitwise and shift ops --
+
+/// Run `op X03, X01, X02` with `X01 = a`, `X02 = b` and return the result.
+fn binop(op: u8, a: i32, b: i32) -> Value {
+    let (a, b) = (a as u32, b as u32);
+    let code = [
+        INT, X01, a as u8, (a >> 8) as u8, (a >> 16) as u8,
+        INT, X02, b as u8, (b >> 8) as u8, (b >> 16) as u8,
+        op, X03, X01, X02,
+        FIN, X03,
+    ];
+    run(&code, &[]).unwrap()
+}
+
+fn int_binop(op: u8, a: i32, b: i32) -> i32 {
+    binop(op, a, b).int_value().unwrap()
+}
+
+#[test]
+fn test_int_div() {
+    assert_eq!(int_binop(INT_DIV, 17, 5), 3);
+    assert_eq!(int_binop(INT_DIV, -17, 5), -3);
+    assert_eq!(int_binop(INT_DIV, 4, 5), 0);
+}
+
+#[test]
+fn test_int_div_by_zero_is_zero() {
+    assert_eq!(int_binop(INT_DIV, 17, 0), 0);
+    assert_eq!(int_binop(INT_DIV, 0, 0), 0);
+}
+
+/// Run `op` like [`binop`] and return the error.
+fn binop_err(op: u8, a: i32, b: i32) -> VmError {
+    let (a, b) = (a as u32, b as u32);
+    let code = [
+        INT, X01, a as u8, (a >> 8) as u8, (a >> 16) as u8,
+        INT, X02, b as u8, (b >> 8) as u8, (b >> 16) as u8,
+        op, X03, X01, X02,
+        FIN, X03,
+    ];
+    run(&code, &[]).unwrap_err()
+}
+
+#[test]
+fn test_int_div_min_by_minus_one_traps() {
+    let min = -(1 << 23);
+    assert!(matches!(binop_err(INT_DIV, min, -1), VmError::IntOverflow { .. }));
+    assert_eq!(int_binop(INT_MOD, min, -1), 0);
+}
+
+#[test]
+fn test_int_sub_sat_overflow_traps() {
+    let max = (1 << 23) - 1;
+    assert_eq!(int_binop(INT_SUB_SAT, max, 0), max);
+    assert!(matches!(binop_err(INT_SUB_SAT, max, -1), VmError::IntOverflow { .. }));
+}
+
+#[test]
+fn test_int_mod() {
+    assert_eq!(int_binop(INT_MOD, 17, 5), 2);
+    assert_eq!(int_binop(INT_MOD, -17, 5), -2);
+    assert_eq!(int_binop(INT_MOD, 4, 5), 4);
+}
+
+#[test]
+fn test_int_mod_by_zero_is_dividend() {
+    assert_eq!(int_binop(INT_MOD, 17, 0), 17);
+    assert_eq!(int_binop(INT_MOD, 0, 0), 0);
+}
+
+#[test]
+fn test_int_sub_sat() {
+    assert_eq!(int_binop(INT_SUB_SAT, 7, 3), 4);
+    assert_eq!(int_binop(INT_SUB_SAT, 3, 7), 0);
+    assert_eq!(int_binop(INT_SUB_SAT, 5, 5), 0);
+}
+
+#[test]
+fn test_int_le() {
+    assert_eq!(binop(INT_LE, 3, 5).ctor_tag(), 1);
+    assert_eq!(binop(INT_LE, 5, 5).ctor_tag(), 1);
+    assert_eq!(binop(INT_LE, 6, 5).ctor_tag(), 0);
+    assert_eq!(binop(INT_LE, -1, 0).ctor_tag(), 1);
+}
+
+#[test]
+fn test_int_bitwise() {
+    assert_eq!(int_binop(INT_AND, 0b1100, 0b1010), 0b1000);
+    assert_eq!(int_binop(INT_OR, 0b1100, 0b1010), 0b1110);
+    assert_eq!(int_binop(INT_XOR, 0b1100, 0b1010), 0b0110);
+    // -1 is all 24 bits set
+    assert_eq!(int_binop(INT_AND, -1, 0x12_3456), 0x12_3456);
+    assert_eq!(int_binop(INT_XOR, -1, 0), -1);
+}
+
+#[test]
+fn test_int_shl() {
+    assert_eq!(int_binop(INT_SHL, 1, 4), 16);
+    assert_eq!(int_binop(INT_SHL, 3, 0), 3);
+    assert_eq!(int_binop(INT_SHL, 1, 22), 1 << 22);
+    assert_eq!(int_binop(INT_SHL, -1, 23), -(1 << 23));
+    assert_eq!(int_binop(INT_SHL, -3, 2), -12);
+    assert_eq!(int_binop(INT_SHL, 0, 100), 0);
+    assert_eq!(int_binop(INT_SHL, 1, -1), 0);
+}
+
+#[test]
+fn test_int_shl_overflow_traps() {
+    assert!(matches!(binop_err(INT_SHL, 1, 23), VmError::IntOverflow { .. }));
+    assert!(matches!(binop_err(INT_SHL, 0x101, 16), VmError::IntOverflow { .. }));
+    assert!(matches!(binop_err(INT_SHL, 1, 24), VmError::IntOverflow { .. }));
+    assert!(matches!(binop_err(INT_SHL, 1, 100), VmError::IntOverflow { .. }));
+}
+
+#[test]
+fn test_int_shr_is_logical() {
+    assert_eq!(int_binop(INT_SHR, 256, 4), 16);
+    assert_eq!(int_binop(INT_SHR, 7, 0), 7);
+    // -1 is 0xFFFFFF on 24 bits: zero fill, no sign extension
+    assert_eq!(int_binop(INT_SHR, -1, 4), 0x0F_FFFF);
+    assert_eq!(int_binop(INT_SHR, -1, 23), 1);
+}
+
+#[test]
+fn test_int_shr_out_of_range_is_zero() {
+    assert_eq!(int_binop(INT_SHR, -1, 24), 0);
+    assert_eq!(int_binop(INT_SHR, 12345, 1000), 0);
+    assert_eq!(int_binop(INT_SHR, 12345, -3), 0);
+}
+
+// -- Globals --
+
+#[test]
+fn test_many_globals_with_wide_index() {
+    // 300 globals: global i evaluates to int(i), except the last, which
+    // reads global 257 through GLOBAL_W and global 3 through GLOBAL.
+    const N: usize = 300;
+    let mut code = Vec::new();
+    let mut entries = Vec::new();
+    for i in 0..N - 1 {
+        entries.push(CodeAddress::new(code.len() as u16));
+        code.extend_from_slice(&[INT, X01, i as u8, (i >> 8) as u8, 0, FIN, X01]);
+    }
+    entries.push(CodeAddress::new(code.len() as u16));
+    code.extend_from_slice(&[
+        GLOBAL_W, X01, 1, 1,       // X01 = g257
+        GLOBAL, X02, 3,            // X02 = g3
+        INT_ADD, X03, X01, X02,
+        FIN, X03,
+    ]);
+    let prog = Program::new(&code, &[], &entries);
+    let mut mem = [Value::from_u32(0); 1024];
+    let mut vm = Vm::init(&mut mem);
+    vm.load(&prog).unwrap();
+    assert_eq!(vm.global_raw(GlobalAddress::new(299)).int_value().unwrap(), 260);
+    assert_eq!(vm.global_raw(GlobalAddress::new(298)).int_value().unwrap(), 298);
+}
+
+#[test]
+fn test_globals_overflow_is_load_error() {
+    let entries = [CodeAddress::new(0); 8];
+    let code = [INT_0, X01, FIN, X01];
+    let prog = Program::new(&code, &[], &entries);
+    let mut mem = [Value::from_u32(0); 4];
+    let mut vm = Vm::init(&mut mem);
+    assert!(matches!(
+        vm.load(&prog),
+        Err(VmError::GlobalsOverflow { needed: 8, available: 4 })
+    ));
+}
+
 #[test]
 fn test_int_add_at_max() {
     // (2^23 - 2) + 1 = 2^23 - 1
@@ -268,7 +442,7 @@ fn test_heap_overflow() {
     // PACK with arity 3 needs 4 words, mem only has 3
     let code = [PACK, X01, 0, X01, X01, X01, FIN, X01];
     let arity_table = [3];
-    let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &arity_table, MAIN);
     let mut mem = [Value::from_u32(0); 3];
     let mut vm = Vm::init(&mut mem);
     let result = vm.load(&prog);
@@ -356,7 +530,7 @@ fn test_gc_reclaims_dead_closures() {
         // function body at offset 6:
         FIN, 2,                     // FIN A1
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 10];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -387,7 +561,7 @@ fn test_gc_preserves_live_data() {
         FIN, X02,                           // 33-34: return ctor(1)
     ];
     let arity_table = [0, 0, 1];
-    let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &arity_table, MAIN);
     let mut mem = [Value::from_u32(0); 6];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -406,7 +580,7 @@ fn test_gc_ignores_registers_of_finished_calls() {
         FIN, 2,                     // FIN A1
     ];
     let arity_table = [1];
-    let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &arity_table, MAIN);
     // Room for one ctor only: each call must reclaim the previous call's,
     // which only its stale X01 still points to.
     let mut mem = [Value::from_u32(0); 3];
@@ -437,7 +611,7 @@ fn test_call() {
         FIN, X01,                       // 20-21
     ];
     let arity_table = [0, 1];
-    let prog = Program::new(&code, &arity_table, &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &arity_table, MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -461,7 +635,7 @@ fn test_extern_dispatch() {
         EXTERN, X02, X01, 0, 0,     // X02 = extern(0)(X01)
         FIN, X02,
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.register_extern(0, double_it);
@@ -477,7 +651,7 @@ fn test_extern_not_registered() {
         EXTERN, X02, X01, 7, 0,
         FIN, X02,
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
 
@@ -491,7 +665,7 @@ fn test_bytes_literal_empty() {
     let code = [BYTES, X01, 0, FIN, X01];
     let result = run(&code, &[]).unwrap();
     assert!(result.is_bytes());
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -501,7 +675,7 @@ fn test_bytes_literal_empty() {
 #[test]
 fn test_bytes_literal() {
     let code = [BYTES, X01, 5, b'h', b'e', b'l', b'l', b'o', FIN, X01];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -548,7 +722,7 @@ fn test_bytes_concat() {
         BYTES_CONCAT, X03, X01, X02,
         FIN, X03,
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -571,7 +745,7 @@ fn test_bytes_slice() {
         BYTES_SLICE, X04, X01, X02, X03,
         FIN, X04,
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 1024];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();
@@ -635,7 +809,7 @@ fn test_bytes_gc_survives() {
         INT_0, X02,
         FIN, X01,
     ];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut mem = [Value::from_u32(0); 12];
     let mut vm = Vm::init(&mut mem);
     vm.load(&prog).unwrap();

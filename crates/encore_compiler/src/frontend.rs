@@ -43,9 +43,13 @@ struct CtorInfo {
     type_id: u8,
 }
 
+/// Constructor tags are `u8`.
+pub const MAX_CTORS: usize = 256;
+
 pub struct CtorRegistry {
     ctors: BTreeMap<String, CtorInfo>,
-    next_tag: u8,
+    /// Wider than a tag so running past 255 is detected, not wrapped.
+    next_tag: u16,
     next_type_id: u8,
 }
 
@@ -57,12 +61,12 @@ impl CtorRegistry {
         ctors.insert("Nil".into(), CtorInfo { tag: TAG_NIL, arity: ARITY_NIL, type_id: 1 });
         ctors.insert("Cons".into(), CtorInfo { tag: TAG_CONS, arity: ARITY_CONS, type_id: 1 });
         ctors.insert("Pair".into(), CtorInfo { tag: TAG_PAIR, arity: ARITY_PAIR, type_id: 2 });
-        Self { ctors, next_tag: FIRST_USER_TAG, next_type_id: 3 }
+        Self { ctors, next_tag: FIRST_USER_TAG as u16, next_type_id: 3 }
     }
 
     pub fn alloc_type_id(&mut self) -> u8 {
         let id = self.next_type_id;
-        self.next_type_id += 1;
+        self.next_type_id = self.next_type_id.saturating_add(1);
         id
     }
 
@@ -74,7 +78,8 @@ impl CtorRegistry {
         if let Some(info) = self.ctors.get(name) {
             return info.tag;
         }
-        let tag = self.next_tag;
+        // Past 255 the tag saturates; `check_capacity` reports the error.
+        let tag = self.next_tag.min(u8::MAX as u16) as u8;
         self.next_tag += 1;
         self.ctors.insert(name.to_string(), CtorInfo { tag, arity, type_id });
         tag
@@ -101,6 +106,15 @@ impl CtorRegistry {
         self.ctors.iter()
             .find(|(_, info)| info.tag == tag)
             .map(|(name, _)| name.as_str())
+    }
+
+    /// Constructor tags are `u8`: fail if more than 256 were allocated.
+    pub fn check_capacity(&self) -> Result<(), ParseError> {
+        let count = self.next_tag as usize;
+        if count > MAX_CTORS {
+            return Err(format!("too many constructors: {count} (max {MAX_CTORS}, tags are u8)").into());
+        }
+        Ok(())
     }
 
     pub fn ctor_names(&self) -> Vec<(u8, String)> {

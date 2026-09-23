@@ -11,9 +11,14 @@ pub struct Arena<'a> {
 }
 
 impl<'a> Arena<'a> {
+    /// Heap addresses are `u16` with `0xFFFF` reserved for
+    /// [`HeapAddress::NULL`], so at most `0xFFFF` words of `mem` are used.
+    pub const MAX_WORDS: usize = u16::MAX as usize;
+
     pub fn new(mem: &'a mut [Value]) -> Self {
+        let words = mem.len().min(Self::MAX_WORDS);
         Self {
-            mem,
+            mem: &mut mem[..words],
             hp: 0,
             #[cfg(feature = "stats")]
             stats: ArenaStats::default(),

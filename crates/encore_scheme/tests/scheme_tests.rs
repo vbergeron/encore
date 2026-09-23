@@ -8,7 +8,7 @@ use encore_vm::vm::Vm;
 
 fn run_scheme_int(source: &str) -> i32 {
     let module = encore_scheme::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let last = prog.n_globals() - 1;
     let mut mem = [Value::from_u32(0); 8192];
@@ -43,7 +43,7 @@ fn test_scheme_fold_left_match_init() {
 
 fn run_scheme_bytes(source: &str) -> Vec<u8> {
     let module = encore_scheme::parse(source);
-    let binary = pipeline::compile_module(module, None, None);
+    let binary = pipeline::compile_module(module, None, None).unwrap();
     let prog = Program::parse(&binary).unwrap();
     let last = prog.n_globals() - 1;
     let mut mem = [Value::from_u32(0); 8192];
@@ -129,4 +129,30 @@ fn test_scheme_folds_rocq_string_literal() {
                 ,`(EmptyString))))
     "#;
     assert_eq!(run_scheme_bytes(source), b"Hi".to_vec());
+}
+
+// -- Scheme: division, bitwise and shift primitives --
+
+#[test]
+fn test_scheme_int_primitives() {
+    let cases = [
+        ("(int-div 17 5)", 3),
+        ("(int-div 17 0)", 0),
+        ("(int-mod 17 5)", 2),
+        ("(int-mod 17 0)", 17),
+        ("(int-sub-sat 3 7)", 0),
+        ("(int-sub-sat 7 3)", 4),
+        ("(int-and 12 10)", 8),
+        ("(int-or 12 10)", 14),
+        ("(int-xor 12 10)", 6),
+        ("(int-shl 3 4)", 48),
+        ("(int-shr 256 4)", 16),
+        ("(int-shr 256 30)", 0),
+        ("(match (<= 5 5) ((True) 1) ((False) 0))", 1),
+        ("(match (<= 6 5) ((True) 1) ((False) 0))", 0),
+    ];
+    for (expr, expected) in cases {
+        let src = format!("(define main {expr})");
+        assert_eq!(run_scheme_int(&src), expected, "{expr}");
+    }
 }

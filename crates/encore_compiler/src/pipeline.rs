@@ -1,13 +1,17 @@
 use std::path::Path;
 
+pub use crate::error::CompileError;
 use crate::ir::ds;
-use crate::pass::{asm_emit::{Emitter, Metadata}, asm_peephole, asm_resolve, cps_optimize::{self, OptimizeConfig}, cps_transform, ds_uncurry, dsi_resolve};
+use crate::pass::{asm_emit::{self, Emitter, Metadata}, asm_peephole, asm_resolve, cps_optimize::{self, OptimizeConfig}, cps_transform, ds_uncurry, dsi_resolve};
 
 pub fn compile_module(
     module: ds::Module,
     config: Option<OptimizeConfig>,
     metadata: Option<&Metadata>,
-) -> Vec<u8> {
+) -> Result<Vec<u8>, CompileError> {
+    if module.defines.len() > asm_emit::MAX_GLOBALS {
+        return Err(CompileError::TooManyGlobals { count: module.defines.len(), max: asm_emit::MAX_GLOBALS });
+    }
     let module = ds_uncurry::resolve_module(module);
     let dsi_module = dsi_resolve::resolve_module(module);
     let cps_module = cps_transform::transform_module(dsi_module);
@@ -38,9 +42,9 @@ pub fn compile_to_dir_with_ctors(
 ) -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(dir)?;
 
-    let global_names: Vec<(u8, String)> = module.defines.iter()
+    let global_names: Vec<(u16, String)> = module.defines.iter()
         .enumerate()
-        .map(|(i, d)| (i as u8, d.name.clone()))
+        .map(|(i, d)| (i as u16, d.name.clone()))
         .collect();
 
     let metadata = Metadata {
@@ -48,7 +52,7 @@ pub fn compile_to_dir_with_ctors(
         global_names: global_names.clone(),
     };
 
-    let binary = compile_module(module.clone(), config, Some(&metadata));
+    let binary = compile_module(module.clone(), config, Some(&metadata))?;
     std::fs::write(dir.join("bytecode.bin"), &binary)?;
 
     if include_bindings {
