@@ -28,8 +28,17 @@
           (@ shift `((lambda (n) (+ n 1)) ,`(0)) `(0) s) body)))
      ((App t1 t2) `(App ,(@ subst j s t1) ,(@ subst j s t2))))))
   
+(define unshift (lambdas (c t)
+  (match t
+     ((Var n)
+       (match (@ leb c n)
+          ((True) `(Var ,(- n 1)))
+          ((False) `(Var ,n))))
+     ((Abs body) `(Abs ,(@ unshift `((lambda (n) (+ n 1)) ,c) body)))
+     ((App t1 t2) `(App ,(@ unshift c t1) ,(@ unshift c t2))))))
+  
 (define beta (lambdas (body arg)
-  (@ shift `((lambda (n) (+ n 1)) ,`(0)) `(0)
+  (@ unshift `(0)
     (@ subst `(0) (@ shift `((lambda (n) (+ n 1)) ,`(0)) `(0) arg) body))))
 
 (define whnf (lambdas (fuel t)
