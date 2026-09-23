@@ -15,7 +15,8 @@ impl Frontend for SchemeFrontend {
             .map_err(|e| ParseError::from(format!("desugar: {e}")))?;
         let scheme_module = desugar::fold_module_strings(scheme_module);
         let scheme_module = desugar::fold_module_nats(scheme_module);
-        let (module, ctor_names) = desugar::lower_module(scheme_module);
+        let (module, ctor_names) = desugar::lower_module(scheme_module)
+            .map_err(|e| ParseError::from(format!("lower: {e}")))?;
         Ok(ParseOutput { module, ctor_names })
     }
 }

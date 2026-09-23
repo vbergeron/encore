@@ -16,6 +16,7 @@ pub mod code;
 pub mod error;
 pub mod ffi;
 pub mod gc;
+pub mod int;
 pub mod opcode;
 pub mod program;
 mod registers;

@@ -47,7 +47,7 @@ impl core::ops::Add<usize> for Reg {
 pub struct CodeAddress(u16);
 
 impl CodeAddress {
-    pub fn new(raw: u16) -> Self { Self(raw) }
+    pub const fn new(raw: u16) -> Self { Self(raw) }
     pub fn raw(self) -> u16 { self.0 }
 }
 

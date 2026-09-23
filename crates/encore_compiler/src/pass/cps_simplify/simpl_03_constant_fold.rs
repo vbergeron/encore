@@ -18,6 +18,7 @@ use std::collections::HashMap;
 use crate::ir::cps::{Case, Cont, Expr, Fun, Tag, Val};
 use crate::ir::cps_traversal::CPSTransformer;
 use crate::ir::prim::{BytesOp, IntOp, PrimOp};
+use encore_vm::int;
 use crate::pass::cps_subst::subst_expr;
 
 #[derive(Clone)]
@@ -202,6 +203,16 @@ fn eval_int_binop(op: IntOp, a: i32, b: i32) -> Val {
         IntOp::Mul => Val::Int(a.wrapping_mul(b)),
         IntOp::Eq => if a == b { Val::TRUE } else { Val::FALSE },
         IntOp::Lt => if a < b { Val::TRUE } else { Val::FALSE },
+        IntOp::Le => if a <= b { Val::TRUE } else { Val::FALSE },
+        // Same semantics as the VM, on operands wrapped to 24 bits.
+        IntOp::Div => Val::Int(int::div(int::wrap(a), int::wrap(b))),
+        IntOp::Mod => Val::Int(int::rem(int::wrap(a), int::wrap(b))),
+        IntOp::SubSat => Val::Int(int::sub_sat(int::wrap(a), int::wrap(b))),
+        IntOp::And => Val::Int(int::and(int::wrap(a), int::wrap(b))),
+        IntOp::Or => Val::Int(int::or(int::wrap(a), int::wrap(b))),
+        IntOp::Xor => Val::Int(int::xor(int::wrap(a), int::wrap(b))),
+        IntOp::Shl => Val::Int(int::shl(int::wrap(a), int::wrap(b))),
+        IntOp::Shr => Val::Int(int::shr(int::wrap(a), int::wrap(b))),
         IntOp::Byte => unreachable!("Byte is unary and handled by try_fold_prim"),
     }
 }

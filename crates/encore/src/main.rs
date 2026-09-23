@@ -243,7 +243,7 @@ fn resolve_entry(entry: &str, prog: &Program) -> usize {
         return idx;
     }
 
-    let global_names: Vec<(u8, &str)> = prog.global_names().collect();
+    let global_names: Vec<(u16, &str)> = prog.global_names().collect();
     for &(idx, name) in &global_names {
         if name == entry {
             return idx as usize;
@@ -282,13 +282,17 @@ fn cmd_compile(frontend: &dyn FrontendTrait, path: &str, out: &str, config: Opti
         let metadata = if include_metadata {
             let global_names = output.module.defines.iter()
                 .enumerate()
-                .map(|(i, d)| (i as u8, d.name.clone()))
+                .map(|(i, d)| (i as u16, d.name.clone()))
                 .collect();
             Some(Metadata { ctor_names: output.ctor_names, global_names })
         } else {
             None
         };
-        let binary = encore_compiler::pipeline::compile_module(output.module, config, metadata.as_ref());
+        let binary = encore_compiler::pipeline::compile_module(output.module, config, metadata.as_ref())
+            .unwrap_or_else(|e| {
+                eprintln!("error: {e}");
+                process::exit(1);
+            });
         fs::create_dir_all(out).unwrap_or_else(|e| {
             eprintln!("error: cannot create {out}: {e}");
             process::exit(1);

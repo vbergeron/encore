@@ -3,6 +3,7 @@ use crate::code::Code;
 use crate::error::{ExternError, VmError};
 use crate::ffi::{EncodeArgs, ValueDecode, ValueEncode, VmCallable};
 use crate::gc;
+use crate::int;
 use crate::opcode;
 use crate::program::Program;
 use crate::registers::Registers;
@@ -24,8 +25,8 @@ fn unregistered(_: &mut Vm, _: Value) -> Result<Value, ExternError> {
 pub struct Vm<'a> {
     code: Code<'a>,
     arity_table: &'a [u8],
-    globals: [Value; 64],
-    n_globals: u8,
+    /// Global slots, carved from the top of the heap buffer by [`load`](Self::load).
+    globals: &'a mut [Value],
     extern_fns: [ExternFn; MAX_EXTERN],
     arena: Arena<'a>,
     registers: Registers,
@@ -43,8 +44,7 @@ impl<'a> Vm<'a> {
         Self {
             code: Code::new(&[]),
             arity_table: &[],
-            globals: [Value::from_u32(0); 64],
-            n_globals: 0,
+            globals: &mut [],
             extern_fns: [unregistered; MAX_EXTERN],
             arena: Arena::new(mem),
             registers: Registers::new(),
@@ -92,11 +92,27 @@ impl<'a> Vm<'a> {
         self.extern_fns[slot as usize] = shim::<Args, O, F>;
     }
 
+    /// Load `prog` and run each define's thunk to populate its global.
+    ///
+    /// Global slots take `n_globals` words from the top of the heap buffer,
+    /// so there is no fixed global limit: a program whose globals do not fit
+    /// beside what is already allocated fails with [`VmError::GlobalsOverflow`].
+    /// Globals of a previous `load` are not reclaimed.
     pub fn load(&mut self, prog: &Program<'a>) -> Result<(), VmError> {
+        let n = prog.n_globals();
+        let mem = core::mem::take(&mut self.arena.mem);
+        let len = mem.len();
+        if n > len - self.arena.hp {
+            self.arena.mem = mem;
+            return Err(VmError::GlobalsOverflow { needed: n, available: len - self.arena.hp });
+        }
+        let (heap, globals) = mem.split_at_mut(len - n);
+        globals.fill(Value::int(0));
+        self.arena.mem = heap;
+        self.globals = globals;
         self.code = Code::new(prog.code);
         self.arity_table = prog.arity_table;
-        self.n_globals = prog.n_globals() as u8;
-        for i in 0..self.n_globals as usize {
+        for i in 0..n {
             let addr = prog.global(i);
             self.globals[i] = self.call_address(addr, Value::from_u32(0))?;
         }
@@ -180,7 +196,7 @@ impl<'a> Vm<'a> {
             return Err(VmError::HeapOverflow);
         }
         let roots = self.registers.as_mut_slice();
-        let globals = &mut self.globals[..self.n_globals as usize];
+        let globals = &mut *self.globals;
         #[cfg(feature = "stats")]
         gc::collect(&mut self.arena, roots, globals, &mut self.stats.gc, self.clock);
         #[cfg(not(feature = "stats"))]
@@ -329,6 +345,12 @@ impl<'a> Vm<'a> {
                 opcode::GLOBAL => {
                     let rd = self.code.read_reg();
                     let idx = self.code.read_u8() as usize;
+                    self.registers[rd] = self.globals[idx];
+                }
+
+                opcode::GLOBAL_W => {
+                    let rd = self.code.read_reg();
+                    let idx = self.code.read_u16() as usize;
                     self.registers[rd] = self.globals[idx];
                 }
 
@@ -494,6 +516,88 @@ impl<'a> Vm<'a> {
                     let b = self.registers[rb].int_value()?;
                     let tag = if a < b { 1 } else { 0 };
                     self.registers[rd] = Value::ctor(tag, HeapAddress::NULL);
+                }
+
+                opcode::INT_LE => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    let tag = if a <= b { 1 } else { 0 };
+                    self.registers[rd] = Value::ctor(tag, HeapAddress::NULL);
+                }
+
+                opcode::INT_DIV => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::div(a, b));
+                }
+
+                opcode::INT_MOD => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::rem(a, b));
+                }
+
+                opcode::INT_SUB_SAT => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::sub_sat(a, b));
+                }
+
+                opcode::INT_AND => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::and(a, b));
+                }
+
+                opcode::INT_OR => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::or(a, b));
+                }
+
+                opcode::INT_XOR => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::xor(a, b));
+                }
+
+                opcode::INT_SHL => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::shl(a, b));
+                }
+
+                opcode::INT_SHR => {
+                    let rd = self.code.read_reg();
+                    let ra = self.code.read_reg();
+                    let rb = self.code.read_reg();
+                    let a = self.registers[ra].int_value()?;
+                    let b = self.registers[rb].int_value()?;
+                    self.registers[rd] = Value::int(int::shr(a, b));
                 }
 
                 opcode::INT_BYTE => {

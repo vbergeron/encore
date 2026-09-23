@@ -1,22 +1,49 @@
 use encore_vm::opcode;
+use crate::error::CompileError;
 use crate::ir::asm::{ContLam, Expr, Fun, Module, Reg, Val};
 use crate::ir::prim::{PrimOp, IntOp, BytesOp};
 
 pub struct Metadata {
     pub ctor_names: Vec<(u8, String)>,
-    pub global_names: Vec<(u8, String)>,
+    pub global_names: Vec<(u16, String)>,
 }
+
+/// Largest code size: code addresses are `u16`.
+pub const MAX_CODE_SIZE: usize = u16::MAX as usize;
+/// Largest number of globals: the global count is a `u16`.
+pub const MAX_GLOBALS: usize = u16::MAX as usize;
+/// Largest byte-string literal: `BYTES` takes a `u8` length.
+pub const MAX_BYTES_LITERAL: usize = u8::MAX as usize;
+/// Heap objects carry a 7-bit size in their GC header.
+const MAX_OBJECT_WORDS: usize = 127;
+/// A closure is a GC header, a closure header and its captures.
+pub const MAX_CAPTURES: usize = MAX_OBJECT_WORDS - 2;
+/// A constructor is a GC header and its fields.
+pub const MAX_CTOR_ARITY: usize = MAX_OBJECT_WORDS - 1;
 
 pub struct Emitter<'a> {
     buf: Vec<u8>,
     arity_table: Vec<u8>,
     deferred: Vec<(usize, &'a Expr)>,
     extern_stubs: Vec<(u16, u16)>,
+    error: Option<CompileError>,
 }
 
 impl<'a> Emitter<'a> {
     pub fn new() -> Self {
-        Self { buf: Vec::new(), arity_table: Vec::new(), deferred: Vec::new(), extern_stubs: Vec::new() }
+        Self { buf: Vec::new(), arity_table: Vec::new(), deferred: Vec::new(), extern_stubs: Vec::new(), error: None }
+    }
+
+    /// Record a limit violation; emission carries on and the first error is
+    /// reported by [`emit_module`](Self::emit_module).
+    fn fail(&mut self, error: CompileError) {
+        self.error.get_or_insert(error);
+    }
+
+    fn check_captures(&mut self, count: usize) {
+        if count > MAX_CAPTURES {
+            self.fail(CompileError::TooManyCaptures { count, max: MAX_CAPTURES });
+        }
     }
 
     fn record_arity(&mut self, tag: u8, arity: u8) {
@@ -86,6 +113,7 @@ impl<'a> Emitter<'a> {
             self.emit_u8(opcode::CLOSURE);
             self.emit_u8(dest);
             let hole = self.emit_u16_placeholder();
+            self.check_captures(fun.captures.len());
             self.emit_u8(fun.captures.len() as u8);
             for cap in &fun.captures {
                 self.emit_u8(*cap);
@@ -104,6 +132,7 @@ impl<'a> Emitter<'a> {
             self.emit_u8(opcode::CLOSURE);
             self.emit_u8(dest);
             let hole = self.emit_u16_placeholder();
+            self.check_captures(cont.captures.len());
             self.emit_u8(cont.captures.len() as u8);
             for cap in &cont.captures {
                 self.emit_u8(*cap);
@@ -124,15 +153,26 @@ impl<'a> Emitter<'a> {
                 self.emit_u8(dest);
                 self.emit_u8(*idx);
             }
-            Val::Global(idx) => {
-                self.emit_u8(opcode::GLOBAL);
-                self.emit_u8(dest);
-                self.emit_u8(*idx);
-            }
+            Val::Global(idx) => match u8::try_from(*idx) {
+                Ok(idx) => {
+                    self.emit_u8(opcode::GLOBAL);
+                    self.emit_u8(dest);
+                    self.emit_u8(idx);
+                }
+                Err(_) => {
+                    self.emit_u8(opcode::GLOBAL_W);
+                    self.emit_u8(dest);
+                    self.emit_u8(*idx as u8);
+                    self.emit_u8((*idx >> 8) as u8);
+                }
+            },
             Val::ContLam(cont) => {
                 self.emit_cont_lam(dest, cont);
             }
             Val::Ctor(tag, fields) => {
+                if fields.len() > MAX_CTOR_ARITY {
+                    self.fail(CompileError::CtorTooWide { tag: *tag, arity: fields.len(), max: MAX_CTOR_ARITY });
+                }
                 self.record_arity(*tag, fields.len() as u8);
                 self.emit_u8(opcode::PACK);
                 self.emit_u8(dest);
@@ -172,6 +212,9 @@ impl<'a> Emitter<'a> {
                 }
             }
             Val::Bytes(data) => {
+                if data.len() > MAX_BYTES_LITERAL {
+                    self.fail(CompileError::BytesLiteralTooLong { len: data.len(), max: MAX_BYTES_LITERAL });
+                }
                 self.emit_u8(opcode::BYTES);
                 self.emit_u8(dest);
                 self.emit_u8(data.len() as u8);
@@ -187,6 +230,15 @@ impl<'a> Emitter<'a> {
                     PrimOp::Int(IntOp::Eq)  => opcode::INT_EQ,
                     PrimOp::Int(IntOp::Lt)   => opcode::INT_LT,
                     PrimOp::Int(IntOp::Byte) => opcode::INT_BYTE,
+                    PrimOp::Int(IntOp::Div)    => opcode::INT_DIV,
+                    PrimOp::Int(IntOp::Mod)    => opcode::INT_MOD,
+                    PrimOp::Int(IntOp::SubSat) => opcode::INT_SUB_SAT,
+                    PrimOp::Int(IntOp::Le)     => opcode::INT_LE,
+                    PrimOp::Int(IntOp::And)    => opcode::INT_AND,
+                    PrimOp::Int(IntOp::Or)     => opcode::INT_OR,
+                    PrimOp::Int(IntOp::Xor)    => opcode::INT_XOR,
+                    PrimOp::Int(IntOp::Shl)    => opcode::INT_SHL,
+                    PrimOp::Int(IntOp::Shr)    => opcode::INT_SHR,
                     PrimOp::Bytes(BytesOp::Len)    => opcode::BYTES_LEN,
                     PrimOp::Bytes(BytesOp::Get)    => opcode::BYTES_GET,
                     PrimOp::Bytes(BytesOp::Concat) => opcode::BYTES_CONCAT,
@@ -301,7 +353,10 @@ impl<'a> Emitter<'a> {
         self.buf
     }
 
-    pub fn emit_module(module: &Module, metadata: Option<&Metadata>) -> Vec<u8> {
+    pub fn emit_module(module: &Module, metadata: Option<&Metadata>) -> Result<Vec<u8>, CompileError> {
+        if module.defines.len() > MAX_GLOBALS {
+            return Err(CompileError::TooManyGlobals { count: module.defines.len(), max: MAX_GLOBALS });
+        }
         let mut emitter = Self::new();
         // Return stub at code address 0: FIN A1
         emitter.emit_u8(opcode::FIN);
@@ -316,7 +371,13 @@ impl<'a> Emitter<'a> {
             entries.push(emitter.pos() as u16);
             emitter.emit_toplevel(&define.body);
         }
-        emitter.serialize(&entries, metadata)
+        if let Some(error) = emitter.error.take() {
+            return Err(error);
+        }
+        if emitter.pos() > MAX_CODE_SIZE {
+            return Err(CompileError::CodeTooLarge { size: emitter.pos(), max: MAX_CODE_SIZE });
+        }
+        Ok(emitter.serialize(&entries, metadata))
     }
 
     pub fn serialize(self, entries: &[u16], metadata: Option<&Metadata>) -> Vec<u8> {
@@ -334,17 +395,23 @@ impl<'a> Emitter<'a> {
         }
         out.extend_from_slice(&code);
         if let Some(meta) = metadata {
-            serialize_name_section(&mut out, &meta.ctor_names);
-            serialize_name_section(&mut out, &meta.global_names);
+            let ctor_names: Vec<(Vec<u8>, &str)> = meta.ctor_names.iter()
+                .map(|(tag, name)| (vec![*tag], name.as_str()))
+                .collect();
+            let global_names: Vec<(Vec<u8>, &str)> = meta.global_names.iter()
+                .map(|(idx, name)| (idx.to_le_bytes().to_vec(), name.as_str()))
+                .collect();
+            serialize_name_section(&mut out, &ctor_names);
+            serialize_name_section(&mut out, &global_names);
         }
         out
     }
 }
 
-fn serialize_name_section(out: &mut Vec<u8>, entries: &[(u8, String)]) {
+fn serialize_name_section(out: &mut Vec<u8>, entries: &[(Vec<u8>, &str)]) {
     out.extend_from_slice(&(entries.len() as u16).to_le_bytes());
     for (idx, name) in entries {
-        out.push(*idx);
+        out.extend_from_slice(idx);
         out.push(name.len() as u8);
         out.extend_from_slice(name.as_bytes());
     }

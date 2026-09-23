@@ -39,7 +39,7 @@ pub struct Case {
 pub enum Val {
     Reg(Reg),
     Capture(u8),
-    Global(u8),
+    Global(u16),
     ContLam(ContLam),
     Ctor(Tag, Vec<Reg>),
     Field(Reg, u8),
@@ -60,7 +60,7 @@ pub enum Expr {
 
 #[derive(Debug)]
 pub struct Define {
-    pub global: u8,
+    pub global: u16,
     pub body: Expr,
 }
 

@@ -31,9 +31,12 @@ impl Env {
 }
 
 pub fn resolve_module(module: &cps::Module) -> asm::Module {
-    let globals: HashMap<String, u8> = module.defines.iter()
+    let globals: HashMap<String, u16> = module.defines.iter()
         .enumerate()
-        .map(|(i, d)| (d.name.clone(), i as u8))
+        .map(|(i, d)| {
+            let idx = u16::try_from(i).expect("global count is checked by the pipeline");
+            (d.name.clone(), idx)
+        })
         .collect();
 
     let defines = module.defines.iter()
@@ -43,12 +46,12 @@ pub fn resolve_module(module: &cps::Module) -> asm::Module {
 
             let mut free = HashSet::new();
             free_vars_expr(&define.body, &mut HashSet::new(), &mut free);
-            let mut used_globals: Vec<(String, u8)> = free.iter()
+            let mut used_globals: Vec<(String, u16)> = free.iter()
                 .filter_map(|n| globals.get(n).map(|idx| (n.clone(), *idx)))
                 .collect();
             used_globals.sort_by_key(|(_, idx)| *idx);
 
-            let global_regs: Vec<(asm::Reg, u8)> = used_globals.iter()
+            let global_regs: Vec<(asm::Reg, u16)> = used_globals.iter()
                 .map(|(name, idx)| {
                     let reg = env.bind_local(name.clone());
                     (reg, *idx)
@@ -62,7 +65,7 @@ pub fn resolve_module(module: &cps::Module) -> asm::Module {
             }
 
             asm::Define {
-                global: i as u8,
+                global: i as u16,
                 body,
             }
         })
@@ -71,7 +74,7 @@ pub fn resolve_module(module: &cps::Module) -> asm::Module {
     asm::Module { defines }
 }
 
-fn resolve_expr(env: &mut Env, expr: &cps::Expr, globals: &HashMap<String, u8>) -> asm::Expr {
+fn resolve_expr(env: &mut Env, expr: &cps::Expr, globals: &HashMap<String, u16>) -> asm::Expr {
     match expr {
         cps::Expr::Let(name, val, body) => {
             if matches!(val, cps::Val::NullCont) {
@@ -123,7 +126,7 @@ fn resolve_expr(env: &mut Env, expr: &cps::Expr, globals: &HashMap<String, u8>) 
     }
 }
 
-fn resolve_val(env: &Env, val: &cps::Val, globals: &HashMap<String, u8>) -> asm::Val {
+fn resolve_val(env: &Env, val: &cps::Val, globals: &HashMap<String, u16>) -> asm::Val {
     match val {
         cps::Val::Var(name) => {
             asm::Val::Reg(env.lookup(name))
@@ -159,7 +162,7 @@ fn resolve_val(env: &Env, val: &cps::Val, globals: &HashMap<String, u8>) -> asm:
     }
 }
 
-fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &HashMap<String, u8>) -> asm::Fun {
+fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &HashMap<String, u16>) -> asm::Fun {
     let mut free = HashSet::new();
     free_vars_expr(&fun.body, &mut HashSet::new(), &mut free);
     for a in &fun.args {
@@ -171,7 +174,7 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &Hash
     }
 
     let mut capture_names: Vec<String> = Vec::new();
-    let mut used_globals: Vec<(String, u8)> = Vec::new();
+    let mut used_globals: Vec<(String, u16)> = Vec::new();
     for name in &free {
         if let Some(idx) = globals.get(name) {
             used_globals.push((name.clone(), *idx));
@@ -205,7 +208,7 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &Hash
         })
         .collect();
 
-    let global_regs: Vec<(asm::Reg, u8)> = used_globals.iter()
+    let global_regs: Vec<(asm::Reg, u16)> = used_globals.iter()
         .map(|(name, idx)| {
             let reg = inner.bind_local(name.clone());
             (reg, *idx)
@@ -227,7 +230,7 @@ fn resolve_fun(env: &Env, fun: &cps::Fun, rec_name: Option<&str>, globals: &Hash
     asm::Fun { captures, body: Box::new(body) }
 }
 
-fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> asm::ContLam {
+fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u16>) -> asm::ContLam {
     let mut free = HashSet::new();
     free_vars_expr(&cont.body, &mut HashSet::new(), &mut free);
     for p in &cont.params {
@@ -235,7 +238,7 @@ fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> a
     }
 
     let mut capture_names: Vec<String> = Vec::new();
-    let mut used_globals: Vec<(String, u8)> = Vec::new();
+    let mut used_globals: Vec<(String, u16)> = Vec::new();
     for name in &free {
         if let Some(idx) = globals.get(name) {
             used_globals.push((name.clone(), *idx));
@@ -266,7 +269,7 @@ fn resolve_cont(env: &Env, cont: &cps::Cont, globals: &HashMap<String, u8>) -> a
         })
         .collect();
 
-    let global_regs: Vec<(asm::Reg, u8)> = used_globals.iter()
+    let global_regs: Vec<(asm::Reg, u16)> = used_globals.iter()
         .map(|(name, idx)| {
             let reg = inner.bind_local(name.clone());
             (reg, *idx)

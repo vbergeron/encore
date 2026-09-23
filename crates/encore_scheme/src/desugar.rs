@@ -142,6 +142,15 @@ fn parse_expr(sexp: &Sexp) -> Result<ir::Expr, String> {
                     "*" => return parse_binop(PrimOp::Int(IntOp::Mul), items),
                     "=" => return parse_binop(PrimOp::Int(IntOp::Eq), items),
                     "<" => return parse_binop(PrimOp::Int(IntOp::Lt), items),
+                    "<=" => return parse_binop(PrimOp::Int(IntOp::Le), items),
+                    "int-div"      => return parse_binop(PrimOp::Int(IntOp::Div), items),
+                    "int-mod"      => return parse_binop(PrimOp::Int(IntOp::Mod), items),
+                    "int-sub-sat"  => return parse_binop(PrimOp::Int(IntOp::SubSat), items),
+                    "int-and"      => return parse_binop(PrimOp::Int(IntOp::And), items),
+                    "int-or"       => return parse_binop(PrimOp::Int(IntOp::Or), items),
+                    "int-xor"      => return parse_binop(PrimOp::Int(IntOp::Xor), items),
+                    "int-shl"      => return parse_binop(PrimOp::Int(IntOp::Shl), items),
+                    "int-shr"      => return parse_binop(PrimOp::Int(IntOp::Shr), items),
                     "int->byte"    => return parse_prim(PrimOp::Int(IntOp::Byte), 1, items),
                     "bytes-len"    => return parse_prim(PrimOp::Bytes(BytesOp::Len), 1, items),
                     "bytes-get"    => return parse_prim(PrimOp::Bytes(BytesOp::Get), 2, items),
@@ -850,10 +859,11 @@ impl Lowering {
     }
 }
 
-pub fn lower_module(module: ir::Module) -> (ds::Module, Vec<(u8, String)>) {
+pub fn lower_module(module: ir::Module) -> Result<(ds::Module, Vec<(u8, String)>), String> {
     let mut lowering = Lowering::new();
     let ds_module = lowering.lower_module(module);
-    (ds_module, lowering.ctors.ctor_names())
+    lowering.ctors.check_capacity().map_err(|e| e.message)?;
+    Ok((ds_module, lowering.ctors.ctor_names()))
 }
 
 #[cfg(test)]
@@ -866,7 +876,7 @@ mod tests {
         let scheme_module = parse_program(&sexps).unwrap();
         let scheme_module = fold_module_strings(scheme_module);
         let scheme_module = fold_module_nats(scheme_module);
-        let (ds_module, _) = lower_module(scheme_module);
+        let (ds_module, _) = lower_module(scheme_module).unwrap();
         ds_module
     }
 
@@ -1069,7 +1079,7 @@ mod tests {
         "#;
         let sexps = parser::parse(src).unwrap();
         let scheme_module = parse_program(&sexps).unwrap();
-        let (_, ctor_names) = lower_module(scheme_module);
+        let (_, ctor_names) = lower_module(scheme_module).unwrap();
         let nil_tag = ctor_names.iter().find(|(_, n)| n == "Nil").unwrap().0;
         let cons_tag = ctor_names.iter().find(|(_, n)| n == "Cons").unwrap().0;
         assert_ne!(nil_tag, cons_tag);

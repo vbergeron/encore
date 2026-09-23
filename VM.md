@@ -29,15 +29,17 @@ Every runtime value is a **packed 32-bit word**:
 
 ## Memory model
 
-The VM operates on a single `&mut [Value]` buffer used as a **heap arena**:
+The VM operates on a single `&mut [Value]` buffer. `vm.load` carves one word per global off its top; the rest is the **heap arena**:
 
 ```
-[ heap ──────────── hp >  ... free ... ]
+[ heap ──────────── hp >  ... free ... | globals ]
   grows →
 ```
 
 - **Heap** (`0..hp`): objects allocated by `CLOSURE`, `PACK`, and byte-string opcodes, growing upward via bump allocation.
-- Allocation fails with `HeapOverflow` if `hp + n > mem.len()` after a GC attempt.
+- **Globals** (last `n_globals` words): one slot per define. There is no fixed global limit; a program whose globals do not fit fails to load with `GlobalsOverflow`.
+- Allocation fails with `HeapOverflow` if `hp + n > heap_len` after a GC attempt.
+- Heap addresses are `u16` and `0xFFFF` is `NULL`, so at most `0xFFFF` words of the buffer are used.
 
 ### Heap objects
 
@@ -91,6 +93,7 @@ All opcodes use a **register-based** format. Operands are register indices (`u8`
 | `MOV` | `01` | `rd: Reg`, `rs: Reg` | `regs[rd] = regs[rs]` |
 | `CAPTURE` | `02` | `rd: Reg`, `idx: u8` | `regs[rd] = heap[SELF.closure_addr() + 2 + idx]` |
 | `GLOBAL` | `03` | `rd: Reg`, `idx: u8` | `regs[rd] = globals[idx]` |
+| `GLOBAL_W` | `04` | `rd: Reg`, `idx: u16 LE` | `regs[rd] = globals[idx]` (the compiler uses it for indices ≥ 256) |
 
 ### Allocation
 
@@ -131,9 +134,20 @@ Arguments `A1`–`A8` are staged by the compiler via `MOV` instructions before `
 | `INT_MUL` | `13` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(regs[ra] * regs[rb])` (wrapping) |
 | `INT_EQ` | `14` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if equal, `ctor(0, NULL)` otherwise |
 | `INT_LT` | `15` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if `a < b`, `ctor(0, NULL)` otherwise |
+| `INT_LE` | `17` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = ctor(1, NULL)` if `a <= b`, `ctor(0, NULL)` otherwise |
 | `INT_BYTE` | `16` | `rd: Reg`, `rs: Reg` | Convert integer 0–255 to a single-byte `Bytes` value; error if out of range |
+| `INT_DIV` | `1B` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a / b)`, truncating toward zero; `a / 0 = 0` |
+| `INT_MOD` | `1C` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a rem b)`, sign of `a`; `a mod 0 = a` |
+| `INT_SUB_SAT` | `1D` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a - b)` if `a > b`, else `int(0)` |
+| `INT_AND` | `24` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a & b)` |
+| `INT_OR` | `25` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a \| b)` |
+| `INT_XOR` | `26` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a ^ b)` |
+| `INT_SHL` | `27` | `rd: Reg`, `ra: Reg`, `rb: Reg` | `regs[rd] = int(a << b)`; bits past bit 23 are lost; `b` outside `0..24` gives `0` |
+| `INT_SHR` | `28` | `rd: Reg`, `ra: Reg`, `rb: Reg` | Logical (zero-fill) right shift of the 24-bit payload; `b` outside `0..24` gives `0` |
 
 Comparisons return nullary constructors: tag `1` = true, tag `0` = false.
+
+All integer ops work on the 24-bit two's-complement payload and wrap on overflow. `INT_DIV` and `INT_MOD` follow Rocq's `Nat.div`/`Nat.modulo` convention for a zero divisor, and truncate, which matches `nat` (never negative). They are **not** `Z.div`/`Z.modulo`, which floor: `Z.div (-7) 2 = -4` while `INT_DIV` gives `-3`, and `Z.modulo (-7) 2 = 1` while `INT_MOD` gives `-1`. `INT_SUB_SAT` is `nat` truncated subtraction (`Nat.sub`). The shared semantics live in `encore_vm::int`, which the compiler's constant folder also uses.
 
 ### Byte string operations
 
@@ -187,8 +201,20 @@ Section 1 — constructor names:
 
 Section 2 — global/define names:
   n_globals: u16 LE
-  For each: idx: u8, name_len: u8, name: name_len bytes (UTF-8)
+  For each: idx: u16 LE, name_len: u8, name: name_len bytes (UTF-8)
 ```
+
+### Limits
+
+| Limit | Bound | Reported |
+|-------|-------|----------|
+| Globals (defines) | 65,535 (`u16` count); in practice, the heap buffer | `CompileError::TooManyGlobals`; `VmError::GlobalsOverflow` at load |
+| Code size | 65,535 bytes (`u16` code addresses) | `CompileError::CodeTooLarge` |
+| Constructors | 256 tags (`u8`) | parse error in both frontends |
+| Constructor fields | 126 (7-bit GC object size) | `CompileError::CtorTooWide` |
+| Closure captures | 125 (7-bit GC object size) | `CompileError::TooManyCaptures` |
+| Byte-string literal | 255 bytes (`u8` length of `BYTES`) | `CompileError::BytesLiteralTooLong` |
+| Heap | 65,535 words (`u16` addresses, `0xFFFF` = `NULL`) | a larger buffer is used only up to that size |
 
 ## Entry points
 

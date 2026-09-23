@@ -5,6 +5,8 @@ use encore_vm::program::Program;
 use encore_vm::value::{CodeAddress, GlobalAddress, Value};
 use encore_vm::vm::Vm;
 
+const MAIN: &[CodeAddress] = &[CodeAddress::new(0)];
+
 const X01: u8 = 10;
 
 /// Bytecode for an identity function: the global slot returns a function
@@ -12,7 +14,7 @@ const X01: u8 = 10;
 const IDENTITY_CODE: [u8; 8] = [FUNCTION, X01, 6, 0, FIN, X01, FIN, 2];
 
 fn make_vm<'a>(mem: &'a mut [Value], code: &'a [u8], arity_table: &'a [u8]) -> Vm<'a> {
-    let prog = Program::new(code, arity_table, &[CodeAddress::new(0)]);
+    let prog = Program::new(code, arity_table, MAIN);
     let mut vm = Vm::init(mem);
     vm.load(&prog).unwrap();
     vm
@@ -442,7 +444,7 @@ fn test_extern_fn_macro_roundtrip() {
         EXTERN, X01, 2, 0, 0, FIN, X01,
     ];
     let mut mem = [Value::from_u32(0); 256];
-    let prog = Program::new(&code, &[], &[CodeAddress::new(0)]);
+    let prog = Program::new(&code, &[], MAIN);
     let mut vm = Vm::init(&mut mem);
     vm.register_extern(0, encore_vm::extern_fn!(double_handler));
     vm.load(&prog).unwrap();
