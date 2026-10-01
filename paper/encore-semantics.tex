@@ -1,0 +1,16 @@
+%% Standalone document: full formal semantics of the Encore pipeline
+%% (Scheme subset, CPS IR, bytecode machine). Build: pdflatex + bibtex.
+\documentclass{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,booktabs,graphicx,mathpartir,placeins,url}
+\newcommand{\encore}{\textit{Encore!}}
+\newcommand{\code}[1]{\texttt{#1}}
+\begin{document}
+\title{Formal Semantics of the \encore{} Pipeline}
+\author{Valentin Bergeron \and Karolina Gorna}
+\institute{Companion to ``From Rocq to Metal''}
+\maketitle
+\input{semantics-full}
+\bibliographystyle{splncs04}
+\bibliography{refs}
+\end{document}
