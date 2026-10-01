@@ -439,16 +439,21 @@ Table~\ref{tab:comparison} summarises their compatibility with our hardware cons
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lllll}
 \toprule
-Extraction path & GC required & \code{no\_std} viable & Cortex-M viable & Proof infra preserved \\
+Extraction path & GC required & \code{no\_std} viable & Cortex-M viable & Verified down to \\
 \midrule
-Lean 4 & Ref-count + cycle GC & No & No & None \\
-OCaml / OMicroB & Generational GC & No & No & None \\
-CertiRocq & Conditional & Partial & Partial & Compiler chain \\
-Scheme / \encore{} & Mark-compact, bounded & Yes & Yes & Full \\
+Lean 4 & Ref-count + cycle GC & No & No & Source \\
+OCaml / OMicroB & Generational GC & No & No & Source \\
+CertiRocq & Conditional & Partial & Partial & Clight \\
+Scheme / \encore{} & Mark-compact, bounded & Yes & Yes & Source \\
 \bottomrule
 \end{tabular}
 }
 \end{table}
+
+The last column states how far machine-checked guarantees reach.
+For every path except CertiRocq, proofs cover the source program only: extraction, compilation, and the runtime are trusted.
+\encore{} is no exception: its advantage over the other extraction paths is deployability, not a stronger guarantee, and it inherits the trust assumptions of Sect.~\ref{sec:trust}.
+CertiRocq carries its guarantee down to Clight, but the C compiler and the patched runtime remain trusted.
 
 Lean 4 and OCaml are eliminated by their runtimes alone.
 CertiRocq is viable only for programs with bounded allocation, where its GC can be replaced by a static bump allocator; it remains conditional.
@@ -631,13 +636,14 @@ The \code{unsafe} surface is intentionally small and confined to these two subsy
 We have shown that Rocq-proven firmware logic runs on a Cortex-M35P: extracted to Scheme, compiled by \encore, and deployed on a Ledger Flex hardware wallet.
 The verified core remains the source of truth, while the runtime, compiler, host callbacks, and device I/O are explicit trusted components.
 
-The architecture also scales.
+The architecture is also designed to scale.
 Structuring firmware as a pure state-transition function decouples verification effort from hardware complexity: the verified \code{step} grows freely with application logic while the unverified components size stays constant.
 
 As code generation becomes cheaper, assurance cost only stays manageable if verification is part of the architecture.
 Theorem signatures and Rocq checking make that path natural for the firmware core.
 
-Engineering work remains, but the hard question is answered: proven logic runs on bare metal, at scale, today.
+The trust chain is not yet closed: extraction, the \encore{} compiler, and the VM remain trusted, and our largest application is a few hundred lines of Gallina.
+What this work establishes is that proven application logic can run on bare-metal microcontrollers today; carrying the proofs down to the runtime and scaling to larger applications are the next steps.
 
 \section*{Acknowledgments}
 The authors thank Nicolas Iooss for their valuable contribution and the Ledger Backend and Ledger Donjon teams for their support.
