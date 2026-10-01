@@ -1,0 +1,76 @@
+%% Value encoding and heap layout of the Encore VM.
+%% Adapted from the "Value representation" and "Heap objects" slides of
+%% vbergeron/encore-slides (decks/2026-09-28-lirmm-seminar.typ).
+%% Source of truth: crates/encore_vm/src/value.rs and VM.md.
+\begin{figure}[tbp]
+\centering
+\colorlet{vheap}{orange!18}
+\colorlet{vcode}{blue!12}
+\colorlet{vnum}{yellow!20}
+\colorlet{vtyp}{gray!25}
+\begin{tikzpicture}[x=0.29cm, y=0.42cm, font=\scriptsize]
+  \newcommand\fld[5]{%
+    \draw[fill=#4] (#2,-#1) rectangle ++(#3,-0.85);
+    \node at ({#2+#3/2},{-#1-0.425}) {#5};}
+  \newcommand\row[2]{\node[anchor=east] at (-0.4,{-#1-0.425}) {#2};}
+  \newcommand\grp[2]{\node[anchor=west, font=\scriptsize\bfseries] at (-9,{-#1-0.45}) {#2};}
+  % bit ruler
+  \foreach \b in {31,24,16,8,0} {
+    \node[font=\tiny, text=gray] at ({31-\b+0.5},0.45) {\b};
+  }
+  \grp{0}{Values (registers, globals, fields)}
+  \row{1}{Integer}       \fld{1}{0}{24}{vnum}{signed integer, 24 bits}  \fld{1}{24}{8}{vtyp}{\texttt{04}}
+  \row{2}{Function}      \fld{2}{0}{16}{vcode}{code address}            \fld{2}{16}{8}{white}{--}  \fld{2}{24}{8}{vtyp}{\texttt{05}}
+  \row{3}{Closure}       \fld{3}{0}{16}{vheap}{heap address}            \fld{3}{16}{8}{white}{--}  \fld{3}{24}{8}{vtyp}{\texttt{00}}
+  \row{4}{Constructor}   \fld{4}{0}{16}{vheap}{heap address or \texttt{NULL}} \fld{4}{16}{8}{white}{tag} \fld{4}{24}{8}{vtyp}{\texttt{01}}
+  \row{5}{Bytes}         \fld{5}{0}{16}{vheap}{heap address}            \fld{5}{16}{8}{white}{--}  \fld{5}{24}{8}{vtyp}{\texttt{06}}
+  \grp{6}{Headers (first words of a heap object)}
+  \row{7}{GC header}     \fld{7}{0}{16}{vheap}{forwarding address}      \fld{7}{16}{8}{vnum}{mark, size}  \fld{7}{24}{8}{vtyp}{\texttt{03}}
+  \row{8}{Closure header}\fld{8}{0}{16}{vcode}{code address}            \fld{8}{16}{8}{vnum}{env\_len}    \fld{8}{24}{8}{vtyp}{\texttt{02}}
+  \row{9}{Bytes header}  \fld{9}{0}{24}{vnum}{byte length, 24 bits}     \fld{9}{24}{8}{vtyp}{\texttt{07}}
+\end{tikzpicture}
+
+\medskip
+\begin{tikzpicture}[
+    font=\scriptsize,
+    word/.style={draw, minimum width=1.55cm, minimum height=0.95cm, inner sep=1pt,
+                 align=center, anchor=north west},
+    ptr/.style={-Latex, thick},
+  ]
+  \newcommand\w[6]{% name, x, y, address, hex, meaning; #7 fill via \wfill
+    \node[word, fill=\wfill] (#1) at (#2,#3)
+      {{\tiny\color{gray}\texttt{#4}}\\[-1pt]{\tiny\texttt{#5}}\\[-1pt]#6};}
+  \newcommand\hroot[4]{% y, value, register, word
+    \node[anchor=east, align=right] at (-0.35,{#1-0.47})
+      {\textbf{#2}\\\texttt{#3 = #4}};}
+  % pair (3, 4)
+  \def\wfill{vcode}
+  \hroot{0}{pair (3, 4)}{A1}{0x0020\_0401}
+  \w{a20}{0.00}{0}{0020}{0x0000\_0303}{GC hdr, 3}
+  \w{a21}{1.55}{0}{0021}{0x0000\_0304}{Int 3}
+  \w{a22}{3.10}{0}{0022}{0x0000\_0404}{Int 4}
+  % list [1; 2]
+  \hroot{-1.45}{list [1; 2]}{A2}{0x0026\_0301}
+  \w{a23}{0.00}{-1.45}{0023}{0x0000\_0303}{GC hdr, 3}
+  \w{a24}{1.55}{-1.45}{0024}{0x0000\_0204}{Int 2}
+  \w{a25}{3.10}{-1.45}{0025}{0xFFFF\_0201}{Nil (\texttt{NULL})}
+  \def\wfill{vheap}
+  \w{a26}{4.65}{-1.45}{0026}{0x0000\_0303}{GC hdr, 3}
+  \w{a27}{6.20}{-1.45}{0027}{0x0000\_0104}{Int 1}
+  \w{a28}{7.75}{-1.45}{0028}{0x0023\_0301}{Cons \texttt{@0023}}
+  % bytes "hello"
+  \def\wfill{vcode}
+  \hroot{-2.9}{bytes "hello"}{A3}{0x0029\_0006}
+  \w{a29}{0.00}{-2.9}{0029}{0x0000\_0403}{GC hdr, 4}
+  \w{a2a}{1.55}{-2.9}{002A}{0x0000\_0507}{Bytes hdr, 5}
+  \w{a2b}{3.10}{-2.9}{002B}{0x6C6C\_6568}{\texttt{h e l l}}
+  \w{a2c}{4.65}{-2.9}{002C}{0x0000\_006F}{\texttt{o} + pad}
+  % pointers
+  \draw[ptr] (-0.3,-0.47) -- (a20.west);
+  \draw[ptr] (-0.3,-1.92) -- (-0.15,-1.92) |- ([yshift=0.15cm]a26.north) -- (a26.north);
+  \draw[ptr] (a28.south) -- ++(0,-0.22) -| (a23.south);
+  \draw[ptr] (-0.3,-3.37) -- (a29.west);
+\end{tikzpicture}
+\caption{\encore{} values. Top: every value and heap header is one 32-bit word, \code{[payload:16 | meta:8 | typ:8]}; integers, functions, and nullary constructors never allocate, and heap addresses are 16-bit word indices (at most 64\,Ki words of arena). Bottom: a heap fragment holding a pair, a list, and a byte string, with the registers that refer to them. A value points at its object's GC header, and \code{FIELD $i$} reads word $\mathit{addr} + 1 + i$; byte strings pack 4 bytes per word, little-endian. Since values are immutable, a field always refers to an older object, at a lower address.}
+\label{fig:values}
+\end{figure}
