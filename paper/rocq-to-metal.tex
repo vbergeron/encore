@@ -306,36 +306,10 @@ Post-emission high-value optimisations are also performed.
 
 \subsection{Host--VM Interface}
 
-\encore{} is designed for hosted deployment: the bytecode VM is a library embedded inside a Rust application that retains full control of the execution context, memory budget, and I/O.
-
-The interface is deliberately narrow.
-The VM exposes two entry points to the host:
-\begin{enumerate}
-  \item \textbf{Function call}: the host invokes a named global or a closure handle with typed arguments and receives a typed result.
-  \item \textbf{Extern registration}: the host registers typed callbacks that the VM may invoke via the EXTERN opcode.
-\end{enumerate}
-
-\subsubsection{Derive-Macro Code Generation for ADTs}
-
-For algebraic data types exchanged across the boundary, \encore{} provides procedural macros \derive{ValueEncode} and \derive{ValueDecode}.
-Each variant or struct field must be annotated with \code{\#[ctor(tag)]}, where \code{tag} is a \code{u8} constant from the compiler-generated \code{ctors} module (Sect.~\ref{sec:bindings}).
-
-This design draws a clear boundary between host-side types (ordinary Rust structs and enums), VM-side types (constructor tags and field layouts), and the bijection between them (the derive macros).
-Neither side references the other's internal representation; the mapping is established once at compile time through the shared tag constants.
-
-Additionally, \code{VmList<T>} and \code{VmBytes} provide type-safe handles to linked lists and byte arrays in the VM heap.
-Both support lazy traversal and bounded materialization into caller-supplied buffers, which is the only safe option in a no-alloc context.
-
-\subsubsection{Build-Time Binding Generation}
-\label{sec:bindings}
-
-The mapping between host identifiers and VM tags is produced at Cargo build time by a \code{build.rs} script that runs the full compiler pipeline and emits two artefacts into \code{\$OUT\_DIR}:
-\begin{itemize}
-  \item \code{bytecode.bin}: the ENCR binary, linked into the firmware as a static byte array via \code{include\_bytes!}.
-  \item \code{bindings.rs}: a Rust source file declaring two constant modules: \code{funcs}, one \code{GlobalAddress} constant per top-level let definition; and \code{ctors}, one \code{u8} constant per constructor tag, likewise named.
-\end{itemize}
-
-This build-time generation guarantees that host tag references cannot diverge from the bytecode: there is no separate binding definition file to keep in sync.
+\encore{} is a library embedded in a Rust application that keeps control of the execution context, memory budget, and I/O.
+The VM exposes two entry points: calling a global or a closure handle with typed arguments, and registering typed host callbacks invoked by EXTERN.
+Values crossing the boundary are converted by the procedural macros \derive{ValueEncode} and \derive{ValueDecode}, whose \code{\#[ctor(tag)]} annotations use constructor tags from a \code{bindings.rs} file that \code{build.rs} generates together with the bytecode, so host code and bytecode cannot disagree on tags.
+\code{VmList<T>} and \code{VmBytes} give bounded, allocation-free access to lists and byte strings in the VM heap.
 
 \input{semantics}
 
@@ -404,28 +378,11 @@ First, we show that among all extraction paths, only \encore{} and CertiRocq are
 Second, we show that \encore{}'s design is better suited for embedded application development.
 Third, we demonstrate the state-transition architecture on a real application.
 
-The software versions used for this section are listed in Table~\ref{tab:versions}.
+We used Rocq 9.1.1 (OCaml 4.14.3), CertiRocq 0.9.1, Rust 1.88, QEMU 8.2.2, \code{arm-none-eabi-gcc} 13.2.1, Ribbit 1.0.0 (Gambit v4.9.3), and Chibi-Scheme 0.12.0.
 Flash values are measured from the linked bare-metal image, heap values are the minimum configured heap that completes each benchmark without allocation failure, and build time is wall-clock time for a clean benchmark build on the same host.
 Unless otherwise stated, benchmark execution is on QEMU configured for the Cortex-M target; the signing application is additionally validated on physical Ledger Flex hardware.
 
-\begin{table}
-\centering
-\caption{Software versions used in this article.}
-\label{tab:versions}
-\begin{tabular}{lll}
-\toprule
-Tool & Version & Notes \\
-\midrule
-Rocq & 9.1.1 & compiled with OCaml 4.14.3 \\
-CertiRocq & 0.9.1 & \\
-Rust & 1.88 & \\
-QEMU & 8.2.2 & \\
-\code{arm-none-eabi-gcc} & 13.2.1 & \\
-Ribbit & 1.0.0 & compiled with Gambit v4.9.3 \\
-Chibi-Scheme & 0.12.0 & \\
-\bottomrule
-\end{tabular}
-\end{table}
+
 
 \subsection{Running Verified Code on a Microcontroller}
 
@@ -561,11 +518,6 @@ Whereas the benchmarks of Table~\ref{tab:certirocq} run on QEMU, this signing ap
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{A Better GC for Embedded CertiRocq}
-
-Our approach using a static bump allocator in place of the regular multi-generational GC of CertiRocq was robust enough to validate the general design of \encore{} but it is too limiting for more ambitious programs.
-With care, one could weave a classic mark-and-sweep algorithm or a Cheney semispace algorithm on static buffers in order to provide this path the ability to run larger programs.
-
 \subsection{Verified Optimisation Passes}
 
 The \encore{} compiler's nine CPS optimisation passes are currently implemented in Rust and trusted by construction.
@@ -575,45 +527,13 @@ The growth-enabling passes (inlining, hoisting, CSE, contification) are structur
 
 \subsection{Ahead-of-Time Native Compilation}
 
-The AOT backend is fully designed: it compiles CPS IR directly to ARMv8-M Thumb-2 assembly, eliminating interpreter dispatch.
-Six virtual registers (SELF, CONT, A1, A2, X01--X04) are pinned to ARM hardware registers and the rest spill to a shadow file; tail calls resolve through a code-table index and a single \code{BX}, with no stack growth.
-Integer addition and subtraction reduce to two ARM instructions via the packed value representation, and pattern matching compiles to a \code{TBH} jump table.
+A backend compiling the CPS IR directly to ARMv8-M Thumb-2 is designed but not yet implemented: it pins the most used virtual registers to hardware registers and turns each tail call into a single \code{BX}, removing interpreter dispatch.
 
-\subsection{Portability to Other Microcontrollers}
+\subsection{Portability}
 \label{sec:portability}
 
-The architecture is deliberately portable: only a well-defined slice of the system is device-specific.
-The Rocq \code{step} function, the extracted Scheme, the compiled \code{ENCR} bytecode, and \code{encore\_vm} itself are architecture-independent, since the interpreter is \code{no\_std} Rust with no libc, libm, or standard-library dependency and represents every value as a self-describing 32-bit word.
-Porting to a new target therefore reduces to retargeting the Rust build and reimplementing the TCB boundary for that board: the event poller, the effect interpreter, and the host callbacks that back the admitted axioms (Sect.~\ref{sec:axioms}).
-The verified core does not move.
-
-Three constraints govern feasibility.
-First, a Rust target must exist for the core; every ARM Cortex-M profile has one (\code{thumbv6m}, \code{thumbv7em}, \code{thumbv8m}), whereas AVR support is confined to a nightly tier-3 target.
-Second, the device must hold the VM heap; the 50 KB figure of Table~\ref{tab:hwspec} is the total RAM of our binding target, not the runtime footprint, which stays near 18 KB of flash and a few KB of heap on our benchmarks (\code{rbtree-100} needs 3.7 KB).
-Third, the ahead-of-time backend described above emits ARMv8-M Thumb-2 and is ARM-only; off-ARM targets fall back to the portable interpreter, which is the validated path in any case.
-
-Under these constraints, an STM32 is essentially a drop-in, as it shares the Cortex-M lineage of our ST33 target, and modern ARM-based Arduino boards (Due, Zero, Nano 33 BLE, Portenta) run the interpreter as well.
-The classic 8-bit AVR Arduino (Uno, Nano, Mega) is out of reach: 2 KB of RAM cannot host the VM heap, there is no ahead-of-time path, and the 32-bit word model fits the architecture poorly.
-Table~\ref{tab:portability} summarises these cases.
-
-\begin{table}
-\centering
-\caption{Portability of the \encore{} pipeline to other microcontroller families.}
-\label{tab:portability}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{llll}
-\toprule
-Device family & Core & RAM & Runs \encore{} \\
-\midrule
-STM32 (F/L/U series) & Cortex-M0+/M3/M4/M7/M33 & 20 KB to 1 MB & Yes \\
-Arduino Due & Cortex-M3 & 96 KB & Yes \\
-Arduino Nano 33 BLE / Portenta & Cortex-M4/M7 & 256 KB+ & Yes \\
-Arduino Zero / MKR & Cortex-M0+ & 32 KB & Yes (tight, interpreter) \\
-Arduino Uno / Nano / Mega & AVR 8-bit & 2 KB & No \\
-\bottomrule
-\end{tabular}
-}
-\end{table}
+Only the TCB boundary is device-specific: the \code{step} function, the bytecode, and \code{encore\_vm} (\code{no\_std}, no libc) are architecture-independent, so porting reduces to retargeting the Rust build and reimplementing the event poller, effect interpreter, and host callbacks (Sect.~\ref{sec:axioms}).
+Any Cortex-M with a Rust target and a few KB of heap qualifies, since the runtime needs about 18 KB of flash and 3.7 KB of heap on \code{rbtree-100}; this includes STM32 parts and ARM-based Arduino boards, but not 8-bit AVR boards, with 2 KB of RAM and only a tier-3 Rust target.
 
 \subsection{Verifying the VM with rocq-of-rust}
 
