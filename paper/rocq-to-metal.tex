@@ -99,7 +99,7 @@ This work makes three contributions:
 \begin{itemize}
   \item We show that code extracted from Rocq can run on Cortex-M microcontrollers, by choosing Scheme as the extraction target and building a purpose-built bare-metal runtime.
   \item We present \encore, a \code{no\_std} CPS bytecode VM in Rust that fits within the resource budget of ST33-class hardware and executes Rocq-extracted Scheme end-to-end.
-  \item We introduce a firmware architecture structured as a pure state-transition function, making the business-logic core fully provable in Rocq while keeping the unverified trusted computing base (TCB) constant regardless of firmware complexity.
+  \item We introduce a firmware architecture structured as a pure state-transition function, making the business-logic core fully provable in Rocq while confining the unverified trusted computing base (TCB) to the event/effect boundary, which grows with the hardware interface rather than with application logic.
 \end{itemize}
 
 \section{An Architecture for Verified Firmware}
@@ -132,7 +132,7 @@ This model applies two key functional programming principles, copying instead of
 
 The remaining parts, the \textbf{Event poller} and the \textbf{Effect interpreter}, form the TCB.
 Their size is independent of firmware complexity unless new hardware operations and capabilities are added.
-The verified core grows with the application; the unverified boundary stays fixed.
+The verified core grows with the application; the unverified boundary grows only with the hardware interface.
 
 Moreover, in a VM-based deployment the application logic can be fully specified in the VM input code, allowing the same carefully reviewed base firmware to host custom, verified business logic, which is a particularly powerful combination for safety-critical devices.
 
@@ -558,8 +558,7 @@ The verified Gallina core (\code{step}, parser, helpers, and proofs) totals abou
 Two non-trivial properties are machine-checked: \code{deserialize\_preserves\_data} (no bytes dropped or reordered during parsing) and \code{check\_encoding\_spec} (memo ASCII validity).
 State-machine safety, signing only from \code{PendingTx}, follows by \code{simpl; discriminate}.
 
-The unverified Rust layer is about 575 lines and is \emph{stable}: adding new state variants or event cases extends only the verified core.
-The TCB grows only if new hardware operations are introduced, a structural guarantee rather than a coincidence of the current implementation size.
+The unverified Rust layer is about 575 lines: adding state variants or application logic extends only the verified core, whereas new events, effects, externs, or runtime primitives also extend this layer.
 
 Whereas the benchmarks of Table~\ref{tab:certirocq} run on QEMU, this signing application was validated end-to-end on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
 
@@ -638,7 +637,7 @@ We have shown that Rocq-proven firmware logic runs on a Cortex-M35P: extracted t
 The verified core remains the source of truth, while the runtime, compiler, host callbacks, and device I/O are explicit trusted components.
 
 The architecture is also designed to scale.
-Structuring firmware as a pure state-transition function decouples verification effort from hardware complexity: the verified \code{step} grows freely with application logic while the unverified components size stays constant.
+Structuring firmware as a pure state-transition function decouples verification effort from hardware complexity: the verified \code{step} grows with application logic, while the unverified components grow only with the hardware interface.
 
 As code generation becomes cheaper, assurance cost only stays manageable if verification is part of the architecture.
 Theorem signatures and Rocq checking make that path natural for the firmware core.
