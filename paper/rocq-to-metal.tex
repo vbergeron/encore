@@ -285,20 +285,10 @@ Every value is a packed 32-bit word encoding its type, metadata, and either an i
 
 \input{fig-values}
 
-The register file is divided between special registers (Current function \code{SELF 0x00}, Current Continuation \code{CONT 0x01} and Nullary sentinel \code{NULL 0xff}), argument registers (\code{0x02 -> 0x0b}) and regular registers (\code{0x0c -> 0xfe}).
-
-The heap is a flat bump-allocated arena shared by closures, constructors, and byte strings, with all objects prefixed by a GC header word.
-The garbage collector is mark-compact (Lisp-2 style): when a bump allocation fails, it traces from all 256 registers and all globals as roots, marks reachable objects via header bits, computes forwarding addresses in a linear scan, rewrites all pointers (roots and interior), then slides live objects down and resets the heap pointer.
-Because all values are self-describing 32-bit words with a type byte, the GC can identify pointer types without compiler-emitted maps.
-
-All function dispatch is reduced to a single opcode: ENCORE.
-It overwrites SELF and CONT, resolves the callee's code pointer (inline for bare functions, from the heap header for closures), and jumps; it never returns.
-Contrary to most VMs, there is no CALL/RET pair and no frame stack.
-Calling a continuation is the same instruction as calling a function; the NULL register is passed as the continuation argument when resuming a final continuation.
-FIN halts the interpreter and returns a register's value.
-
-All other control flow is data-driven: MATCH does an indexed jump on a constructor tag, BRANCH is a two-way variant.
-The remaining opcodes provide primitives for data movement and allocation, as well as specialized opcodes for native integer handling and byte string manipulation.
+The 256 registers comprise \code{SELF} (current function), \code{CONT} (current continuation), the arguments \code{A1}--\code{A8} (\code{0x02}--\code{0x09}), general-purpose registers, and the \code{NULL} sentinel (\code{0xff}).
+The heap is a bump-allocated arena with a mark-compact (Lisp-2) collector; since every word carries its type byte, the collector finds pointers without compiler-emitted maps.
+The only call instruction is ENCORE, which sets \code{SELF} and \code{CONT} and jumps without returning; resuming a continuation is the same instruction with \code{NULL} as continuation, and MATCH and BRANCH provide all other control flow.
+Sect.~\ref{sec:semantics} makes this precise.
 
 \subsection{Compiler Pipeline}
 
