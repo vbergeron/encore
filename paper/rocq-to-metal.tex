@@ -91,8 +91,8 @@ The pipeline is end-to-end: write firmware logic and prove it correct in Rocq, e
 What runs on the MCU is directly derived from the Rocq source, though the compiler, VM, host callbacks, and device I/O remain trusted.
 
 We first present an architecture for structuring firmware so its core is fully verifiable, illustrated on a concrete transaction-signing application.
-We then survey the landscape of extraction paths from theorem provers to embedded targets, and characterize why executing this class of code on microcontrollers is non-trivial.
-Next, we introduce \encore{} and show how it addresses these challenges.
+Next, we introduce \encore{}, the runtime we built to execute this code on microcontrollers.
+We then survey the existing extraction paths from theorem provers to embedded targets, and characterize why they fall short on this class of hardware.
 Finally, we present experimental results and outline remaining steps toward extending trust further up the toolchain.
 
 This work makes three contributions:
@@ -255,60 +255,6 @@ The two theorems therefore constrain the behavior of the state-transition functi
 This structure also suits code generation: a candidate \code{step} function is checked immediately by Rocq, and theorem statements make the expected behavior explicit.
 LLM-assisted proof synthesis~\cite{blaauwbroek2020tactician} can be used in this workflow, but the assurance argument relies on the Rocq kernel and stated lemmas rather than on the generator.
 
-\section{Related Work}
-
-We investigated the feasibility of running proved logic on resource-constrained microcontrollers (MCUs), targeting the ST33K1M5 and the tighter ST33J2M0 budget in Table~\ref{tab:hwspec}.
-The ST33J2M0, with 50 KB of RAM, sets the binding constraint.
-
-\begin{table}
-\centering
-\caption{Hardware specifications of the MCUs considered.}
-\label{tab:hwspec}
-\begin{tabular}{lll}
-\toprule
-Metric & ST33K1M5 & ST33J2M0 \\
-\midrule
-ISA & ARM+Thumb2 & ARM+Thumb2 \\
-Flash & 1.5 MB & 2 MB \\
-RAM & 64 KB & 50 KB \\
-Clock speed & 70 MHz & 60 MHz \\
-Cache & 2 KB & None \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Any attached runtime must therefore be lean: applications on this class of MCU often ship with no runtime, and the code cannot rely on libc, libm, or the Rust standard library.
-This excludes many otherwise attractive proof-to-code paths.
-
-\subsection{Lean 4}
-
-Lean 4 \cite{demoura2021lean4} has mature native code generation and an active proof ecosystem, but its runtime assumes C++ library support, reference counting with cycle collection, tasks, and hosted IO.
-Prior reports confirm that more constrained targets than a Raspberry Pi require substantial runtime work \cite{hendrix2021lean4baremetal}; the known ESP32-C3 port needed a patched libc++/picolibc stack on a device with 384 KB of RAM \cite{kurucz2024lean}.
-The Lean FRO roadmap \cite{leanfroy3} does not currently target bare-metal embedded deployment.
-
-\subsection{Rocq Extraction to OCaml}
-
-Rocq extraction to OCaml \cite{letouzey2002extraction,letouzey2008extraction} is mature, but the OCaml runtime requires a generational GC, libc/libm support, and native-code assumptions mismatched with Cortex-M object formats.
-A native OCaml Cortex-M experiment required assembly patching, a custom linker script, and standard-library stubs on a larger target \cite{elvers2025ocamlpico}.
-OMicroB \cite{OMicroB} is closer in spirit, but supports AVR and PIC32; the Cortex-M0 port discussed in prior work \cite{wcet2019} remains unmerged, and our Cortex-M35P targets require full Thumb-2 support.
-
-\subsection{CertiRocq}
-
-CertiRocq \cite{anand2017certicoq} is the most principled Rocq compilation path: it compiles Gallina to Clight through a largely verified compiler chain.
-Its runtime story is nevertheless conditional for our targets.
-The generated Clight allocates inductive values, and correctness is stated against a GC-aware heap predicate \code{full\_gc} \cite{korkut2025veriffi}; replacing the runtime on Cortex-M therefore requires either proving a new collector or restricting programs to bounded allocation.
-Moreover, CertiRocq does not apply the standard extraction mechanism that maps Peano \code{nat} to machine arithmetic, so arithmetic-heavy programs may become infeasible without source-level representation changes.
-
-\subsection{Usage of Scheme Extraction}
-
-Rocq also supports extraction to Scheme \cite{letouzey2008extraction}.
-Although less mature than OCaml extraction, Scheme has compact semantics and no mandatory hosted runtime.
-Small Scheme systems such as Ribbit \cite{yvon2021ribbit} and PICOBIT \cite{picobit} show that complete implementations can fit microcontroller budgets.
-We therefore evaluate Chibi Scheme \cite{chibi}, Ribbit, CertiRocq, and our purpose-built runtime.
-
-Verified compilers such as CompCert \cite{leroy2009compcert} and CakeML \cite{kumar2014cakeml} demonstrate that a compiler can carry a machine-checked proof that the generated code refines the semantics of its source program.
-\encore{} is not yet in that class: its contribution is the systems path that makes Rocq-extracted logic executable on the target hardware, with the remaining compiler/VM verification gap made explicit in Sect.~\ref{sec:trust}.
-
 \section{The \encore{} VM and Compiler}
 
 \encore{} aims to be a Scheme runtime that is efficient, lightweight, and safe to execute.
@@ -396,6 +342,64 @@ The mapping between host identifiers and VM tags is produced at Cargo build time
 \end{itemize}
 
 This build-time generation guarantees that host tag references cannot diverge from the bytecode: there is no separate binding definition file to keep in sync.
+
+\section{Related Work}
+
+We investigated the feasibility of running proved logic on resource-constrained microcontrollers (MCUs), targeting the ST33K1M5 and the tighter ST33J2M0 budget in Table~\ref{tab:hwspec}.
+The ST33J2M0, with 50 KB of RAM, sets the binding constraint.
+
+\begin{table}
+\centering
+\caption{Hardware specifications of the MCUs considered.}
+\label{tab:hwspec}
+\begin{tabular}{lll}
+\toprule
+Metric & ST33K1M5 & ST33J2M0 \\
+\midrule
+ISA & ARM+Thumb2 & ARM+Thumb2 \\
+Flash & 1.5 MB & 2 MB \\
+RAM & 64 KB & 50 KB \\
+Clock speed & 70 MHz & 60 MHz \\
+Cache & 2 KB & None \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Any attached runtime must therefore be lean: applications on this class of MCU often ship with no runtime, and the code cannot rely on libc, libm, or the Rust standard library.
+This excludes many otherwise attractive proof-to-code paths.
+
+\subsection{Lean 4}
+
+Lean 4 \cite{demoura2021lean4} has mature native code generation and an active proof ecosystem, but its runtime assumes C++ library support, reference counting with cycle collection, tasks, and hosted IO.
+Prior reports confirm that more constrained targets than a Raspberry Pi require substantial runtime work \cite{hendrix2021lean4baremetal}; the known ESP32-C3 port needed a patched libc++/picolibc stack on a device with 384 KB of RAM \cite{kurucz2024lean}.
+The Lean FRO roadmap \cite{leanfroy3} does not currently target bare-metal embedded deployment.
+
+\subsection{Rocq Extraction to OCaml}
+
+Rocq extraction to OCaml \cite{letouzey2002extraction,letouzey2008extraction} is mature, but the OCaml runtime requires a generational GC, libc/libm support, and native-code assumptions mismatched with Cortex-M object formats.
+A native OCaml Cortex-M experiment required assembly patching, a custom linker script, and standard-library stubs on a larger target \cite{elvers2025ocamlpico}.
+OMicroB \cite{OMicroB} is closer in spirit, but supports AVR and PIC32; the Cortex-M0 port discussed in prior work \cite{wcet2019} remains unmerged, and our Cortex-M35P targets require full Thumb-2 support.
+
+\subsection{CertiRocq}
+
+CertiRocq \cite{anand2017certicoq} is the most principled Rocq compilation path: it compiles Gallina to Clight through a largely verified compiler chain.
+Its runtime story is nevertheless conditional for our targets.
+The generated Clight allocates inductive values, and correctness is stated against a GC-aware heap predicate \code{full\_gc} \cite{korkut2025veriffi}; replacing the runtime on Cortex-M therefore requires either proving a new collector or restricting programs to bounded allocation.
+Moreover, CertiRocq does not apply the standard extraction mechanism that maps Peano \code{nat} to machine arithmetic, so arithmetic-heavy programs may become infeasible without source-level representation changes.
+
+\subsection{Usage of Scheme Extraction}
+
+Rocq also supports extraction to Scheme \cite{letouzey2008extraction}.
+Although less mature than OCaml extraction, Scheme has compact semantics and no mandatory hosted runtime.
+Small Scheme systems such as Ribbit \cite{yvon2021ribbit} and PICOBIT \cite{picobit} show that complete implementations can fit microcontroller budgets.
+We therefore evaluate Chibi Scheme \cite{chibi}, Ribbit, CertiRocq, and our purpose-built runtime.
+
+\subsection{Verified Low-Level and Bare-Metal Code}
+
+Verified compilers such as CompCert \cite{leroy2009compcert} and CakeML \cite{kumar2014cakeml} carry a machine-checked proof that the generated code refines its source, and \OE{}uf \cite{mullen2018oeuf} applies this idea to a subset of Gallina to shrink the extraction TCB.
+Another line of work obtains verified low-level code by restricting how programs are written: Low* \cite{protzenko2017lowstar} and Fiat Cryptography \cite{erbsen2019fiat} generate allocation-free C from a first-order subset, and Bedrock2 \cite{erbsen2021bedrock2} verifies a low-level language end-to-end on a small RISC-V embedded system.
+These approaches give stronger guarantees than ours, but either constrain the source to first-order, allocation-free code or assume a hosted runtime.
+\encore{} is not a new verification methodology: it is a practical systems pipeline that runs ordinary higher-order, allocating Gallina, produced by the standard extraction mechanism, on Cortex-M hardware, with the remaining compiler/VM gap made explicit in Sect.~\ref{sec:trust}.
 
 \section{Experimental Results}
 
