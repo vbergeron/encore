@@ -450,10 +450,7 @@ Scheme / \encore{} & Mark-compact, bounded & Yes & Yes & Source \\
 }
 \end{table}
 
-The last column states how far machine-checked guarantees reach.
-For every path except CertiRocq, proofs cover the source program only: extraction, compilation, and the runtime are trusted.
-\encore{} is no exception: its advantage over the other extraction paths is deployability, not a stronger guarantee, and it inherits the trust assumptions of Sect.~\ref{sec:trust}.
-CertiRocq carries its guarantee down to Clight, but the C compiler and the patched runtime remain trusted.
+Except for CertiRocq, proofs cover only the source program: \encore{}'s advantage is deployability, not a stronger guarantee (Sect.~\ref{sec:trust}).
 
 Lean 4 and OCaml are eliminated by their runtimes alone.
 CertiRocq is viable only for programs with bounded allocation, where its GC can be replaced by a static bump allocator; it remains conditional.
@@ -642,8 +639,7 @@ Structuring firmware as a pure state-transition function decouples verification 
 As code generation becomes cheaper, assurance cost only stays manageable if verification is part of the architecture.
 Theorem signatures and Rocq checking make that path natural for the firmware core.
 
-The trust chain is not yet closed: extraction, the \encore{} compiler, and the VM remain trusted, and our largest application is a few hundred lines of Gallina.
-What this work establishes is that proven application logic can run on bare-metal microcontrollers today; carrying the proofs down to the runtime and scaling to larger applications are the next steps.
+Proven application logic runs on bare metal today; closing the trust chain down to the VM and scaling to larger applications remain future work.
 
 \section*{Acknowledgments}
 The authors thank Nicolas Iooss for their valuable contribution and the Ledger Backend and Ledger Donjon teams for their support.
