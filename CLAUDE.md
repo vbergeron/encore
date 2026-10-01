@@ -81,3 +81,4 @@ All passes are individually toggleable via CLI flags (e.g. `--cps-optimize-rewri
 - `VM.md` — value encoding, opcodes, binary format
 - `OPTIMIZER.md` — CPS pass descriptions and tuning
 - `STATS.md` — `stats` feature: runtime statistics, clock, zero-overhead rules (`stat!` macro)
+- `paper/semantics.tex` — formal grammar and semantics of the Scheme subset, CPS IR and VM, and the compiler correctness statement (keep in sync with `ir/cps.rs`, `encore_scheme`, `vm.rs`)

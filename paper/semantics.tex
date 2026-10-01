@@ -1,0 +1,240 @@
+%% Formal semantics of the Encore pipeline.
+%% Transcribed from the implementation:
+%%   source   crates/encore_scheme/src/{parser,desugar}.rs, SCHEME.md
+%%   CPS IR   crates/encore_compiler/src/ir/cps.rs, pass/cps_transform.rs
+%%   machine  crates/encore_vm/src/vm.rs, VM.md
+%% Keep it in sync when any of these change.
+
+\newcommand{\kw}[1]{\mathsf{#1}}
+\newcommand{\sch}[1]{\texttt{#1}}
+\newcommand{\ext}[1]{\kw{ext}_{#1}}
+\newcommand{\clo}{\kw{clo}}
+\newcommand{\kont}{\kw{kont}}
+\newcommand{\nullk}{\kw{null}}
+\newcommand{\enc}{\kw{encore}}
+\newcommand{\sem}[1]{[\![#1]\!]}
+\newcommand{\instr}[1]{\textsc{#1}}
+
+\subsection{Formal Semantics}
+\label{sec:semantics}
+
+We now make precise the three languages of the pipeline: the Scheme subset accepted by the frontend, the CPS intermediate representation, and the bytecode machine.
+The presentation follows that of CertiRocq's CPS language~\cite{paraskevopoulou2019closure} and the standard treatment of compilation to a virtual machine~\cite{leroy2009mechanized}.
+The definitions are transcribed from the implementation; they are not yet mechanised.
+
+\paragraph{Notation.}
+$\bar{x}$ is a sequence $x_1 \dots x_m$, and $\rho[\bar{x} \mapsto \bar{v}]$ extends the environment $\rho$ pointwise.
+$C$ ranges over constructors, and $t(C) \in [0, 255]$ is the numeric tag the frontend assigns to $C$ ($\kw{False}$ and $\kw{True}$ have tags $0$ and $1$).
+$n$ ranges over 24-bit integers, $s$ over byte strings, $p$ over primitive operations, whose meaning is a partial function $\delta_p$, undefined exactly where the VM traps (integer overflow, out-of-range byte).
+$h_j$ is the host function registered in extern slot $j$; it is the same function at every level.
+
+\paragraph{Source language.}
+Fig.~\ref{fig:source} gives the grammar of the Scheme subset produced by Rocq extraction, and its translation into a core call-by-value $\lambda$-calculus with constructors, $\lambda_S$.
+The frontend has no macro expander and recognises these forms only.
+The big-step judgement $\rho \vdash e \Downarrow v$ of $\lambda_S$ is the reference semantics of a program: top-level definitions are mutually visible, and a program denotes the global environment $G$ such that $G \vdash e_i \Downarrow G(x_i)$ for each definition $(\sch{define}\ x_i\ e_i)$, evaluated in order.
+Evaluation is left to right, function before argument; this order is observable only through externs.
+
+\begin{figure}[!tbp]
+\centering\small
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{r@{\;}c@{\;}l}
+d & ::= & (\sch{define}\ x\ e) \mid (\sch{define}\ x\ (\sch{extern}\ (\sch{slot}\ j)\ x_1 \dots x_m)) \\
+e & ::= & x \mid n \mid \sch{"}s\sch{"} \mid (\sch{lambda}\ (x)\ e) \mid (\sch{lambdas}\ (x_1 \dots x_m)\ e)
+          \mid (\sch{@}\ e\ e_1 \dots e_m) \mid (e\ e_1 \dots e_m) \\
+  & \mid & (\sch{let}\ ((x_1\ e_1) \dots (x_m\ e_m))\ e) \mid (\sch{letrec}\ ((f\ e_1))\ e_2) \mid (\sch{if}\ e\ e_1\ e_2) \\
+  & \mid & (\sch{match}\ e\ ((C_1\ \bar{x}_1)\ e_1) \dots ((C_m\ \bar{x}_m)\ e_m))
+          \mid \sch{`}(C\ \sch{,}e_1 \dots \sch{,}e_m) \mid \sch{'}C \mid (p\ e_1 \dots e_m) \mid (\sch{error})
+\end{array}
+$}
+\]
+\vspace{-0.5em}
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{r@{\;}c@{\;}l}
+\sem{(\sch{lambdas}\ (x_1 \dots x_m)\ e)} & = & \lambda x_1 \dots \lambda x_m.\, \sem{e} \\
+\sem{(\sch{@}\ e\ e_1 \dots e_m)} = \sem{(e\ e_1 \dots e_m)} & = & (\dots(\sem{e}\ \sem{e_1}) \dots)\ \sem{e_m} \\
+\sem{(\sch{let}\ ((x_1\ e_1) \dots)\ e)} & = & \kw{let}\ x_1 = \sem{e_1}\ \kw{in} \dots \kw{in}\ \sem{e} \\
+\sem{(\sch{letrec}\ ((f\ (\sch{lambda}\ (x)\ e_1)))\ e_2)} & = & \kw{letrec}\ f\,x = \sem{e_1}\ \kw{in}\ \sem{e_2}
+  \quad \text{(otherwise $\eta$-expanded)} \\
+\sem{(\sch{if}\ e\ e_1\ e_2)} & = & \kw{case}\ \sem{e}\ \kw{of}\ \{\kw{False} \Rightarrow \sem{e_2};\ \kw{True} \Rightarrow \sem{e_1}\} \\
+\sem{\sch{`}(C\ \sch{,}e_1 \dots \sch{,}e_m)} = \sem{\sch{'}C} & = & C(\sem{e_1}, \dots, \sem{e_m}) \quad (m = 0 \text{ for } \sch{'}C) \\
+\sem{(\sch{define}\ x\ (\sch{extern}\ (\sch{slot}\ j)\ x_1 \dots x_m))} & = & (\sch{define}\ x\ \lambda x_1 \dots \lambda x_m.\, \ext{j}\ C_j(x_1, \dots, x_m))
+\end{array}
+$}
+\]
+\vspace{-0.5em}
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{r@{\;}c@{\;}l}
+e & ::= & x \mid n \mid s \mid \ext{j} \mid \lambda x.\, e \mid e\ e \mid \kw{let}\ x = e\ \kw{in}\ e \mid \kw{letrec}\ f\,x = e\ \kw{in}\ e \\
+  & \mid & C(e_1, \dots, e_m) \mid \kw{case}\ e\ \kw{of}\ \{C_i(\bar{x}_i) \Rightarrow e_i\}_i \mid p(e_1, \dots, e_m) \\
+v & ::= & n \mid s \mid \ext{j} \mid C(v_1, \dots, v_m) \mid \langle \rho, f, x, e \rangle
+\end{array}
+$}
+\]
+\vspace{-0.3em}
+\begin{mathpar}
+\inferrule{ }{\rho \vdash x \Downarrow \rho(x)}
+\and
+\inferrule{a \in \{n, s, \ext{j}\}}{\rho \vdash a \Downarrow a}
+\and
+\inferrule{ }{\rho \vdash \lambda x.\, e \Downarrow \langle \rho, \_, x, e \rangle}
+\and
+\inferrule{\rho[f \mapsto \langle \rho, f, x, e_1 \rangle] \vdash e_2 \Downarrow v}
+          {\rho \vdash \kw{letrec}\ f\,x = e_1\ \kw{in}\ e_2 \Downarrow v}
+\and
+\inferrule{\rho \vdash e_1 \Downarrow c = \langle \rho', f, x, e \rangle \\ \rho \vdash e_2 \Downarrow v_2 \\
+           \rho'[f \mapsto c, x \mapsto v_2] \vdash e \Downarrow v}
+          {\rho \vdash e_1\ e_2 \Downarrow v}
+\and
+\inferrule{\rho \vdash e_1 \Downarrow \ext{j} \\ \rho \vdash e_2 \Downarrow v_2}
+          {\rho \vdash e_1\ e_2 \Downarrow h_j(v_2)}
+\and
+\inferrule{\rho \vdash e_1 \Downarrow v_1 \\ \rho[x \mapsto v_1] \vdash e_2 \Downarrow v}
+          {\rho \vdash \kw{let}\ x = e_1\ \kw{in}\ e_2 \Downarrow v}
+\and
+\inferrule{\rho \vdash e_i \Downarrow v_i \ (\forall i)}{\rho \vdash C(\bar{e}) \Downarrow C(\bar{v})}
+\and
+\inferrule{\rho \vdash e_i \Downarrow v_i \ (\forall i) \\ \delta_p(\bar{v}) = v}{\rho \vdash p(\bar{e}) \Downarrow v}
+\and
+\inferrule{\rho \vdash e \Downarrow C_i(\bar{v}) \\ \rho[\bar{x}_i \mapsto \bar{v}] \vdash e_i \Downarrow v}
+          {\rho \vdash \kw{case}\ e\ \kw{of}\ \{C_i(\bar{x}_i) \Rightarrow e_i\}_i \Downarrow v}
+\end{mathpar}
+\caption{Source language. Top: the Scheme subset accepted by the frontend. Middle: its translation $\sem{\cdot}$ into $\lambda_S$ (remaining forms map homomorphically; $C_j$ is a constructor reserved for extern slot $j$; $(\sch{error})$ occurs only in branches extraction proves unreachable and is left unspecified). Bottom: syntax, values, and big-step semantics of $\lambda_S$; $\langle \rho, f, x, e \rangle$ is a closure, recursive through $f$ ($\_$ if anonymous).}
+\label{fig:source}
+\end{figure}
+
+\paragraph{CPS intermediate representation.}
+Fig.~\ref{fig:cps} gives the IR on which the optimiser runs.
+Its expressions are in A-normal form: every operand is a variable, and only two forms transfer control, $\enc$ and $\kw{match}$.
+A function $\kw{letrec}\ f(\bar{x}) \to k = e$ takes its continuation $k$ as an explicit parameter.
+A continuation $\kw{cont}(\bar{x}) \Rightarrow e$ is a first-class value; it is resumed by the same $\enc$ form, with the null continuation in place of $k$.
+The CPS transformation and every optimisation pass map an IR term to an IR term, so all of them are stated against this single semantics.
+Configurations are pairs $\langle e, \rho \rangle$; the machine is deterministic and halts on $\kw{fin}\ x$ with result $\rho(x)$.
+
+\begin{figure}[!tbp]
+\centering\small
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{r@{\;}c@{\;}l}
+v & ::= & x \mid \kw{cont}(\bar{x}) \Rightarrow e \mid \nullk \mid C(\bar{x}) \mid \kw{field}_i(x) \mid n \mid s \mid p(\bar{x}) \mid \ext{j} \\
+e & ::= & \kw{let}\ x = v\ \kw{in}\ e \mid \kw{letrec}\ f(\bar{x}) \to k = e\ \kw{in}\ e
+          \mid \enc\ x(\bar{y}) \to k \mid \kw{match}\ x\ \kw{from}\ b\ \{\bar{x}_i \Rightarrow e_i\}_{i} \mid \kw{fin}\ x \\
+W & ::= & n \mid s \mid \ext{j} \mid \nullk \mid C(W_1, \dots, W_m) \mid \clo(\rho, f, \bar{x}, k, e) \mid \kont(\rho, \bar{x}, e)
+\end{array}
+$}
+\]
+\vspace{-0.3em}
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{c}
+\sem{y}\rho = \rho(y) \qquad
+\sem{\kw{cont}(\bar{x}) \Rightarrow e}\rho = \kont(\rho, \bar{x}, e) \qquad
+\sem{C(\bar{y})}\rho = C(\rho(\bar{y})) \qquad
+\sem{p(\bar{y})}\rho = \delta_p(\rho(\bar{y})) \\
+\sem{\kw{field}_i(y)}\rho = W_i \ \text{if}\ \rho(y) = C(\bar{W}) \qquad
+\sem{a}\rho = a \ \text{for}\ a \in \{\nullk, n, s, \ext{j}\}
+\end{array}
+$}
+\]
+\vspace{-0.3em}
+\begin{mathpar}
+\inferrule{ }{\langle \kw{let}\ x = v\ \kw{in}\ e, \rho \rangle \to \langle e, \rho[x \mapsto \sem{v}\rho] \rangle}
+\and
+\inferrule{ }{\langle \kw{letrec}\ f(\bar{x}) \to k = e_1\ \kw{in}\ e_2, \rho \rangle
+              \to \langle e_2, \rho[f \mapsto \clo(\rho, f, \bar{x}, k, e_1)] \rangle}
+\and
+\inferrule{\rho(x) = \clo(\rho', f, \bar{x}, k', e)}
+          {\langle \enc\ x(\bar{y}) \to k, \rho \rangle \to \langle e, \rho'[f \mapsto \rho(x), \bar{x} \mapsto \rho(\bar{y}), k' \mapsto \rho(k)] \rangle}
+\and
+\inferrule{\rho(x) = \kont(\rho', \bar{x}, e) \\ \rho(k) = \nullk}
+          {\langle \enc\ x(\bar{y}) \to k, \rho \rangle \to \langle e, \rho'[\bar{x} \mapsto \rho(\bar{y})] \rangle}
+\and
+\inferrule{\rho(x) = \ext{j} \\ \rho(k) = \kont(\rho', z, e)}
+          {\langle \enc\ x(y) \to k, \rho \rangle \to \langle e, \rho'[z \mapsto h_j(\rho(y))] \rangle}
+\and
+\inferrule{\rho(x) = C(\bar{W}) \\ t(C) - b = i}
+          {\langle \kw{match}\ x\ \kw{from}\ b\ \{\bar{x}_i \Rightarrow e_i\}_i, \rho \rangle \to \langle e_i, \rho[\bar{x}_i \mapsto \bar{W}] \rangle}
+\end{mathpar}
+\caption{CPS intermediate representation (\code{ir/cps.rs}): values $v$, expressions $e$, runtime values $W$, evaluation $\sem{v}\rho$ of let-bound values (partial, like $\delta_p$), and the small-step transition relation. A $\kw{match}$ lists one case per tag from the base tag $b$; $\enc$ passes at most eight arguments.}
+\label{fig:cps}
+\end{figure}
+
+\paragraph{Bytecode machine.}
+Fig.~\ref{fig:vm} gives the abstract machine that \code{encore\_vm} implements.
+It abstracts the 32-bit packed encoding into tagged words $w$ and the arena into a partial map $H$ from addresses to objects, and leaves the code $c$ implicit: $c(pc)$ is the instruction at $pc$ and $pc^{+}$ the next one.
+A state is $\langle pc, R, H, G \rangle$, with $R$ the 256-register file and $G$ the globals.
+There is no stack component: $\instr{encore}$ is the only transfer to a code address held in a value, and no instruction returns.
+When allocation finds no free address, the collector replaces $H$ by $\pi(H|_{\mathit{reach}(R, G)})$ and the roots by their images, for an injective renaming $\pi$ of the addresses reachable from $R$ and $G$; the machine traps with \code{HeapOverflow} if allocation still fails.
+The collector is thus invisible up to renaming, which is the property a proof of the mark-compact implementation must establish.
+
+\begin{figure}[!tbp]
+\centering\small
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{r@{\;}c@{\;}l}
+w & ::= & \kw{int}(n) \mid \kw{func}(\ell) \mid \kw{clos}(a) \mid \kw{con}(t, a) \mid \kw{con}(t, \bullet) \mid \kw{bytes}(a) \\
+H(a) & ::= & \langle \ell; w_1, \dots, w_m \rangle \ \text{(closure)} \mid \langle w_1, \dots, w_m \rangle \ \text{(fields)} \mid s \ \text{(byte string)}
+\end{array}
+\qquad
+\begin{array}{l}
+\mathit{code}_H(\kw{func}(\ell)) = \ell \\
+\mathit{code}_H(\kw{clos}(a)) = \ell \ \text{if}\ H(a) = \langle \ell; \bar{w} \rangle
+\end{array}
+$}
+\]
+\vspace{-0.3em}
+\[
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
+\begin{array}{@{}l@{\quad}l@{\quad}l@{}}
+\toprule
+c(pc) & \text{condition} & \text{next state} \\
+\midrule
+\instr{mov}\ d\ r & & \langle pc^+, R[d \mapsto R(r)], H, G \rangle \\
+\instr{capture}\ d\ i & R(\kw{SELF}) = \kw{clos}(a),\ H(a) = \langle \ell; \bar{w} \rangle & \langle pc^+, R[d \mapsto w_i], H, G \rangle \\
+\instr{global}\ d\ i & & \langle pc^+, R[d \mapsto G(i)], H, G \rangle \\
+\instr{function}\ d\ \ell & & \langle pc^+, R[d \mapsto \kw{func}(\ell)], H, G \rangle \\
+\instr{closure}\ d\ \ell\ \bar{r} & a \notin \mathrm{dom}(H) & \langle pc^+, R[d \mapsto \kw{clos}(a)], H[a \mapsto \langle \ell; R(\bar{r}) \rangle], G \rangle \\
+\instr{pack}\ d\ t\ \bar{r} & \text{arity}(t) > 0,\ a \notin \mathrm{dom}(H) & \langle pc^+, R[d \mapsto \kw{con}(t, a)], H[a \mapsto \langle R(\bar{r}) \rangle], G \rangle \\
+\instr{pack}\ d\ t & \text{arity}(t) = 0 & \langle pc^+, R[d \mapsto \kw{con}(t, \bullet)], H, G \rangle \\
+\instr{field}\ d\ r\ i & R(r) = \kw{con}(t, a),\ H(a) = \langle \bar{w} \rangle & \langle pc^+, R[d \mapsto w_i], H, G \rangle \\
+\instr{unpack}\ d\ t\ r & R(r) = \kw{con}(t', a),\ H(a) = \langle \bar{w} \rangle & \langle pc^+, R[d{+}i \mapsto w_i]_{i < \text{arity}(t)}, H, G \rangle \\
+\instr{match}\ r\ b\ \ell_0 \dots \ell_{m-1} & R(r) = \kw{con}(t, \_),\ 0 \le t - b < m & \langle \ell_{t-b}, R, H, G \rangle \\
+\instr{encore}\ f\ k & \mathit{code}_H(R(f)) = \ell & \langle \ell, R[\kw{SELF} \mapsto R(f), \kw{CONT} \mapsto R(k)], H, G \rangle \\
+\instr{extern}\ d\ r\ j & & \langle pc^+, R[d \mapsto h_j(R(r))], H, G \rangle \\
+\instr{op}\ d\ \bar{r} & \delta_{op}(R(\bar{r})) = w & \langle pc^+, R[d \mapsto w], H', G \rangle \\
+\instr{fin}\ r & & \text{halt with } R(r) \\
+\bottomrule
+\end{array}
+$}
+\]
+\caption{Bytecode machine (\code{vm.rs}). $\instr{branch}$ is $\instr{match}$ with two targets; $\instr{op}$ stands for the integer and byte-string opcodes, where $H'$ extends $H$ when the result is a new byte string. A state with no applicable rule traps; load-time validation guarantees that $pc$ always designates an instruction.}
+\label{fig:vm}
+\end{figure}
+
+\paragraph{Compilation.}
+Register allocation (\code{asm\_resolve}) maps each IR variable to a register, a capture of the enclosing closure, or a global.
+A $\kw{let}$ becomes the instruction that computes its value; $\kw{letrec}$ and $\kw{cont}$ become $\instr{closure}$ over their free variables, or $\instr{function}$ when there are none; $\kw{match}$ becomes $\instr{match}$ or $\instr{branch}$ followed by $\instr{unpack}$; and $\kw{fin}$ becomes $\instr{fin}$.
+$\enc\ x(\bar{y}) \to k$ moves $\bar{y}$ into the argument registers $\kw{A1} \dots \kw{A8}$ and executes $\instr{encore}$; a function body therefore starts with its closure in $\kw{SELF}$, its continuation in $\kw{CONT}$, and its arguments in $\kw{A1} \dots$, and a continuation is resumed with the $\kw{NULL}$ register as $k$.
+An extern is a code stub that runs $\instr{extern}$ on $\kw{A1}$ and resumes $\kw{CONT}$ with the result.
+
+\paragraph{Correctness statement.}
+Let $W \approx_H w$ relate IR values to machine words: $n \approx_H \kw{int}(n)$; $s \approx_H \kw{bytes}(a)$ when $H(a) = s$; $C() \approx_H \kw{con}(t(C), \bullet)$; and $C(\bar{W}) \approx_H \kw{con}(t(C), a)$ when $H(a) = \langle \bar{w} \rangle$ and $W_i \approx_H w_i$ for all $i$.
+Closures are related through the code they were compiled from, by a logical relation in the style of CertiRocq's CPS-to-C proof~\cite{savarybelanger2019cpstoc}.
+
+\begin{conjecture}[Compiler correctness]
+\label{conj:correct}
+Let $P$ be a program accepted by the frontend, $G$ its denotation in $\lambda_S$, and $B$ the bytecode \encore{} produces for it.
+For every definition $x$ of $P$ such that $G(x)$ is first-order (built from integers, byte strings, and constructors), loading $B$ either initialises the global slot of $x$ to a word $w$ such that $G(x) \approx_H w$ in the resulting heap $H$, or traps with \code{HeapOverflow}.
+\end{conjecture}
+
+\noindent
+Since the machine is deterministic, this forward simulation also excludes any other observable behaviour~\cite{leroy2009mechanized}.
+The statement decomposes along the pipeline into three simulations, each of which has a precedent in a mechanised compiler:
+(i)~$\sem{\cdot}$, uncurrying, and the CPS transformation relate $\lambda_S$ to the CPS semantics, as in CertiRocq's front end~\cite{paraskevopoulou2019closure};
+(ii)~each optimisation pass preserves the CPS semantics, as in Pilsner~\cite{neis2015pilsner} and CertiRocq;
+(iii)~register allocation and emission relate the CPS semantics to the machine of Fig.~\ref{fig:vm}, as CertiRocq does for C~\cite{savarybelanger2019cpstoc}.
+Two links remain outside the statement: Rocq's extraction from Gallina to Scheme, for which a verified alternative exists for OCaml~\cite{forster2024verified}, and the agreement between Fig.~\ref{fig:vm} and the Rust interpreter, discussed in Sect.~\ref{sec:discussion}.
+
+\FloatBarrier

@@ -15,6 +15,8 @@
 \usepackage{url}
 \usepackage{microtype}
 \usepackage{etoolbox}
+\usepackage{mathpartir}
+\usepackage{placeins}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 \setlength{\floatsep}{8pt plus 2pt minus 2pt}
@@ -200,7 +202,7 @@ This keeps the trusted axioms few and auditable, at the cost of manual upkeep, a
 The verified part of the system is the Rocq model of the application logic and its stated properties.
 The trusted computing base includes the Rocq kernel and extraction mechanism, the extracted Scheme frontend, the \encore{} compiler and VM, the Rust compiler, host callbacks implementing admitted axioms, and the event poller/effect interpreter supplied by the device firmware.
 This boundary is deliberate: application growth extends the proved \code{step} function and its lemmas, whereas the unverified boundary changes only when new hardware actions, externs, or runtime primitives are added.
-The current work therefore establishes verified firmware logic running on bare metal; proving the compiler or VM is future work, discussed in Sect.~\ref{sec:discussion}.
+The current work therefore establishes verified firmware logic running on bare metal; Sect.~\ref{sec:semantics} states the compiler correctness theorem that would remove the compiler and VM from this list, and proving it is future work, discussed in Sect.~\ref{sec:discussion}.
 
 \subsection{Concrete Example: Transaction Signing Application}
 
@@ -342,6 +344,8 @@ The mapping between host identifiers and VM tags is produced at Cargo build time
 \end{itemize}
 
 This build-time generation guarantees that host tag references cannot diverge from the bytecode: there is no separate binding definition file to keep in sync.
+
+\input{semantics}
 
 \section{Related Work}
 
@@ -625,7 +629,7 @@ Arduino Uno / Nano / Mega & AVR 8-bit & 2 KB & No \\
 The \code{rocq-of-rust} tool \cite{ho2024rocqofrust} translates Rust source to Rocq definitions, enabling correctness proofs of Rust programs inside Rocq.
 Applying it to \code{encore\_vm} closes the last gap in the trust chain: the same proof assistant that certifies the firmware logic certifies the runtime executing it.
 
-The central theorem to establish is a simulation between the abstract CPS operational semantics and the concrete interpreter: each step of the Rust dispatch loop corresponds to a reduction in the Gallina model.
+The central theorem to establish is part~(iii) of Conjecture~\ref{conj:correct} together with the agreement of the Rust dispatch loop with the machine of Fig.~\ref{fig:vm}: each step of the interpreter corresponds to a transition of the abstract machine.
 Two components present the main proof obligations.
 The mark-compact GC requires reasoning about pointer aliasing and preservation of the tag-byte invariant across every collection cycle, since compaction rewrites every live pointer in both the register file and the heap interior.
 The ENCORE dispatch opcode must be shown to resolve the callee's code pointer and to preserve the register-file state prescribed by the calling convention.
