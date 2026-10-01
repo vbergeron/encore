@@ -281,13 +281,13 @@ The binary format (ENCR magic, arity table, global thunk offsets, bytecode) is c
 \subsection{VM Internals}
 
 \encore{} is a \code{\#![no\_std]} register-based bytecode interpreter with 256 registers and no call stack.
-Every value is a packed 32-bit word encoding its type, metadata, and either an inline payload (integers, code pointers) or a heap address (closures, constructors, byte strings); Fig.~\ref{fig:values} (top) gives the layout.
+Every value is a packed 32-bit word encoding its type, metadata, and either an inline payload (integers, code pointers) or a heap address (closures, constructors, byte strings) (Fig.~\ref{fig:values}).
 
 \input{fig-values}
 
 The register file is divided between special registers (Current function \code{SELF 0x00}, Current Continuation \code{CONT 0x01} and Nullary sentinel \code{NULL 0xff}), argument registers (\code{0x02 -> 0x0b}) and regular registers (\code{0x0c -> 0xfe}).
 
-The heap is a flat bump-allocated arena shared by closures, constructors, and byte strings, with all objects prefixed by a GC header word (Fig.~\ref{fig:values}, bottom).
+The heap is a flat bump-allocated arena shared by closures, constructors, and byte strings, with all objects prefixed by a GC header word.
 The garbage collector is mark-compact (Lisp-2 style): when a bump allocation fails, it traces from all 256 registers and all globals as roots, marks reachable objects via header bits, computes forwarding addresses in a linear scan, rewrites all pointers (roots and interior), then slides live objects down and resets the heap pointer.
 Because all values are self-describing 32-bit words with a type byte, the GC can identify pointer types without compiler-emitted maps.
 
