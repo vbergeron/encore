@@ -68,8 +68,8 @@ Telecom Paris and Ledger Donjon, Paris, France\\
 Enforcing invariants in safety-critical firmware is increasingly urgent as generated code becomes widespread, but standard extraction targets for proof assistants require runtimes too large for many embedded devices.
 We present a pipeline for running formally verified Rocq firmware logic on Cortex-M microcontrollers.
 The pipeline extracts Gallina to Scheme, compiles it with \encore, a bare-metal Continuation Passing Style (CPS) bytecode virtual machine, and embeds the result in \code{no\_std} Rust firmware.
-We structure applications as pure state-transition functions, so the business logic is proved in Rocq while the event/effect boundary, host callbacks, compiler, and VM remain explicit trusted components.
-On ST33-class targets with a 50 KB RAM lower bound, \encore{} executes Rocq-extracted code end-to-end, stays within the target memory budget on our benchmarks, and validates a transaction-signing application on physical Ledger Flex hardware.
+We structure applications as pure state-transition functions, so the business logic is proved in Rocq while the event/effect boundary, host callbacks, compiler, and VM remain explicit trusted components: no proof yet relates bytecode execution to Gallina semantics.
+On ST33-class targets with a 50 KB RAM lower bound, \encore{} executes unmodified Rocq-extracted code, stays within the target memory budget on our benchmarks, and validates a transaction-signing application on physical Ledger Flex hardware.
 
 \keywords{formal verification \and Rocq \and Gallina \and microcontrollers \and firmware \and CPS \and proof extraction}
 \end{abstract}
@@ -87,7 +87,7 @@ Standard practice is therefore to translate specifications into the host languag
 
 We built \encore{}~\cite{encore} to close this gap.
 \encore{} is a bare-metal CPS bytecode VM written in \code{no\_std} Rust that executes Rocq-extracted Scheme on microcontrollers.
-The pipeline is end-to-end: write firmware logic and prove it correct in Rocq, extract to Scheme, compile with \encore, and deploy.
+The pipeline covers the whole path from proof to device: write firmware logic and prove it correct in Rocq, extract to Scheme, compile with \encore, and deploy.
 What runs on the MCU is directly derived from the Rocq source, though the compiler, VM, host callbacks, and device I/O remain trusted.
 
 We first present an architecture for structuring firmware so its core is fully verifiable, illustrated on a concrete transaction-signing application.
@@ -98,7 +98,7 @@ Finally, we present experimental results and outline remaining steps toward exte
 This work makes three contributions:
 \begin{itemize}
   \item We show that code extracted from Rocq can run on Cortex-M microcontrollers, by choosing Scheme as the extraction target and building a purpose-built bare-metal runtime.
-  \item We present \encore, a \code{no\_std} CPS bytecode VM in Rust that fits within the resource budget of ST33-class hardware and executes Rocq-extracted Scheme end-to-end.
+  \item We present \encore, a \code{no\_std} CPS bytecode VM in Rust that fits within the resource budget of ST33-class hardware and executes unmodified Rocq-extracted Scheme.
   \item We introduce a firmware architecture structured as a pure state-transition function, making the business-logic core fully provable in Rocq while confining the unverified trusted computing base (TCB) to the event/effect boundary, which grows with the hardware interface rather than with application logic.
 \end{itemize}
 
@@ -474,7 +474,7 @@ The verified firmware logic does not execute on the device.
 
 \textbf{\encore.} The Rocq sources are extracted to \code{.scm} files, then \code{build.rs} invokes \code{encore\_scheme::parse} and \code{encore\_compiler::compile} as a Rust API, with no intermediate files or external tool invocations.
 The \code{encore\_program!} macro links the resulting bytecode into the binary, and \code{encore\_vm} runs it on the MCU as a \code{no\_std} Rust library.
-The bytecode is compiled directly from the Rocq-extracted Scheme sources, end-to-end.
+The bytecode is compiled directly from the unmodified Rocq-extracted Scheme sources.
 
 \begin{table}
 \centering
@@ -560,7 +560,7 @@ State-machine safety, signing only from \code{PendingTx}, follows by \code{simpl
 
 The unverified Rust layer is about 575 lines: adding state variants or application logic extends only the verified core, whereas new events, effects, externs, or runtime primitives also extend this layer.
 
-Whereas the benchmarks of Table~\ref{tab:certirocq} run on QEMU, this signing application was validated end-to-end on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
+Whereas the benchmarks of Table~\ref{tab:certirocq} run on QEMU, this signing application was validated on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
 
 \section{Discussion}
 \label{sec:discussion}
