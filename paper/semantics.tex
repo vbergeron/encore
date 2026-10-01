@@ -16,9 +16,9 @@ $h_j$ is the host function registered in extern slot $j$, and $\delta_{op}$ the 
 \paragraph{Bytecode machine.}
 Fig.~\ref{fig:vm} gives the abstract machine that \code{encore\_vm} implements.
 It abstracts the 32-bit packed encoding into tagged words $w$ and the arena into a partial map $H$ from addresses to objects, and leaves the code $c$ implicit: $c(pc)$ is the instruction at $pc$ and $pc^{+}$ the next one.
-A state is $\langle pc, R, H, G \rangle$, with $R$ the 256-register file and $G$ the globals.
+A state is $\langle pc, R, H \rangle$, with $R$ the 256-register file. As in the implementation, the globals live in the same memory as the heap: global $i$ is a reserved cell $g_i$ of $H$ holding a word.
 There is no stack component: $\instr{encore}$ is the only transfer to a code address held in a value, and no instruction returns.
-When allocation finds no free address, the collector replaces $H$ by $\pi(H|_{\mathit{reach}(R, G)})$ and the roots by their images, for an injective renaming $\pi$ of the addresses reachable from $R$ and $G$; the machine traps with \code{HeapOverflow} if allocation still fails.
+When allocation finds no free address, the collector replaces $H$ by $\pi(H|_{\mathit{reach}})$ and $R$ by $\pi(R)$, where $\mathit{reach}$ is the set of addresses reachable from $R$ and the global cells, and $\pi$ is an injective renaming of these addresses that fixes the $g_i$; the machine traps with \code{HeapOverflow} if allocation still fails.
 The collector is thus invisible up to renaming, which is the property a proof of the mark-compact implementation must establish.
 
 \begin{figure}[!tbp]
@@ -27,7 +27,7 @@ The collector is thus invisible up to renaming, which is the property a proof of
 \resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{$\displaystyle
 \begin{array}{r@{\;}c@{\;}l}
 w & ::= & \kw{int}(n) \mid \kw{func}(\ell) \mid \kw{clos}(a) \mid \kw{con}(t, a) \mid \kw{con}(t, \bullet) \mid \kw{bytes}(a) \\
-H(a) & ::= & \langle \ell; w_1, \dots, w_m \rangle \ \text{(closure)} \mid \langle w_1, \dots, w_m \rangle \ \text{(fields)} \mid s \ \text{(byte string)}
+H(a) & ::= & \langle \ell; w_1, \dots, w_m \rangle \ \text{(closure)} \mid \langle w_1, \dots, w_m \rangle \ \text{(fields)} \mid s \ \text{(byte string)} \mid w \ \text{(global cell)}
 \end{array}
 \qquad
 \begin{array}{l}
@@ -43,19 +43,19 @@ $}
 \toprule
 c(pc) & \text{condition} & \text{next state} \\
 \midrule
-\instr{mov}\ d\ r & & \langle pc^+, R[d \mapsto R(r)], H, G \rangle \\
-\instr{capture}\ d\ i & R(\kw{SELF}) = \kw{clos}(a),\ H(a) = \langle \ell; \bar{w} \rangle & \langle pc^+, R[d \mapsto w_i], H, G \rangle \\
-\instr{global}\ d\ i & & \langle pc^+, R[d \mapsto G(i)], H, G \rangle \\
-\instr{function}\ d\ \ell & & \langle pc^+, R[d \mapsto \kw{func}(\ell)], H, G \rangle \\
-\instr{closure}\ d\ \ell\ \bar{r} & a \notin \mathrm{dom}(H) & \langle pc^+, R[d \mapsto \kw{clos}(a)], H[a \mapsto \langle \ell; R(\bar{r}) \rangle], G \rangle \\
-\instr{pack}\ d\ t\ \bar{r} & \text{arity}(t) > 0,\ a \notin \mathrm{dom}(H) & \langle pc^+, R[d \mapsto \kw{con}(t, a)], H[a \mapsto \langle R(\bar{r}) \rangle], G \rangle \\
-\instr{pack}\ d\ t & \text{arity}(t) = 0 & \langle pc^+, R[d \mapsto \kw{con}(t, \bullet)], H, G \rangle \\
-\instr{field}\ d\ r\ i & R(r) = \kw{con}(t, a),\ H(a) = \langle \bar{w} \rangle & \langle pc^+, R[d \mapsto w_i], H, G \rangle \\
-\instr{unpack}\ d\ t\ r & R(r) = \kw{con}(t', a),\ H(a) = \langle \bar{w} \rangle & \langle pc^+, R[d{+}i \mapsto w_i]_{i < \text{arity}(t)}, H, G \rangle \\
-\instr{match}\ r\ b\ \ell_0 \dots \ell_{m-1} & R(r) = \kw{con}(t, \_),\ 0 \le t - b < m & \langle \ell_{t-b}, R, H, G \rangle \\
-\instr{encore}\ f\ k & \mathit{code}_H(R(f)) = \ell & \langle \ell, R[\kw{SELF} \mapsto R(f), \kw{CONT} \mapsto R(k)], H, G \rangle \\
-\instr{extern}\ d\ r\ j & & \langle pc^+, R[d \mapsto h_j(R(r))], H, G \rangle \\
-\instr{op}\ d\ \bar{r} & \delta_{op}(R(\bar{r})) = w & \langle pc^+, R[d \mapsto w], H', G \rangle \\
+\instr{mov}\ d\ r & & \langle pc^+, R[d \mapsto R(r)], H \rangle \\
+\instr{capture}\ d\ i & R(\kw{SELF}) = \kw{clos}(a),\ H(a) = \langle \ell; \bar{w} \rangle & \langle pc^+, R[d \mapsto w_i], H \rangle \\
+\instr{global}\ d\ i & H(g_i) = w & \langle pc^+, R[d \mapsto w], H \rangle \\
+\instr{function}\ d\ \ell & & \langle pc^+, R[d \mapsto \kw{func}(\ell)], H \rangle \\
+\instr{closure}\ d\ \ell\ \bar{r} & a \notin \mathrm{dom}(H) & \langle pc^+, R[d \mapsto \kw{clos}(a)], H[a \mapsto \langle \ell; R(\bar{r}) \rangle] \rangle \\
+\instr{pack}\ d\ t\ \bar{r} & \text{arity}(t) > 0,\ a \notin \mathrm{dom}(H) & \langle pc^+, R[d \mapsto \kw{con}(t, a)], H[a \mapsto \langle R(\bar{r}) \rangle] \rangle \\
+\instr{pack}\ d\ t & \text{arity}(t) = 0 & \langle pc^+, R[d \mapsto \kw{con}(t, \bullet)], H \rangle \\
+\instr{field}\ d\ r\ i & R(r) = \kw{con}(t, a),\ H(a) = \langle \bar{w} \rangle & \langle pc^+, R[d \mapsto w_i], H \rangle \\
+\instr{unpack}\ d\ t\ r & R(r) = \kw{con}(t', a),\ H(a) = \langle \bar{w} \rangle & \langle pc^+, R[d{+}i \mapsto w_i]_{i < \text{arity}(t)}, H \rangle \\
+\instr{match}\ r\ b\ \ell_0 \dots \ell_{m-1} & R(r) = \kw{con}(t, \_),\ 0 \le t - b < m & \langle \ell_{t-b}, R, H \rangle \\
+\instr{encore}\ f\ k & \mathit{code}_H(R(f)) = \ell & \langle \ell, R[\kw{SELF} \mapsto R(f), \kw{CONT} \mapsto R(k)], H \rangle \\
+\instr{extern}\ d\ r\ j & & \langle pc^+, R[d \mapsto h_j(R(r))], H \rangle \\
+\instr{op}\ d\ \bar{r} & \delta_{op}(R(\bar{r})) = w & \langle pc^+, R[d \mapsto w], H' \rangle \\
 \instr{fin}\ r & & \text{halt with } R(r) \\
 \bottomrule
 \end{array}
@@ -76,7 +76,7 @@ Let $v \approx_H w$ relate first-order values to machine words: $n \approx_H \kw
 \begin{conjecture}[Compiler correctness]
 \label{conj:correct}
 Let $P$ be an extracted program accepted by the frontend and $B$ the bytecode \encore{} produces for it.
-If a definition $x$ of $P$ evaluates, under the call-by-value semantics of Scheme, to a first-order value $v$ (built from integers, byte strings, and constructors), then loading $B$ either initialises the global slot of $x$ to a word $w$ such that $v \approx_H w$ in the resulting heap $H$, or traps with \code{HeapOverflow}.
+If a definition $x$ of $P$ evaluates, under the call-by-value semantics of Scheme, to a first-order value $v$ (built from integers, byte strings, and constructors), then loading $B$ either initialises the global cell $g_x$ of $x$ to a word $w$ such that $v \approx_H w$ in the resulting heap $H$, or traps with \code{HeapOverflow}.
 \end{conjecture}
 
 \noindent
