@@ -10,7 +10,7 @@
 \label{sec:semantics}
 
 We give the semantics of the bytecode machine, following the standard treatment of compilation to a virtual machine~\cite{leroy2009mechanized}.
-It is transcribed from the interpreter and not yet mechanised.
+It is transcribed from the interpreter and not yet mechanized.
 $h_j$ is the host function registered in extern slot $j$, and $\delta_{op}$ the meaning of a primitive opcode, a partial function undefined exactly where the VM traps (integer overflow, out-of-range byte).
 
 \paragraph{Bytecode machine.}
@@ -76,15 +76,15 @@ Let $v \approx_H w$ relate first-order values to machine words: $n \approx_H \kw
 \begin{conjecture}[Compiler correctness]
 \label{conj:correct}
 Let $P$ be an extracted program accepted by the frontend and $B$ the bytecode \encore{} produces for it.
-If a definition $x$ of $P$ evaluates, under the call-by-value semantics of Scheme, to a first-order value $v$ (built from integers, byte strings, and constructors), then loading $B$ either initialises the global cell $g_x$ of $x$ to a word $w$ such that $v \approx_H w$ in the resulting heap $H$, or traps with \code{HeapOverflow}.
+If a definition $x$ of $P$ evaluates, under the call-by-value semantics of Scheme, to a first-order value $v$ (built from integers, byte strings, and constructors), then loading $B$ either initializes the global cell $g_x$ of $x$ to a word $w$ such that $v \approx_H w$ in the resulting heap $H$, or traps with \code{HeapOverflow}.
 Likewise, if $x$ denotes a function and $x\ v_1 \dots v_m$ evaluates to a first-order $v$ for first-order arguments $v_i \approx_H w_i$, then calling $x$ on $\bar{w}$ returns a word $w$ with $v \approx_{H'} w$ in the final heap $H'$, or traps with \code{HeapOverflow}.
 \end{conjecture}
 
 \noindent
-Since the machine is deterministic, this forward simulation also excludes any other observable behaviour~\cite{leroy2009mechanized}.
-The statement decomposes along the pipeline into three simulations, each with a precedent in a mechanised compiler:
+Since the machine is deterministic, this forward simulation also excludes any other observable behavior~\cite{leroy2009mechanized}.
+The statement decomposes along the pipeline into three simulations, each with a precedent in a mechanized compiler:
 (i)~the frontend and the CPS transformation, as in CertiRocq~\cite{paraskevopoulou2019closure};
-(ii)~each optimisation pass, as in Pilsner~\cite{neis2015pilsner};
+(ii)~each optimization pass, as in Pilsner~\cite{neis2015pilsner};
 (iii)~register allocation and emission against the machine of Fig.~\ref{fig:vm}, as CertiRocq does for C~\cite{savarybelanger2019cpstoc}.
 Two links remain outside the statement: Rocq's extraction, for which a verified alternative exists for OCaml~\cite{forster2024verified}, and the agreement between Fig.~\ref{fig:vm} and the Rust interpreter, discussed in Sect.~\ref{sec:discussion}.
 

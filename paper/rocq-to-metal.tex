@@ -80,7 +80,7 @@ On eight firmware workloads, from APDU parsing to a credential store, \encore{} 
 
 Generated code is changing how software is written, including firmware.
 For safety-critical devices, lower code-generation cost increases the amount of code that must be reviewed, while the required assurance level remains high.
-Formal verification has already demonstrated its value at the systems level (seL4~\cite{klein2009sel4} gives a machine-checked proof of OS kernel correctness), and similar rigour is increasingly sought for firmware.
+Formal verification has already demonstrated its value for operating-system kernels, and similar rigor is increasingly sought for firmware.
 Formal specifications offer a scalable response: generated implementations can be checked against theorem statements, and proof obligations become part of the development interface.
 
 However, the hardware constraints of embedded firmware prevent straightforward use of standard specification language extraction.
@@ -113,7 +113,7 @@ This section answers \emph{what} to run on the MCU and how to structure it so co
 
 The model below is not imported from an existing specification: we define it for this work.
 Its shape follows the well-established reactive state-machine pattern (an application reduced to a transition over an explicit state driven by input events), which we instantiate for firmware.
-We choose this formulation because it maximizes the area that can be proven: modelling the application as a pure state transition function, effectively treating the whole embedded device as a state machine, confines all impurity to the event and effect boundary and leaves the transition itself as pure Gallina we can reason about directly.
+We choose this formulation because it maximizes the area that can be proven: modeling the application as a pure state transition function, effectively treating the whole embedded device as a state machine, confines all impurity to the event and effect boundary and leaves the transition itself as pure Gallina we can reason about directly.
 
 Before diving into the modeling details, we assume that a Scheme VM is deployed as part of what we call a Formal Software Development Kit (FSDK), that bridges the virtual machine and the host device.
 The FSDK contains both host code (it \emph{is} the real firmware that gets deployed) and Rocq code to provide the necessary bridge abstractions.
@@ -148,9 +148,7 @@ Rather than relying on an Effect/Event pair with little added value, we choose t
 Additionally, VM primitive operations such as raw byte operations (\code{bytes\_len}, \code{bytes\_concat}, etc.) are abstracted via a typeclass admitted in the extraction context.
 The FSDK bridges the typeclass and the concrete VM-provided implementations via Rocq extraction directives.
 
-This bridge is currently manual, not automated: each host primitive is declared once in Rocq as an axiom giving its type, its intended behavior is stated as an accompanying Rocq axiom when a proof depends on it, and an extraction directive links the name to the Rust callback.
-Adding or changing a primitive on the Rust host therefore requires a matching Rocq-side edit; there is no tool that infers Rocq signatures or specifications from the host code.
-This keeps the trusted axioms few and auditable, at the cost of manual upkeep, and automating this correspondence is left as future work.
+This bridge is manual: each host primitive is declared in Rocq as an axiom, with its behavior stated as a further axiom when a proof needs it, and linked to its Rust callback by an extraction directive, which keeps the trusted axioms few and auditable at the cost of keeping both sides in sync by hand.
 
 \begin{figure}
 \centering
@@ -250,33 +248,16 @@ Theorem check_encoding_spec : forall memo,
 \code{check\_encoding\_spec} gives a machine-checked certificate that memo content is valid ASCII.
 Note that neither property is expressible as a Rust type.
 
-These two functions are not free-standing: they are the parser and validator that \code{step} runs on an \code{InApdu} event.
-On that event \code{step} calls \code{deserialize\_transaction} and, on success, gates the transition from \code{InitialState} to \code{PendingTx (tx)} on \code{check\_encoding}, emitting a \code{DisplayProps} effect; every other input leaves the state unchanged.
+These two functions are the parser and validator that \code{step} runs on an \code{InApdu} event: on success, \code{step} moves from \code{InitialState} to \code{PendingTx} only if \code{check\_encoding} holds, and emits a \code{DisplayProps} effect; every other input leaves the state unchanged.
 The two theorems therefore constrain the behavior of the state-transition function on the event that admits untrusted input, which is precisely where the proofs interface with the firmware.
-
-This structure also suits code generation: a candidate \code{step} function is checked immediately by Rocq, and theorem statements make the expected behavior explicit.
-LLM-assisted proof synthesis~\cite{blaauwbroek2020tactician} can be used in this workflow, but the assurance argument relies on the Rocq kernel and stated lemmas rather than on the generator.
 
 \section{The \encore{} VM and Compiler}
 
-\encore{} aims to be a Scheme runtime that is efficient, lightweight, and safe to execute.
-
-A key design decision follows from the observation that the Scheme emitted by Rocq extraction is heavily curried and already close to CPS form, which suits register-based virtual machines well.
-
-The CPS rewrite eliminates the call stack \emph{semantically} while the register VM eliminates it \emph{physically}, leaving no hidden control flow and no stack frame management at runtime.
-Register allocation also maps naturally to CPS, since every intermediate value is named and data flow is made explicit.
-GC root discovery similarly becomes trivial: every active register is a root, and CPS guarantees they are always contiguous, eliminating the need for unbounded stack scanning.
-
-Rocq-extracted Scheme is also a particular subset worth optimizing.
-The extracted code must load a specific \code{macros\_extr.csm} file, which contains primitives for curried function definition and application, as well as constructor pattern matching.
-The goal of \encore{} is to trade off generic Scheme macro support by only implementing these as core primitives of the target execution model.
-
-The only addition of \encore{} to the Scheme grammar is the special \code{define extern} hook in order to make external function definitions, used in the host, possible.
-It allows the Rocq code to pose the external functions as axioms and later reference them from the host.
-We introduce a dedicated form rather than reusing an existing FFI syntax because standard Scheme has no portable notion of a host-provided extern, and the FFI forms of full implementations (Chibi, Gambit) presuppose a hosted C runtime and dynamic loading that our bare-metal target does not provide.
-A distinct keyword also lets the compiler emit an unresolved symbol that the host binds at link time, keeping externs syntactically explicit and separate from ordinary definitions.
-
-The binary format (ENCR magic, arity table, global thunk offsets, bytecode) is compact and position-independent, with optional metadata sections appending constructor and global names for the disassembler.
+\encore{} is a Scheme runtime built for the code Rocq extraction emits.
+That code is heavily curried and close to CPS form, which suits a register-based virtual machine: the CPS rewrite eliminates the call stack \emph{semantically} and the register VM eliminates it \emph{physically}, so there is no hidden control flow and no frame management at run time, and every intermediate value is named, which makes register allocation direct.
+Extracted code relies on a \code{macros\_extr.csm} file of macros for curried definition, application, and constructor matching; rather than support Scheme macros in general, \encore{} implements these as core primitives.
+Its only addition to Scheme is \code{define extern}, which declares a function provided by the host: Rocq poses it as an axiom, and the host binds it at link time.
+We use a dedicated form because standard Scheme has no portable notion of a host-provided function, and the FFI forms of full implementations presuppose a hosted C runtime and dynamic loading.
 
 \subsection{VM Internals}
 
@@ -292,17 +273,10 @@ Sect.~\ref{sec:semantics} makes this precise.
 
 \subsection{Compiler Pipeline}
 
-The compiler pipeline starts with a lexer/parser step, which identifies specific Rocq-extracted Scheme macros and includes them in its intermediate representation (IR).
-Then the Scheme frontend Abstract Syntax Tree (AST) is transformed into the first of \encore{}'s sub-IRs, DS (for Direct-Style).
-
-We choose to articulate the compilation pipeline to first further refine the Scheme to have better CPS rewrite and optimization targets.
-The first transform is to uncurry chains of application wherever they are complete.
-In typical code, full application happens quite often and thus allows us to spare the closure allocation and reduce GC pressure in such a constrained target.
-
-Next step is to convert the direct-style IR to a fully CPS-transformed, De Bruijn-indexed IR.
-Then the IR is optimized in a tight loop combining shrinking and expanding phases as described by Appel \cite{appel1992cwc} and Kennedy \cite{kennedy2007cwcc}.
-Finally, this IR is compiled to VM bytecode after register addressing.
-Post-emission high-value optimisations are also performed.
+The parser recognizes the extraction macros and produces a direct-style IR.
+A first pass uncurries saturated applications, which are frequent in extracted code, saving the allocation of intermediate closures.
+Variables are then indexed by de Bruijn level, and the program is converted to CPS.
+The CPS IR is optimized by iterating shrinking and growth-enabling passes to a fixed point, in the style of Appel~\cite{appel1992cwc}, before register allocation, bytecode emission, and a final peephole pass.
 
 \subsection{Host--VM Interface}
 
@@ -316,77 +290,42 @@ Values crossing the boundary are converted by the procedural macros \derive{Valu
 \section{Related Work}
 \label{sec:related}
 
-We investigated the feasibility of running proved logic on resource-constrained microcontrollers (MCUs), targeting the ST33K1M5 and the tighter ST33J2M0 budget in Table~\ref{tab:hwspec}.
-The ST33J2M0, with 50 KB of RAM, sets the binding constraint.
+Our targets are ST33 secure microcontrollers (Cortex-M35P): the ST33K1M5 has 64\,KiB of RAM and 1.5\,MiB of flash, and the tighter ST33J2M0, 50\,KiB of RAM, which sets the binding constraint.
+Applications on this class of device ship with no runtime and cannot rely on libc, libm, or the Rust standard library, which excludes many proof-to-code paths.
 
-\begin{table}
-\centering
-\caption{Hardware specifications of the MCUs considered.}
-\label{tab:hwspec}
-\begin{tabular}{lll}
-\toprule
-Metric & ST33K1M5 & ST33J2M0 \\
-\midrule
-ISA & ARM+Thumb2 & ARM+Thumb2 \\
-Flash & 1.5 MB & 2 MB \\
-RAM & 64 KB & 50 KB \\
-Clock speed & 70 MHz & 60 MHz \\
-Cache & 2 KB & None \\
-\bottomrule
-\end{tabular}
-\end{table}
+\subsection{Lean 4 and Rocq Extraction to OCaml}
 
-Any attached runtime must therefore be lean: applications on this class of MCU often ship with no runtime, and the code cannot rely on libc, libm, or the Rust standard library.
-This excludes many otherwise attractive proof-to-code paths.
-
-\subsection{Lean 4}
-
-Lean 4 \cite{demoura2021lean4} has mature native code generation and an active proof ecosystem, but its runtime assumes C++ library support, reference counting with cycle collection, tasks, and hosted IO.
-Prior reports confirm that more constrained targets than a Raspberry Pi require substantial runtime work \cite{hendrix2021lean4baremetal}; the known ESP32-C3 port needed a patched libc++/picolibc stack on a device with 384 KB of RAM \cite{kurucz2024lean}.
-The Lean FRO roadmap \cite{leanfroy3} does not currently target bare-metal embedded deployment.
-
-\subsection{Rocq Extraction to OCaml}
-
-Rocq extraction to OCaml \cite{letouzey2002extraction,letouzey2008extraction} is mature, but the OCaml runtime requires a generational GC, libc/libm support, and native-code assumptions mismatched with Cortex-M object formats.
-A native OCaml Cortex-M experiment required assembly patching, a custom linker script, and standard-library stubs on a larger target \cite{elvers2025ocamlpico}.
-OMicroB \cite{OMicroB} is closer in spirit, but supports AVR and PIC32; the Cortex-M0 port discussed in prior work \cite{wcet2019} remains unmerged, and our Cortex-M35P targets require full Thumb-2 support.
+Lean 4~\cite{demoura2021lean4} has mature native code generation, but its runtime assumes C++ library support, reference counting with cycle collection, tasks, and hosted I/O, and no port targets bare-metal devices of this size.
+Rocq extraction to OCaml~\cite{letouzey2008extraction} is mature, but the OCaml runtime requires a generational GC, libc/libm support, and native-code assumptions mismatched with Cortex-M object formats; OMicroB~\cite{OMicroB}, a bytecode VM for microcontrollers, supports AVR and PIC32 but not the full Thumb-2 of our targets.
 
 \subsection{CertiRocq}
 
-CertiRocq \cite{anand2017certicoq} is the most principled Rocq compilation path: it compiles Gallina to Clight through a largely verified compiler chain.
+CertiRocq (formerly CertiCoq)~\cite{anand2017certicoq} is the most principled Rocq compilation path: it compiles Gallina to Clight through a largely verified compiler chain.
 Its runtime does not carry over unchanged to our targets.
-The generated Clight allocates inductive values, and correctness is stated against a GC-aware heap predicate \code{full\_gc} \cite{korkut2025veriffi}; on a microcontroller, the collector must run over a static arena, outside that proof.
+The generated Clight allocates inductive values, and correctness is stated against the heap of its own collector; on a microcontroller, the collector must run over a static arena, outside that proof.
 CertiRocq also ignores Rocq's extraction directives: mapping \code{nat} to machine integers requires registering primitives, applied by an erasure pass that is itself trusted, and its code is in direct style, so deep recursion consumes the C stack (Sect.~\ref{sec:eval}).
 
 \subsection{Usage of Scheme Extraction}
 
 Rocq also supports extraction to Scheme \cite{letouzey2008extraction}.
 Although less mature than OCaml extraction, Scheme has compact semantics and no mandatory hosted runtime.
-Small Scheme systems such as Ribbit \cite{yvon2021ribbit} and PICOBIT \cite{picobit} show that complete implementations can fit microcontroller budgets, but none accepts the code Rocq extracts: Ribbit, for instance, does not support the quasiquote that extraction emits to build constructors.
+Small Scheme systems such as Ribbit~\cite{yvon2021ribbit} show that complete implementations fit microcontroller budgets, but none accepts the code Rocq extracts: Ribbit, for instance, does not support the quasiquote that extraction emits to build constructors.
 \encore{} is a runtime built for that code.
 
 \subsection{Verified Low-Level and Bare-Metal Code}
 
 Verified compilers such as CompCert \cite{leroy2009compcert} and CakeML \cite{kumar2014cakeml} carry a machine-checked proof that the generated code refines its source, and \OE{}uf \cite{mullen2018oeuf} applies this idea to a subset of Gallina to shrink the extraction TCB.
-Another line of work obtains verified low-level code by restricting how programs are written: Low* \cite{protzenko2017lowstar} and Fiat Cryptography \cite{erbsen2019fiat} generate allocation-free C from a first-order subset, and Bedrock2 \cite{erbsen2021bedrock2} verifies a low-level language end-to-end on a small RISC-V embedded system.
+Another line of work obtains verified low-level code by restricting how programs are written: Low*~\cite{protzenko2017lowstar} generates allocation-free C from a first-order subset, and Bedrock2 \cite{erbsen2021bedrock2} verifies a low-level language end-to-end on a small RISC-V embedded system.
 These approaches give stronger guarantees than ours, but either constrain the source to first-order, allocation-free code or assume a hosted runtime.
 \encore{} is not a new verification methodology: it is a practical systems pipeline that runs ordinary higher-order, allocating Gallina, produced by the standard extraction mechanism, on Cortex-M hardware, with the remaining compiler/VM gap made explicit in Sect.~\ref{sec:trust}.
 
-\section{Experimental Evaluation}
-\label{sec:eval}
+\subsection{Summary}
 
-We evaluate the pipeline against four questions.
-\textbf{Q1 (feasibility):} which workloads fit the ST33J2M0 budget of 50\,KiB of RAM and 256\,KiB of flash, for each toolchain?
-\textbf{Q2 (cost):} what does \encore{} cost in executed instructions and flash, against native Rust and against CertiRocq?
-\textbf{Q3 (predictability):} is the latency added by the garbage collector bounded?
-\textbf{Q4 (value of the proof):} what is proved, with how much proof, and how much unverified code remains?
-The workloads, drivers, measurement harness, and raw results are public~\cite{encorebench}.
+Table~\ref{tab:comparison} summarizes how these paths meet our constraints.
+Lean 4 and OCaml are eliminated by their runtimes, and existing small Scheme systems do not accept extracted code, which leaves \encore{} and CertiRocq, compared in Sect.~\ref{sec:eval}.
+Except for CertiRocq, proofs cover only the source program: \encore{}'s advantage is deployability, not a stronger guarantee (Sect.~\ref{sec:trust}).
 
-\subsection{Choosing the Extraction Path}
-
-Table~\ref{tab:comparison} summarises how the extraction paths surveyed in Sect.~\ref{sec:related} meet the hardware constraints.
-
-\begin{table}
+\begin{table}[t]
 \centering
 \caption{Rocq extraction paths against embedded deployment constraints.}
 \label{tab:comparison}
@@ -404,22 +343,28 @@ Scheme / \encore{} & Mark-compact, bounded & Yes & Yes & Source \\
 }
 \end{table}
 
-Except for CertiRocq, proofs cover only the source program: \encore{}'s advantage is deployability, not a stronger guarantee (Sect.~\ref{sec:trust}).
-Lean 4 and OCaml are eliminated by their runtimes alone, and existing small Scheme systems do not accept the extracted code.
-\encore{} and CertiRocq therefore remain as the two candidates, compared below.
+\section{Experimental Evaluation}
+\label{sec:eval}
+
+We evaluate the pipeline against four questions.
+\textbf{Q1 (feasibility):} which workloads fit the ST33J2M0 budget of 50\,KiB of RAM and 256\,KiB of flash, for each toolchain?
+\textbf{Q2 (cost):} what does \encore{} cost in executed instructions and flash, against native Rust and against CertiRocq?
+\textbf{Q3 (predictability):} is the latency added by the garbage collector bounded?
+\textbf{Q4 (value of the proof):} what is proved, with how much proof, and how much unverified code remains?
+The workloads, drivers, measurement harness, and raw results are public~\cite{encorebench}.
 
 \subsection{Methodology}
 
 \textbf{Variants.}
-\textbf{E} is the pipeline of this paper (\encore{} 0.1.6, CPS optimiser on).
-\textbf{C} compiles the same Gallina with CertiRocq 0.9.1 to Clight and \code{gcc -Os}, with its generational collector running over a static arena and \code{nat} mapped to machine integers, as for \encore{}; it thus no longer has the handicaps of our earlier comparison (disabled collector, Peano arithmetic).
+\textbf{E} is the pipeline of this paper (\encore{} 0.1.6, CPS optimizer on).
+\textbf{C} compiles the same Gallina with CertiRocq 0.9.1 to Clight and \code{gcc -Os}, with its generational collector running over a static arena and \code{nat} mapped to machine integers, as for \encore{}.
 \textbf{R} is idiomatic \code{no\_std} Rust without an allocator, written without looking at the Gallina: it is the performance ceiling and the output oracle, as every E and C run must reproduce R's output hash.
 The three variants share the Rust driver, the frozen input vectors, and the output hashing; only the logic differs.
 
 \textbf{Workloads.}
 Table~\ref{tab:workloads} lists the eight workloads, chosen because a bug in them is a security hole or a field failure on a hardware wallet, and because a precise property can be proved about them.
-Each follows the \code{step} model of Sect.~\ref{sec:firmware} and is parameterised by an input size $N$.
-W8 is deliberately unfavourable to \encore{}: a tight bitwise loop with no allocation to amortise interpretation.
+Each follows the \code{step} model of Sect.~\ref{sec:firmware} and is parameterized by an input size $N$.
+W8 is deliberately unfavorable to \encore{}: a tight bitwise loop with no allocation to amortize interpretation.
 
 \textbf{Platform and metrics.}
 Linker scripts impose the ST33J2M0 budget, so a program that does not fit fails to link.
@@ -485,7 +430,7 @@ CertiRocq's CPS mode would move this recursion to the heap, as in \encore{}, but
 
 \textbf{Q2: cost.}
 Interpretation is expensive: at the largest input both complete, E executes 4.8--10$\times$ more instructions than C (2.3--10$\times$ over all inputs), and 155--589$\times$ more than R, except on W7 (34$\times$), where tree manipulation also dominates R, and on W8 (1{,}849$\times$), as designed (Table~\ref{tab:cost}); C itself executes 4--68$\times$ more than R.
-The CPS optimiser divides E's instruction count by 2.3--4.2 and halves its bytecode.
+The CPS optimizer divides E's instruction count by 2.3--4.2 and halves its bytecode.
 All images are far below the 256\,KiB flash budget.
 E adds a constant 21--23\,KiB over R (the VM and its dependencies), while its bytecode, at 1.9--6.5\,KiB, is two to three times smaller than R's native code for the policy workloads W3--W5: the VM pays for itself in flash only for programs several times larger than ours.
 
@@ -505,24 +450,16 @@ Line counts are ours and approximate.
 
 \subsection{State-Transition Architecture on Hardware}
 
-The Ledger Flex transaction-signing app structures firmware as a pure \code{step : State * Event -> State * List Effect} function.
-The verified Gallina core (\code{step}, parser, helpers, and proofs) totals about 400 lines.
-Two non-trivial properties are machine-checked: \code{deserialize\_preserves\_data} (no bytes dropped or reordered during parsing) and \code{check\_encoding\_spec} (memo ASCII validity).
-State-machine safety, signing only from \code{PendingTx}, follows by \code{simpl; discriminate}.
-
-The unverified Rust layer is about 575 lines: adding state variants or application logic extends only the verified core, whereas new events, effects, externs, or runtime primitives also extend this layer.
-
-Whereas the workloads above run on QEMU, this signing application was validated on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
+The transaction-signing application of Sect.~\ref{sec:firmware} has a verified Gallina core (\code{step}, parser, helpers, and proofs) of about 400 lines, and an unverified Rust layer of about 575 lines.
+Whereas the workloads above run on QEMU, it was validated on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
 
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{Verified Optimisation Passes}
+\subsection{Verified Optimization Passes}
 
-The \encore{} compiler's nine CPS optimisation passes are currently implemented in Rust and trusted by construction.
-The next step is to port the compiler to OCaml and prove each pass semantics-preserving, in the style of CompCert \cite{leroy2009compcert}.
-The CPS intermediate representation is well-suited for this: equational reasoning about $\lambda$-calculus reductions is standard, and the shrinking reductions have textbook semantic preservation proofs.
-The growth-enabling passes (inlining, hoisting, CSE, contification) are structurally similar to optimisations already verified in Pilsner \cite{neis2015pilsner}.
+The nine CPS optimization passes are trusted Rust code.
+Proving them semantics-preserving, part~(ii) of Conjecture~\ref{conj:correct}, is standard for the shrinking reductions, and the growth-enabling passes (inlining, hoisting, CSE, contification) resemble optimizations verified in Pilsner~\cite{neis2015pilsner}.
 
 \subsection{Ahead-of-Time Native Compilation}
 
@@ -532,19 +469,19 @@ A backend compiling the CPS IR directly to ARMv8-M Thumb-2 is designed but not y
 \label{sec:portability}
 
 Only the TCB boundary is device-specific: the \code{step} function, the bytecode, and \code{encore\_vm} (\code{no\_std}, no libc) are architecture-independent, so porting reduces to retargeting the Rust build and reimplementing the event poller, effect interpreter, and host callbacks (Sect.~\ref{sec:axioms}).
-Any Cortex-M with a Rust target and a few tens of KiB of RAM qualifies, since the runtime adds about 22\,KiB of flash and our workloads need at most 32.25\,KiB of heap; this includes STM32 parts and ARM-based Arduino boards, but not 8-bit AVR boards, with 2 KB of RAM and only a tier-3 Rust target.
+Any Cortex-M with a Rust target and a few tens of KiB of RAM qualifies, since the runtime adds about 22\,KiB of flash and our workloads need at most 32.25\,KiB of heap; this includes STM32 parts and ARM-based Arduino boards, but not 8-bit AVR boards, with 2\,KiB of RAM and only a tier-3 Rust target.
 
 \subsection{Verifying the VM with rocq-of-rust}
 
 \code{encore\_vm} is \code{no\_std} Rust with minimal \code{unsafe} and no trait objects.
 The \code{rocq-of-rust} tool \cite{ho2024rocqofrust} translates Rust source to Rocq definitions, enabling correctness proofs of Rust programs inside Rocq.
-Applying it to \code{encore\_vm} closes the last gap in the trust chain: the same proof assistant that certifies the firmware logic certifies the runtime executing it.
+Applying it to \code{encore\_vm} would close the VM's gap in the trust chain: the same proof assistant that certifies the firmware logic certifies the runtime executing it.
 
 The central theorem to establish is part~(iii) of Conjecture~\ref{conj:correct} together with the agreement of the Rust dispatch loop with the machine of Fig.~\ref{fig:vm}: each step of the interpreter corresponds to a transition of the abstract machine.
 Two components present the main proof obligations.
 The mark-compact GC requires reasoning about pointer aliasing and preservation of the tag-byte invariant across every collection cycle, since compaction rewrites every live pointer in both the register file and the heap interior.
 The ENCORE dispatch opcode must be shown to resolve the callee's code pointer and to preserve the register-file state prescribed by the calling convention.
-The \code{unsafe} surface is intentionally small and confined to these two subsystems, keeping the verification perimeter tractable.
+The \code{unsafe} surface is small: unchecked reads of code, registers, and arena, whose bounds load-time validation establishes.
 
 \section{Conclusion}
 
@@ -554,9 +491,6 @@ On eight security-relevant workloads, \encore{} fits the memory budget where Cer
 
 The architecture is also designed to scale.
 Structuring firmware as a pure state-transition function decouples verification effort from hardware complexity: the verified \code{step} grows with application logic, while the unverified components grow only with the hardware interface.
-
-As code generation becomes cheaper, assurance cost only stays manageable if verification is part of the architecture.
-Theorem signatures and Rocq checking make that path natural for the firmware core.
 
 Proven application logic runs on bare metal today; closing the trust chain down to the VM and scaling to larger applications remain future work.
 
