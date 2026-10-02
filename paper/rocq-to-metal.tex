@@ -145,10 +145,11 @@ Some operations are observationally pure from Rocq's perspective but would be im
 Examples include hash functions, polynomial operations (CRC), and more generally any finite field operation involved in cryptographic algorithms.
 
 Rather than relying on an Effect/Event pair with little added value, we choose to admit them in Rocq as axioms and provide them as host callbacks before the application run loop starts.
-Additionally, VM primitive operations such as raw byte operations (\code{bytes\_len}, \code{bytes\_concat}, etc.) are abstracted via a typeclass admitted in the extraction context.
-The FSDK bridges the typeclass and the concrete VM-provided implementations via Rocq extraction directives.
-
+VM primitive operations, such as the byte-string operations \code{bytes\_len} and \code{bytes\_concat}, are treated the same way: Rocq parameters with axiomatized equations, mapped to the VM's implementations by extraction directives.
 This bridge is manual: each host primitive is declared in Rocq as an axiom, with its behavior stated as a further axiom when a proof needs it, and linked to its Rust callback by an extraction directive, which keeps the trusted axioms few and auditable at the cost of keeping both sides in sync by hand.
+
+The FSDK can also fix what every application must prove.
+A typeclass over \code{State}, \code{Event}, and \code{step} can request a baseline set of theorems, for example that no signing effect is emitted outside an approved state; an application is then accepted only with an instance of that class, and reviewing a firmware application amounts to reviewing the statements of the class, which the Rocq kernel checks for every instance.
 
 \begin{figure}
 \centering
