@@ -71,7 +71,7 @@ Enforcing invariants in safety-critical firmware is increasingly urgent as gener
 We present a pipeline for running formally verified Rocq firmware logic on Cortex-M microcontrollers.
 The pipeline extracts Gallina to Scheme, compiles it with \encore, a bare-metal Continuation Passing Style (CPS) bytecode virtual machine, and embeds the result in \code{no\_std} Rust firmware.
 We structure applications as pure state-transition functions, so the business logic is proved in Rocq while the event/effect boundary, host callbacks, compiler, and VM remain explicit trusted components: no proof yet relates bytecode execution to Gallina semantics.
-On ST33-class targets with a 50 KB RAM lower bound, \encore{} executes unmodified Rocq-extracted code, stays within the target memory budget on our benchmarks, and validates a transaction-signing application on physical Ledger Flex hardware.
+On eight firmware workloads, from APDU parsing to a credential store, \encore{} runs unmodified Rocq-extracted code within the 50\,KiB RAM budget of ST33-class targets on every input size, where CertiRocq's generated code runs out of memory on the larger ones, at the price of 5--10$\times$ more executed instructions; a transaction-signing application is validated on physical Ledger Flex hardware.
 
 \keywords{formal verification \and Rocq \and Gallina \and microcontrollers \and firmware \and CPS \and proof extraction}
 \end{abstract}
@@ -314,6 +314,7 @@ Values crossing the boundary are converted by the procedural macros \derive{Valu
 \input{semantics}
 
 \section{Related Work}
+\label{sec:related}
 
 We investigated the feasibility of running proved logic on resource-constrained microcontrollers (MCUs), targeting the ST33K1M5 and the tighter ST33J2M0 budget in Table~\ref{tab:hwspec}.
 The ST33J2M0, with 50 KB of RAM, sets the binding constraint.
@@ -371,23 +372,19 @@ Another line of work obtains verified low-level code by restricting how programs
 These approaches give stronger guarantees than ours, but either constrain the source to first-order, allocation-free code or assume a hosted runtime.
 \encore{} is not a new verification methodology: it is a practical systems pipeline that runs ordinary higher-order, allocating Gallina, produced by the standard extraction mechanism, on Cortex-M hardware, with the remaining compiler/VM gap made explicit in Sect.~\ref{sec:trust}.
 
-\section{Experimental Results}
+\section{Experimental Evaluation}
+\label{sec:eval}
 
-We validate the three contributions experimentally.
-First, we show that among all extraction paths, only \encore{} and CertiRocq are viable candidates for running verified code on a Cortex-M MCU.
-Second, we show that \encore{}'s design is better suited for embedded application development.
-Third, we demonstrate the state-transition architecture on a real application.
+We evaluate the pipeline against four questions.
+\textbf{Q1 (feasibility):} which workloads fit the ST33J2M0 budget of 50\,KiB of RAM and 256\,KiB of flash, for each toolchain?
+\textbf{Q2 (cost):} what does \encore{} cost in executed instructions and flash, against native Rust and against CertiRocq?
+\textbf{Q3 (predictability):} is the latency added by the garbage collector bounded?
+\textbf{Q4 (value of the proof):} what is proved, with how much proof, and how much unverified code remains?
+The workloads, drivers, measurement harness, and raw results are public~\cite{encorebench}.
 
-We used Rocq 9.1.1 (OCaml 4.14.3), CertiRocq 0.9.1, Rust 1.88, QEMU 8.2.2, \code{arm-none-eabi-gcc} 13.2.1, Ribbit 1.0.0 (Gambit v4.9.3), and Chibi-Scheme 0.12.0.
-Flash values are measured from the linked bare-metal image, heap values are the minimum configured heap that completes each benchmark without allocation failure, and build time is wall-clock time for a clean benchmark build on the same host.
-Unless otherwise stated, benchmark execution is on QEMU configured for the Cortex-M target; the signing application is additionally validated on physical Ledger Flex hardware.
+\subsection{Choosing the Extraction Path}
 
-
-
-\subsection{Running Verified Code on a Microcontroller}
-
-The extraction survey identifies four candidate paths.
-Table~\ref{tab:comparison} summarises their compatibility with our hardware constraints.
+Table~\ref{tab:comparison} summarises how the extraction paths surveyed in Sect.~\ref{sec:related} meet the hardware constraints.
 
 \begin{table}
 \centering
@@ -408,103 +405,106 @@ Scheme / \encore{} & Mark-compact, bounded & Yes & Yes & Source \\
 \end{table}
 
 Except for CertiRocq, proofs cover only the source program: \encore{}'s advantage is deployability, not a stronger guarantee (Sect.~\ref{sec:trust}).
-
 Lean 4 and OCaml are eliminated by their runtimes alone.
-CertiRocq is viable only for programs with bounded allocation, where its GC can be replaced by a static bump allocator; it remains conditional.
-Scheme extraction survives every constraint, leaving \encore{} and CertiRocq as the two candidates worth evaluating on hardware.
+Among Scheme runtimes, we built bare-metal pipelines for Chibi, Ribbit, and \encore{} on QEMU: the Chibi interpreter exceeds the 256\,KiB flash budget, and Ribbit fits but cannot compile the extracted code, which uses quasiquote.
+\encore{} and CertiRocq therefore remain as the two candidates, compared below.
 
-Among Scheme runtimes, we prototyped full deployment pipelines for Chibi, Ribbit, and \encore{} on QEMU.
-Table~\ref{tab:scheme-runtimes} summarises the outcome.
+\subsection{Methodology}
 
-\textbf{Chibi.} The Rocq sources are extracted via \code{dune build} to \code{.scm} files, then the Chibi C runtime (about 50 files) is cross-compiled with custom POSIX stubs, the Scheme sources are embedded as a C string literal, and the whole is linked into a bare-metal binary.
-The entire Chibi interpreter runs on the MCU at runtime, loading and evaluating the Scheme source on every boot.
-The resulting binary exceeds the 256 KB flash budget.
+\textbf{Variants.}
+\textbf{E} is the pipeline of this paper (\encore{} 0.1.6, CPS optimiser on).
+\textbf{C} compiles the same Gallina with CertiRocq 0.9.1 to Clight and \code{gcc -Os}, with its generational collector running over a static arena and \code{nat} mapped to machine integers, as for \encore{}; it thus no longer has the handicaps of our earlier comparison (disabled collector, Peano arithmetic).
+\textbf{R} is idiomatic \code{no\_std} Rust without an allocator, written without looking at the Gallina: it is the performance ceiling and the output oracle, as every E and C run must reproduce R's output hash.
+The three variants share the Rust driver, the frozen input vectors, and the output hashing; only the logic differs.
 
-\textbf{Ribbit.} The Rocq sources are extracted to \code{.scm} files, then \code{build.rs} invokes \code{gsi rsc.scm} to produce a C file in \code{OUT\_DIR}, which is patched to use a static heap and a semihosting shim before being cross-compiled for Cortex-M35P and linked into the binary.
-Only the bytecode and the minimal Ribbit VM are embedded, and the binary fits on target.
-However, this step uses hand-written Scheme sources rather than the Rocq-extracted ones, because Ribbit does not support quasiquote.
-The verified firmware logic does not execute on the device.
+\textbf{Workloads.}
+Table~\ref{tab:workloads} lists the eight workloads, chosen because a bug in them is a security hole or a field failure on a hardware wallet, and because a precise property can be proved about them.
+Each follows the \code{step} model of Sect.~\ref{sec:firmware} and is parameterised by an input size $N$.
+W8 is deliberately unfavourable to \encore{}: a tight bitwise loop with no allocation to amortise interpretation.
 
-\textbf{\encore.} The Rocq sources are extracted to \code{.scm} files, then \code{build.rs} invokes \code{encore\_scheme::parse} and \code{encore\_compiler::compile} as a Rust API, with no intermediate files or external tool invocations.
-The \code{encore\_program!} macro links the resulting bytecode into the binary, and \code{encore\_vm} runs it on the MCU as a \code{no\_std} Rust library.
-The bytecode is compiled directly from the unmodified Rocq-extracted Scheme sources.
-
-\begin{table}
-\centering
-\caption{Scheme runtimes against Rocq extraction deployment requirements.}
-\label{tab:scheme-runtimes}
-\begin{tabular}{llll}
-\toprule
- & Chibi & Ribbit & \encore{} \\
-\midrule
-Runtime model & interpreter & VM & VM \\
-Runs Rocq-extracted Scheme & \checkmark & $\times$ & \checkmark \\
-Fits 256 KB flash & $\times$ & \checkmark & \checkmark \\
-Pipeline complexity & high & medium & low \\
-Working bare-metal & $\times$ & \checkmark & \checkmark \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\encore{} is the only Scheme runtime that satisfies all four requirements listed in Table~\ref{tab:scheme-runtimes}.
-Together with the CertiRocq path, viable for bounded-allocation programs, it is one of two candidates for running verified code on the target hardware.
-
-\subsection{\encore{} Design Suitability}
-
-In order to run CertiRocq on such a constrained device, four surgical changes were made in the CertiRocq runtime.
-The goal of these changes is to treat memory as a static bump allocator, enabling us to compare the runtime behaviors in terms of allocation rate and overall performance.
-
-\begin{enumerate}
-  \item Static nursery instead of \code{malloc} calls (\code{gc\_stack.c}).
-  \item Garbage collection aborts the program (\code{gc\_stack.c}).
-  \item Stub implementation for the remaining methods (\code{gc\_stack.c}).
-  \item Bare metal config to take the ARM embedded target into account (\code{config.h} and \code{m.h}).
-\end{enumerate}
-
-Table~\ref{tab:certirocq} compares \encore{} against CertiRocq on seven standard benchmarks.
-\textbf{sum}, \textbf{fibonacci} and \textbf{gcd} are simple arithmetic examples, \textbf{fsm} is a toy FSM example, and \textbf{rbtree} is an implementation of a Red-Black tree on \code{nat} for different tree sizes.
-Nodes from 1 to $N$ are inserted then checked for membership.
+\textbf{Platform and metrics.}
+Linker scripts impose the ST33J2M0 budget, so a program that does not fit fails to link.
+Within it, E uses a 32\,KiB heap (40\,KiB for W6) and C a 20\,KiB arena, the rest of the RAM holding its C stack.
+We run on QEMU 8.2.2, emulating a Cortex-M33 (AN505), the ARMv8-M core closest to the Cortex-M35P; instruction counts on a Cortex-M3 (LM3S6965) differ by at most 1.3\%.
+The metric for speed is the number of instructions executed per run, counted exactly by tracing QEMU between two markers, minus the cost of an empty region.
+We also report the flash size of the linked image, the smallest E heap that completes every case (by binary search), and, in a separate build since its counters perturb the instruction counts, the number, share, and longest pause of collections.
+The other tools are Rust 1.88, \code{arm-none-eabi-gcc} 13.2.1, Rocq 9.1.1, Chibi-Scheme 0.12.0, and Ribbit 1.0.0.
 
 \begin{table}
 \centering
-\caption{\encore{} (E) vs CertiRocq (CR), all benchmarks (QEMU, Cortex-M). \emph{ratio} is CertiRocq / \encore.}
-\label{tab:certirocq}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lrrrrrrrrr}
+\caption{Workloads and feasibility (Q1, Q4). $N$: input size (bytes, events, rules, or entries). Largest $N$: largest input that completes within the ST33J2M0 budget. Proof: theorems and lines of proof, against lines of program and specification (non-blank, comments excluded); no lemma is admitted.}
+\label{tab:workloads}
+{\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{2.95cm}rrrrr@{}}
 \toprule
-\multirow{2}{*}{Benchmark} & \multicolumn{3}{c}{Flash (B)} & \multicolumn{3}{c}{Min heap (B)} & \multicolumn{3}{c}{Build} \\
-\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
- & CR & E & ratio & CR & E & ratio & CR & E & ratio \\
+ & & & \multicolumn{2}{c}{Largest $N$} & E min. & Proof \\
+\cmidrule(lr){4-5}
+Workload & Property proved & $N$ & E & C & heap (KiB) & thms / lines / prog. \\
 \midrule
-sum & 2,480 & 14,340 & 0.17$\times$ & $\sim$3,000\textsuperscript{\dag} & $\leq$50 & $\geq$60$\times$ & 1,145 ms & 485 ms & 2.4$\times$ \\
-fibonacci & 2,524 & 14,364 & 0.18$\times$ & $\sim$3,000\textsuperscript{\dag} & $\sim$200 & $\sim$15$\times$ & 1,155 ms & 499 ms & 2.3$\times$ \\
-gcd & 2,948 & 16,252 & 0.18$\times$ & $\sim$1,000 & $\leq$50 & $\geq$20$\times$ & 1,208 ms & 459 ms & 2.6$\times$ \\
-fsm & 2,804 & 14,944 & 0.19$\times$ & $\sim$200 & $\sim$200 & 1$\times$ & 784 ms & 488 ms & 1.6$\times$ \\
-rbtree-10 & 6,232 & 17,912 & 0.35$\times$ & 1,624 & 471 & 3.4$\times$ & 758 ms & 573 ms & 1.3$\times$ \\
-rbtree-50 & 29,004 & 17,912 & 1.6$\times$ & $\sim$21,720 & 2,022 & 10.7$\times$ & 7,461 ms & 539 ms & 13.8$\times$ \\
-rbtree-100 & 146,152 & 17,912 & 8.2$\times$ & --\textsuperscript{\ddag} & 3,671 & -- & 397 s & 597 ms & 665$\times$ \\
+W1 APDU/TLV & totality, round trip & 5--261 & 261 & 32 & 10.5 & 25 / 240 / 217 \\
+W2 RLP decoder & displayed fields are the signed ones & 0--260 & 260 & 68 & 16.75 & 24 / 284 / 243 \\
+W3 BIP32 policy & signed iff a rule allows it & 1--64 & 64 & 16 & 1 & 30 / 216 / 234 \\
+W4 PIN machine & counter never rises without a verify & 1--1000 & 1000 & 100 & -- & 6 / 35 / 106 \\
+W5 A/B update & no rollback; a valid slot always exists & 10--1000 & 1000 & 100 & 28 & 14 / 71 / 218 \\
+W6 COBS & round trip; no zero byte in output & 16--1024 & 1024 & 64 & 32.25 & 12 / 101 / 105 \\
+W7 cred.\ store & balanced tree; lookup after insert & 10--500 & 500 & 50 & 12.75 & 27 / 163 / 150 \\
+W8 CRC & equals the polynomial definition & 16--1024 & 1024 & n/a & 0.5 & 48 / 313 / 178 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
-\textsuperscript{\dag} Peano \code{nat} stack depth, not heap, is the binding constraint for arithmetic.
+\begin{table}
+\centering
+\caption{Cost (Q2) at the largest $N$ that both E and C complete (W8: largest $N$, C not built). Instructions executed per run on the Cortex-M33; flash of the linked image, and E's bytecode.}
+\label{tab:cost}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+ & & \multicolumn{4}{c}{Instructions} & \multicolumn{4}{c}{Flash (KiB)} \\
+\cmidrule(lr){3-6}\cmidrule(lr){7-10}
+Workload & $N$ & R & E/R & C/R & E/C & R & C & E & bytecode \\
+\midrule
+W1 APDU/TLV & 32 & 331 & 448 & 68 & 6.6 & 9.7 & 17.9 & 36.1 & 3.7 \\
+W2 RLP decoder & 68 & 3{,}659 & 191 & 32 & 6.1 & 10.7 & 24.1 & 37.7 & 5.1 \\
+W3 BIP32 policy & 16 & 15{,}335 & 589 & 59 & 10.0 & 15.5 & 21.0 & 40.9 & 3.1 \\
+W4 PIN machine & 100 & 7{,}003 & 208 & 24 & 8.5 & 15.8 & 22.5 & 40.9 & 2.7 \\
+W5 A/B update & 100 & 17{,}152 & 155 & 16 & 10.0 & 20.8 & 31.7 & 49.2 & 6.5 \\
+W6 COBS & 64 & 1{,}490 & 187 & 39 & 4.8 & 10.4 & 16.1 & 35.5 & 2.0 \\
+W7 cred.\ store & 50 & 22{,}379 & 34 & 4 & 8.1 & 12.9 & 16.3 & 37.4 & 3.4 \\
+W8 CRC & 1024 & 15{,}392 & 1849 & -- & -- & 11.4 & -- & 34.9 & 1.9 \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
-\textsuperscript{\ddag} CertiRocq \code{rbtree(100)} requires about 63 KB heap ($O(N^{1.56})$ growth), exceeding the 50 KB RAM of the most constrained target (ST33J2M0), making it infeasible regardless of configuration.
+\subsection{Results}
 
-\textbf{Flash.} CertiRocq is 5--6$\times$ smaller on arithmetic and FSM due to the direct compilation into ARM assembly.
-The balance flips for the red-black tree: CertiRocq inlines literal list construction at compile time, so its binary grows from 6 KB at $N=10$ to 146 KB at $N=100$.
-\encore{} stays constant at about 18 KB because construction is computed at runtime by the VM, with crossover at $N \approx 40$.
+\textbf{Q1: feasibility.}
+E completes all 31 cases within the budget, with minimum heaps from 0.5 to 32.25\,KiB (Table~\ref{tab:workloads}).
+C completes 17 of the 27 cases of W1--W7: its generated code is in direct style and recurses on the C stack once per input element or event, so the larger inputs exhaust the arena or the stack.
+CertiRocq's CPS mode would move this recursion to the heap, as in \encore{}, but in version 0.9.1 it cannot be combined with the mapping of \code{nat} to machine integers.
 
-\textbf{Heap.} \encore{} needs less heap in every case except \code{fsm}.
-CertiRocq's arithmetic benchmarks require 1--3 KB despite producing no long-lived data.
-Peano \code{nat} encoding materialises every intermediate value as a heap cell (ratio $\geq 20\times$ for sum and gcd).
-At large $N$, CertiRocq's runtime-patched bump allocator cannot reclaim intermediate nodes: \code{rbtree(100)} requires about 63 KB, physically exceeding the 50 KB RAM of the smallest target (ST33J2M0, Table~\ref{tab:hwspec}).
-\encore{}'s mark-compact GC keeps the requirement at 3.7 KB.
+\textbf{Q2: cost.}
+Interpretation is expensive: at the largest input both complete, E executes 4.8--10$\times$ more instructions than C (2.3--10$\times$ over all inputs), and 155--589$\times$ more than R, except on W7 (34$\times$), where tree manipulation also dominates R, and on W8 (1{,}849$\times$), as designed (Table~\ref{tab:cost}); C itself executes 4--68$\times$ more than R.
+The CPS optimiser divides E's instruction count by 2.3--4.2 and halves its bytecode.
+All images are far below the 256\,KiB flash budget.
+E adds a constant 21--23\,KiB over R (the VM and its dependencies), while its bytecode, at 1.9--6.5\,KiB, is two to three times smaller than R's native code for the policy workloads W3--W5: the VM pays for itself in flash only for programs several times larger than ours.
 
-\textbf{Build time.} \encore{} rebuilds 1.3--2.6$\times$ faster on simple cases, as its pipeline is a single Rust API call versus CertiRocq's Rocq elaboration and C code generation.
-The gap explodes to 665$\times$ on \code{rbtree-100}: \code{gcc} must optimise a 146 KB generated C function with hundreds of intermediate variables.
+\textbf{Q3: predictability.}
+The collector runs only when the heap is full, so a pause is bounded by the heap size, not by the input.
+At the largest $N$, collections take 3--22\% of the execution, and the longest pause is 49--309 thousand instructions.
+The counts are deterministic, identical from one run to the next; turning them into a latency bound in time requires cycle measurements on hardware, which we have not yet done.
 
-\subsection{State-Transition Architecture}
+\textbf{Q4: value of the proof.}
+Every workload proves its property in 35--313 lines of proof, for 105--243 lines of program and specification, with no admitted lemma (Table~\ref{tab:workloads}).
+The unverified Rust that drives E stays at 93--104 lines across workloads, whereas R's 68--238 lines of logic carry no proof at all.
+
+\textbf{Threats to validity.}
+Instruction counts are not cycles: the interpreter and native code differ in memory traffic, so the ratios of Table~\ref{tab:cost} bound the gap only roughly; the cycle-counter path for physical boards is implemented but not yet validated.
+R was written by the authors, and C's arena is smaller than E's heap because the C stack shares the RAM budget.
+Line counts are ours and approximate.
+
+\subsection{State-Transition Architecture on Hardware}
 
 The Ledger Flex transaction-signing app structures firmware as a pure \code{step : State * Event -> State * List Effect} function.
 The verified Gallina core (\code{step}, parser, helpers, and proofs) totals about 400 lines.
@@ -513,7 +513,7 @@ State-machine safety, signing only from \code{PendingTx}, follows by \code{simpl
 
 The unverified Rust layer is about 575 lines: adding state variants or application logic extends only the verified core, whereas new events, effects, externs, or runtime primitives also extend this layer.
 
-Whereas the benchmarks of Table~\ref{tab:certirocq} run on QEMU, this signing application was validated on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
+Whereas the workloads above run on QEMU, this signing application was validated on physical Ledger Flex hardware: the Rocq-extracted, \encore-compiled firmware parses, displays, and signs data on the device.
 
 \section{Discussion}
 \label{sec:discussion}
@@ -533,7 +533,7 @@ A backend compiling the CPS IR directly to ARMv8-M Thumb-2 is designed but not y
 \label{sec:portability}
 
 Only the TCB boundary is device-specific: the \code{step} function, the bytecode, and \code{encore\_vm} (\code{no\_std}, no libc) are architecture-independent, so porting reduces to retargeting the Rust build and reimplementing the event poller, effect interpreter, and host callbacks (Sect.~\ref{sec:axioms}).
-Any Cortex-M with a Rust target and a few KB of heap qualifies, since the runtime needs about 18 KB of flash and 3.7 KB of heap on \code{rbtree-100}; this includes STM32 parts and ARM-based Arduino boards, but not 8-bit AVR boards, with 2 KB of RAM and only a tier-3 Rust target.
+Any Cortex-M with a Rust target and a few KB of heap qualifies, since the runtime adds about 22\,KiB of flash and our workloads need at most 32.25\,KiB of heap; this includes STM32 parts and ARM-based Arduino boards, but not 8-bit AVR boards, with 2 KB of RAM and only a tier-3 Rust target.
 
 \subsection{Verifying the VM with rocq-of-rust}
 
@@ -551,6 +551,7 @@ The \code{unsafe} surface is intentionally small and confined to these two subsy
 
 We have shown that Rocq-proven firmware logic runs on a Cortex-M35P: extracted to Scheme, compiled by \encore, and deployed on a Ledger Flex hardware wallet.
 The verified core remains the source of truth, while the runtime, compiler, host callbacks, and device I/O are explicit trusted components.
+On eight security-relevant workloads, \encore{} fits the memory budget where CertiRocq does not, and pays for it in speed: 5--10$\times$ more instructions than CertiRocq's native code.
 
 The architecture is also designed to scale.
 Structuring firmware as a pure state-transition function decouples verification effort from hardware complexity: the verified \code{step} grows with application logic, while the unverified components grow only with the hardware interface.
