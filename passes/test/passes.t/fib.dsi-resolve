@@ -1,0 +1,14 @@
+; encore ir: dsi
+
+(define fib
+  (lambda 1
+    (let (prim int.lt (var 0) 2)
+    (match (var 0) 0
+      (case 0
+        (let (prim int.sub (var 1) 1)
+        (let (prim int.sub (var 2) 2)
+        (let (app (var 5) (var 1))
+        (let (app (var 6) (var 1)) (prim int.add (var 1) (var 0)))))))
+      (case 0 (var 1))))))
+
+(define main (app (var 1) 15))

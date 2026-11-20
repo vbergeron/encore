@@ -26,6 +26,10 @@ cargo run --bin encore -- compile fleche <file.fleche> --emit <stage>   # print 
 cargo run --bin encore -- compile ir <file> --from <stage> [--emit <stage>]  # resume from IR text
 cargo run --bin encore -- disasm <file.encr> [--interactive]
 
+# Rocq passes (needs Rocq 9.1 + dune via opam): build, test, run on IR text
+dune build && dune test
+dune exec encore-passes -- <file> --from <stage> [--emit <stage>] [-o <out>]
+
 # Run with runtime statistics (opcode counts, GC pauses/phases, timings)
 cargo run --release --features stats --bin encore -- run <file.encr>
 ```
@@ -64,6 +68,7 @@ Every IR has an S-expression text form (`ir/text/`, `Module::to_text`/`from_text
 | `encore_disasm` | Bytecode disassembler with ratatui TUI |
 | `encore_derive` | Proc-macros: `ValueEncode` / `ValueDecode` for VM FFI |
 | `rocq/` | Rocq theory `Encore.Extraction` (`ExtrEncore.v`): the supported extraction directives. `dune build` (Rocq 9.1) builds it and re-extracts `examples/gcd`, `examples/digits` |
+| `passes/` | Compiler passes in Rocq: the IRs as Rocq types with their text codecs, the pipeline, pass stubs; extracted to OCaml and driven by the `encore-passes` CLI. See `passes/README.md` |
 
 ### VM
 

@@ -125,7 +125,14 @@ V ::= R | INT | (capture N) | (global N) | (cont-lam (R ...) E)
 
 (define main
   (let _i0 1000
-    (let _i1 0
-      (let _c2 (ctor 4 _i0 _i1)
-        (let _k3 (cont (_r4) (fin _r4)) (encore sum (_c2) _k3))))))
+  (let _i1 0
+  (let _c2 (ctor 4 _i0 _i1)
+  (let _k3 (cont (_r4) (fin _r4)) (encore sum (_c2) _k3))))))
 ```
+
+The printer lays out a form on one line when it fits in 80 columns. Otherwise
+it breaks the form's arguments onto lines indented by two. The exception is
+the last argument of `let` and `letrec` (the body, or the rest after a
+`letrec`): it goes at the binding's own column, so a chain of bindings reads
+top to bottom. Indentation then grows only for nested closures, function
+bodies and match cases. Layout is not significant to the readers.

@@ -50,14 +50,14 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
-      - name: Build rocq/ and re-extract the examples
+      - name: Build rocq/ and passes/, re-extract the examples, run the passes tests
         run: |
           user="$(getent passwd 1000 | cut -d: -f1)"
           echo "building as ${user:?no uid 1000 user in the image}"
           chown -R "$user" "$GITHUB_WORKSPACE"
-          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && rocq --version && dune build"
+          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && rocq --version && dune build && dune test"
       - name: Committed extraction is up to date
-        run: git -c safe.directory='*' diff --exit-code -- 'examples/*/*.scm' rocq-encore.opam
+        run: git -c safe.directory='*' diff --exit-code -- 'examples/*/*.scm' rocq-encore.opam encore-passes.opam
 
   extracted:
     name: Run extracted examples

@@ -1,0 +1,13 @@
+; encore ir: ds
+
+(define fib
+  (lambda (n)
+    (let done (prim int.lt n 2)
+    (match done 0
+      (case ()
+        (let a (prim int.sub n 1)
+        (let b (prim int.sub n 2)
+        (let ra (app fib a) (let rb (app fib b) (prim int.add ra rb))))))
+      (case () n)))))
+
+(define main (app fib 15))
