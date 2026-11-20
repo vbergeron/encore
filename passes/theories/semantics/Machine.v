@@ -61,9 +61,9 @@ Definition null_label : label := Nat.pow 2 16 - 1.
 (** [RETURN_CONT]: code address 0 holds the compiler's return stub. *)
 Definition return_cont : word := WFunc 0.
 
-(** [Value::from_u32(0)], the argument [load] passes to every define's
-    thunk: a closure word pointing at heap address 0. *)
-Definition thunk_arg : word := WClos 0.
+(** [Value::int(0)], the argument [load] passes to every define's thunk.
+    It is not a heap pointer, so it keeps nothing alive. *)
+Definition thunk_arg : word := WInt 0.
 
 Definition bool_word (b : bool) : word := WCon (if b then 1 else 0) None.
 

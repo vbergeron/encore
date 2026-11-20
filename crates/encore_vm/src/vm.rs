@@ -120,7 +120,10 @@ impl<'a> Vm<'a> {
         self.arity_table = prog.arity_table;
         for i in 0..n {
             let addr = prog.global(i);
-            self.globals[i] = self.call_address(addr, Value::from_u32(0))?;
+            // A thunk takes no argument. The filler must not be a heap
+            // pointer: registers are GC roots, and a pointer would keep
+            // whatever object it names alive while the thunk runs.
+            self.globals[i] = self.call_address(addr, Value::int(0))?;
         }
         Ok(())
     }
