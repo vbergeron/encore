@@ -16,6 +16,14 @@
       invisible. Sizes in words and the bump pointer [hp] are those of the
       VM, so [HeapOverflow] happens exactly when it does in the VM.
 
+    Assumption: the garbage collector is correct. [collect] specifies what
+    gc.rs must do (keep exactly the reachable objects, up to renaming of
+    addresses, and reset [hp] to their total size). That gc.rs implements
+    this specification is trusted, not proved. In particular, this model
+    gives every object its intended size, while the VM currently corrupts
+    the GC header of objects of 128 words or more, i.e. byte strings over
+    500 bytes built at run time (issue #28).
+
     A read the VM performs without a check (e.g. [FIELD] on a non-constructor,
     [BYTES_GET] past the end) has no rule: the state is stuck. Every error
     the VM reports at run time is a [Trap]. *)
@@ -228,7 +236,8 @@ Inductive reachable (R : regs) (G : list word) (H : heap) : addr -> Prop :=
     reachable R G H a -> hget H a = Some o -> In w (obj_words o) -> points w b ->
     reachable R G H b.
 
-(** [collect]: [H'] is [H] restricted to its reachable objects. *)
+(** [collect]: [H'] is [H] restricted to its reachable objects. This is
+    the specification gc.rs is assumed to meet (see the header). *)
 Definition collect (R : regs) (G : list word) (H H' : heap) : Prop :=
   NoDup (map fst H') /\
   forall a o, hget H' a = Some o <-> (hget H a = Some o /\ reachable R G H a).
