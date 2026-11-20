@@ -36,6 +36,7 @@ input.
 | `theories/ir/{Ds,Dsi,Cps,Asm}.v` | Rocq | Each IR as a Rocq type, with `encode : module -> list sexp` and `decode : list sexp -> result module` |
 | `theories/pass/*.v` | Rocq | One file per pass, `run : <IR>.module -> result <IR>.module` |
 | `theories/Pipeline.v` | Rocq | Stages, the `ir` sum type, `compile from to` |
+| `theories/semantics/Machine.v` | Rocq | Semantics of the VM, transcribed from `crates/encore_vm/src/vm.rs`: instructions, step relation with traps, allocation and collection, `load` and calls |
 | `extraction/Extract.v` | Rocq | Extracts `Pipeline` to `encore_passes.ml`, an OCaml library |
 | `bin/sexp_text.ml` | OCaml | Text to `sexp` and back. Matches the Rust reader and printer byte for byte |
 | `bin/main.ml` | OCaml | The `encore-passes` command line |
