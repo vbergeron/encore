@@ -16,3 +16,14 @@
   (dune (>= 3.21))
   (rocq-core (and (>= 9.1) (< 9.2)))
   (rocq-stdlib (and (>= 9.1) (< 9.2)))))
+
+(package
+ (name encore-passes)
+ (synopsis "Encore compiler passes written in Rocq")
+ (description
+  "The Encore IRs (ds, dsi, cps, asm) as Rocq data types, with their S-expression text forms and the compiler passes between them, extracted to OCaml. The encore-passes command reads IR text from one pipeline stage and writes the IR of a later stage.")
+ (depends
+  (dune (>= 3.21))
+  (ocaml (>= 4.14))
+  (rocq-core (and (>= 9.1) (< 9.2)))
+  (rocq-stdlib (and (>= 9.1) (< 9.2)))))

@@ -1,0 +1,39 @@
+; encore ir: asm
+
+(define 0
+  (let r10 (global 0)
+    (let r11 2
+      (letrec r12 (r11)
+        (let r10 a1
+          (let r11 (capture 0)
+            (let r12 (global 0)
+              (let r13 (prim int.lt r10 r11)
+                (match r13 0
+                  (case 0 r14
+                    (let r14 1
+                      (let r15 (prim int.sub r10 r14)
+                        (let r16 2
+                          (let r17 (prim int.sub r10 r16)
+                            (let r18
+                              (cont-lam (cont r17)
+                                (let r10 a1
+                                  (let r11 (capture 0)
+                                    (let r12 (capture 1)
+                                      (let r13 (global 0)
+                                        (let r14
+                                          (cont-lam (r11 r10)
+                                            (let r10 a1
+                                              (let r11 (capture 0)
+                                                (let r12 (capture 1)
+                                                  (let r13
+                                                    (prim int.add r12 r10)
+                                                    (encore r11 (r13) null))))))
+                                          (encore r13 (r12) r14)))))))
+                              (encore r12 (r15) r18)))))))
+                  (case 0 r14 (encore cont (r10) null)))))))
+        (fin r12)))))
+
+(define 1
+  (let r10 (global 0)
+    (let r11 15
+      (let r12 (cont-lam () (let r10 a1 (fin r10))) (encore r10 (r11) r12)))))

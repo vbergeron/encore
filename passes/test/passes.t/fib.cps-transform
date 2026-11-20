@@ -1,0 +1,28 @@
+; encore ir: cps
+
+(define fib
+  (letrec _f0 (_x2) _k1
+    (let _i3 2
+      (let _p4 (prim int.lt _x2 _i3)
+        (let _k5
+          (cont (_r6) (let _nc7 (null-cont) (encore _k1 (_r6) _nc7)))
+          (match _p4 0
+            (case ()
+              (let _i8 1
+                (let _p9 (prim int.sub _x2 _i8)
+                  (let _i10 2
+                    (let _p11 (prim int.sub _x2 _i10)
+                      (let _k12
+                        (cont (_r13)
+                          (let _k14
+                            (cont (_r15)
+                              (let _p16 (prim int.add _r13 _r15)
+                                (let _nc17 (null-cont)
+                                  (encore _k5 (_p16) _nc17))))
+                            (encore fib (_p11) _k14)))
+                        (encore fib (_p9) _k12)))))))
+            (case () (let _nc18 (null-cont) (encore _k5 (_x2) _nc18)))))))
+    (fin _f0)))
+
+(define main
+  (let _i0 15 (let _k1 (cont (_r2) (fin _r2)) (encore fib (_i0) _k1))))

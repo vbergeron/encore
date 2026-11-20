@@ -1,0 +1,12 @@
+; dune runs Extract.v and compiles the extracted OCaml as a library for the
+; driver in ../bin.
+(rocq.extraction
+ (prelude Extract)
+ (extracted_modules encore_passes)
+ (theories Stdlib EncorePasses))
+
+(library
+ (name encore_passes)
+ (modules encore_passes)
+ ; Extracted code: unused variables and the like are expected.
+ (flags (:standard -w -a)))

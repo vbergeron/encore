@@ -1,0 +1,7 @@
+; The command-line driver: text <-> sexp and argument handling in OCaml,
+; everything else in the extracted Rocq library.
+(executable
+ (name main)
+ (public_name encore-passes)
+ (package encore-passes)
+ (libraries encore_passes))

@@ -1,2 +1,3 @@
-; Rocq sources: the extraction library and the examples extracted through it.
-(dirs rocq examples)
+; Rocq sources: the extraction library and the examples extracted through it,
+; and the Rocq compiler passes with their OCaml driver.
+(dirs rocq examples passes)

@@ -1,0 +1,4 @@
+; Cram tests for encore-passes. The fib.* fixtures are `encore compile fleche
+; examples/fibonacci/fibonacci.fleche --emit STAGE` for every stage.
+(cram
+ (deps %{bin:encore-passes}))

@@ -1,0 +1,8 @@
+; The data structures (IRs) and passes, written in Rocq and extracted to
+; OCaml by ../extraction.
+(include_subdirs qualified)
+
+(rocq.theory
+ (name EncorePasses)
+ (package encore-passes)
+ (theories Stdlib))
