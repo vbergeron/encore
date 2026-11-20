@@ -5,6 +5,7 @@ use clap::{Parser, Subcommand};
 use encore_compiler::frontend::Frontend as FrontendTrait;
 use encore_compiler::pass::asm_emit::Metadata;
 use encore_compiler::pass::cps_optimize::OptimizeConfig;
+use encore_compiler::pipeline::{self, Ir, Stage};
 use encore_fleche::FlecheFrontend;
 use encore_scheme::SchemeFrontend;
 use encore_vm::program::Program;
@@ -77,34 +78,46 @@ enum Frontend {
     Fleche {
         /// Path to the .fleche source file
         file: String,
-        /// Output directory
-        #[arg(short, long, default_value = "out")]
-        out: String,
-        /// Include debug metadata (constructor names) in the binary
-        #[arg(long)]
-        include_metadata: bool,
-        /// Generate Rust bindings (funcs/ctors constants) in the output directory
-        #[arg(long)]
-        include_bindings: bool,
         #[command(flatten)]
-        opt: OptimizeFlags,
+        args: CompileArgs,
     },
     /// Compile a Rocq-extracted .scm source file
     Scheme {
         /// Path to the .scm source file
         file: String,
-        /// Output directory
-        #[arg(short, long, default_value = "out")]
-        out: String,
-        /// Include debug metadata (constructor names) in the binary
-        #[arg(long)]
-        include_metadata: bool,
-        /// Generate Rust bindings (funcs/ctors constants) in the output directory
-        #[arg(long)]
-        include_bindings: bool,
         #[command(flatten)]
-        opt: OptimizeFlags,
+        args: CompileArgs,
     },
+    /// Resume compilation from an IR text file (as written by --emit)
+    Ir {
+        /// Path to the IR text file
+        file: String,
+        /// Stage that produced the file; compilation resumes with the next pass
+        #[arg(long, value_name = "STAGE")]
+        from: Stage,
+        #[command(flatten)]
+        args: CompileArgs,
+    },
+}
+
+#[derive(Parser)]
+struct CompileArgs {
+    /// Output directory
+    #[arg(short, long, default_value = "out")]
+    out: String,
+    /// Include debug metadata (constructor names) in the binary
+    #[arg(long)]
+    include_metadata: bool,
+    /// Generate Rust bindings (funcs/ctors constants) in the output directory
+    #[arg(long)]
+    include_bindings: bool,
+    /// Stop after STAGE and print its IR as text to stdout instead of writing bytecode.
+    /// Stages: parse, ds-uncurry (ds); dsi-resolve (dsi); cps-transform,
+    /// cps-optimize (cps); asm-resolve, asm-peephole (asm)
+    #[arg(long, value_name = "STAGE", conflicts_with_all = ["include_metadata", "include_bindings"])]
+    emit: Option<Stage>,
+    #[command(flatten)]
+    opt: OptimizeFlags,
 }
 
 #[derive(Parser)]
@@ -181,14 +194,9 @@ fn main() {
     match cli.command {
         Command::Run { file, entry, heap_size } => cmd_run(&file, entry.as_deref(), heap_size),
         Command::Compile { frontend } => match frontend {
-            Frontend::Fleche { file, out, include_metadata, include_bindings, opt } => {
-                let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile(&FlecheFrontend, &file, &out, config, include_metadata, include_bindings);
-            }
-            Frontend::Scheme { file, out, include_metadata, include_bindings, opt } => {
-                let config: Option<OptimizeConfig> = opt.into();
-                cmd_compile(&SchemeFrontend, &file, &out, config, include_metadata, include_bindings);
-            }
+            Frontend::Fleche { file, args } => cmd_compile(Input::Frontend(&FlecheFrontend), &file, args),
+            Frontend::Scheme { file, args } => cmd_compile(Input::Frontend(&SchemeFrontend), &file, args),
+            Frontend::Ir { file, from, args } => cmd_compile(Input::Ir(from), &file, args),
         },
         Command::Disasm { file, interactive } => cmd_disasm(&file, interactive),
     }
@@ -259,49 +267,78 @@ fn resolve_entry(entry: &str, prog: &Program) -> usize {
     process::exit(1);
 }
 
-fn cmd_compile(frontend: &dyn FrontendTrait, path: &str, out: &str, config: Option<OptimizeConfig>, include_metadata: bool, include_bindings: bool) {
+enum Input<'a> {
+    Frontend(&'a dyn FrontendTrait),
+    Ir(Stage),
+}
+
+fn cmd_compile(input: Input, path: &str, args: CompileArgs) {
+    let CompileArgs { out, include_metadata, include_bindings, emit, opt } = args;
+    let config: Option<OptimizeConfig> = opt.into();
+
     let source = fs::read_to_string(path).unwrap_or_else(|e| {
         eprintln!("error: cannot read {path}: {e}");
         process::exit(1);
     });
 
-    let output = frontend.parse(&source).unwrap_or_else(|e| {
+    let (ir, from, ctor_names) = match input {
+        Input::Frontend(frontend) => {
+            let output = frontend.parse(&source).unwrap_or_else(|e| {
+                eprintln!("error: {e}");
+                process::exit(1);
+            });
+            (Ir::Ds(output.module), Stage::Parse, output.ctor_names)
+        }
+        Input::Ir(from) => {
+            let ir = Ir::from_text(from.ir(), &source).unwrap_or_else(|e| {
+                eprintln!("error: {path}: {e} (parsing as {} IR, the output of {from})", from.ir().name());
+                process::exit(1);
+            });
+            (ir, from, Vec::new())
+        }
+    };
+
+    if let Some(until) = emit {
+        if until < from {
+            eprintln!("error: cannot emit {until}: the input is already past it (from {from})");
+            process::exit(1);
+        }
+        let ir = pipeline::run_stages(ir, from, until, config).unwrap_or_else(|e| {
+            eprintln!("error: {e}");
+            process::exit(1);
+        });
+        print!("{}", ir.to_text());
+        return;
+    }
+
+    let global_names = ir.global_names();
+    if (include_metadata || include_bindings) && global_names.is_none() {
+        eprintln!("warning: asm IR carries no define names; metadata/bindings will lack them");
+    }
+    let global_names = global_names.unwrap_or_default();
+    let metadata = (include_metadata || include_bindings)
+        .then(|| Metadata { ctor_names: ctor_names.clone(), global_names: global_names.clone() });
+
+    let binary = pipeline::compile_from(ir, from, config, metadata.as_ref()).unwrap_or_else(|e| {
         eprintln!("error: {e}");
         process::exit(1);
     });
-
+    fs::create_dir_all(&out).unwrap_or_else(|e| {
+        eprintln!("error: cannot create {out}: {e}");
+        process::exit(1);
+    });
+    let bin_path = std::path::Path::new(&out).join("bytecode.bin");
+    fs::write(&bin_path, &binary).unwrap_or_else(|e| {
+        eprintln!("error: cannot write {}: {e}", bin_path.display());
+        process::exit(1);
+    });
     if include_bindings {
-        encore_compiler::pipeline::compile_to_dir_with_ctors(
-            &output.module, config, true, std::path::Path::new(out), &output.ctor_names,
-        ).unwrap_or_else(|e| {
-            eprintln!("error: compile_to_dir: {e}");
+        pipeline::write_bindings(std::path::Path::new(&out), &global_names, &ctor_names).unwrap_or_else(|e| {
+            eprintln!("error: cannot write bindings: {e}");
             process::exit(1);
         });
         eprintln!("compiled {path} -> {out}/");
     } else {
-        let metadata = if include_metadata {
-            let global_names = output.module.defines.iter()
-                .enumerate()
-                .map(|(i, d)| (i as u16, d.name.clone()))
-                .collect();
-            Some(Metadata { ctor_names: output.ctor_names, global_names })
-        } else {
-            None
-        };
-        let binary = encore_compiler::pipeline::compile_module(output.module, config, metadata.as_ref())
-            .unwrap_or_else(|e| {
-                eprintln!("error: {e}");
-                process::exit(1);
-            });
-        fs::create_dir_all(out).unwrap_or_else(|e| {
-            eprintln!("error: cannot create {out}: {e}");
-            process::exit(1);
-        });
-        let bin_path = std::path::Path::new(out).join("bytecode.bin");
-        fs::write(&bin_path, &binary).unwrap_or_else(|e| {
-            eprintln!("error: cannot write {}: {e}", bin_path.display());
-            process::exit(1);
-        });
         eprintln!("compiled {path} -> {} ({} bytes)", bin_path.display(), binary.len());
     }
 }
