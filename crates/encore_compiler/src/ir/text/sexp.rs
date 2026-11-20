@@ -283,6 +283,10 @@ fn looks_numeric(tok: &str) -> bool {
 const WIDTH: usize = 80;
 /// Lists up to this width may stay on their parent's opening line.
 const INLINE_ARG_WIDTH: usize = 32;
+/// Binding forms whose last item (the body, or the rest of a `letrec`) is
+/// printed at the form's own column, so chains of bindings read top to
+/// bottom instead of drifting right.
+const CHAIN_HEADS: &[&str] = &["let", "letrec"];
 
 pub fn sym(s: impl Into<String>) -> Sexp {
     Sexp::Sym(s.into())
@@ -379,7 +383,8 @@ fn flat_width(e: &Sexp, budget: usize) -> Option<usize> {
 
 /// A list too wide for one line keeps its head and leading atoms / short
 /// lists on the opening line (never the last item); the remaining items are broken onto
-/// indented lines once the flat form exceeds the width.
+/// indented lines once the flat form exceeds the width. The last item of a
+/// [`CHAIN_HEADS`] form goes at the form's own column instead.
 fn write_pretty(e: &Sexp, indent: usize, out: &mut String) {
     let items = match e {
         Sexp::List(items) if !items.is_empty() && flat_width(e, WIDTH.saturating_sub(indent)).is_none() => items,
@@ -403,10 +408,13 @@ fn write_pretty(e: &Sexp, indent: usize, out: &mut String) {
         out.push(' ');
         write_flat(item, out);
     }
-    for item in &items[split..] {
+    let chain = matches!(&items[0], Sexp::Sym(h) if CHAIN_HEADS.contains(&h.as_str()));
+    let last = items.len() - 1;
+    for (i, item) in items.iter().enumerate().skip(split) {
+        let col = if chain && i == last { indent } else { indent + 2 };
         out.push('\n');
-        for _ in 0..indent + 2 { out.push(' '); }
-        write_pretty(item, indent + 2, out);
+        for _ in 0..col { out.push(' '); }
+        write_pretty(item, col, out);
     }
     out.push(')');
 }

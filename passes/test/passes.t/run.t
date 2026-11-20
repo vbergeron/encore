@@ -26,9 +26,9 @@ and quoted symbols and byte strings keep their escapes:
   (define |has space|
     (let |x\|y|
       (bytes "tab\there \"q\" \\ \x00\xff")
-      (let n -42
-        (match n 0 (case () (fin n))
-          (case (a b) (let k (cont (r) (fin r)) (encore |has space| (a b) k)))))))
+    (let n -42
+    (match n 0 (case () (fin n))
+      (case (a b) (let k (cont (r) (fin r)) (encore |has space| (a b) k)))))))
   
   (define main (let k (null-cont) (let p (prim bytes.len |x\|y|) (fin p))))
 

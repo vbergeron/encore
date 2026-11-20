@@ -128,6 +128,11 @@ let width = 80
 (* Lists up to this width may stay on their parent's opening line. *)
 let inline_arg_width = 32
 
+(* Binding forms whose last item (the body, or the rest of a [letrec]) is
+   printed at the form's own column, so chains of bindings read top to bottom
+   instead of drifting right. *)
+let chain_heads = [ "let"; "letrec" ]
+
 let is_graphic c = c >= '\x21' && c <= '\x7e'
 
 let write_sym buf s =
@@ -202,7 +207,8 @@ let rec flat_width e budget =
 
 (* A list too wide for one line keeps its head and leading atoms / short lists
    on the opening line (never the last item); the remaining items are broken
-   onto indented lines. *)
+   onto indented lines. The last item of a [chain_heads] form goes at the
+   form's own column instead. *)
 let rec write_pretty buf e indent =
   match e with
   | List (head :: _ as items) when flat_width e (max 0 (width - indent)) = None ->
@@ -228,10 +234,12 @@ let rec write_pretty buf e indent =
         Buffer.add_char buf ' ';
         write_flat buf items.(i)
       done;
+      let chain = match head with Sym h -> List.mem h chain_heads | _ -> false in
       for i = !split to n - 1 do
+        let col = if chain && i = n - 1 then indent else indent + 2 in
         Buffer.add_char buf '\n';
-        Buffer.add_string buf (String.make (indent + 2) ' ');
-        write_pretty buf items.(i) (indent + 2)
+        Buffer.add_string buf (String.make col ' ');
+        write_pretty buf items.(i) col
       done;
       Buffer.add_char buf ')'
   | _ -> write_flat buf e
