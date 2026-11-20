@@ -4,3 +4,4 @@ pub mod cps_traversal;
 pub mod ds;
 pub mod dsi;
 pub mod prim;
+pub mod text;

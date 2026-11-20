@@ -22,6 +22,8 @@ cargo test <test_name> -- --nocapture
 # Run the CLI
 cargo run --bin encore -- run <file.encr>
 cargo run --bin encore -- compile fleche <file.fleche> --out <dir>
+cargo run --bin encore -- compile fleche <file.fleche> --emit <stage>   # print IR text after <stage>
+cargo run --bin encore -- compile ir <file> --from <stage> [--emit <stage>]  # resume from IR text
 cargo run --bin encore -- disasm <file.encr> [--interactive]
 
 # Run with runtime statistics (opcode counts, GC pauses/phases, timings)
@@ -42,10 +44,13 @@ Fleche source
   → cps::Module      (explicit continuations)                         [cps_transform]
   → cps::Module      (optimized)                                      [cps_optimize]
   → asm::Module      (registers, captures, globals — no names)        [asm_resolve]
+  → asm::Module      (peephole-optimized)                             [asm_peephole]
   → bytecode         (ENCR binary)                                     [asm_emit]
 ```
 
 All IR types and compiler passes live in `crates/encore_compiler/src/`. IR representations are in `ir/` subdirectory; passes are in `pass/`.
+
+Every IR has an S-expression text form (`ir/text/`, `Module::to_text`/`from_text`) that round-trips exactly. `pipeline::Stage` names each point in the pipeline after the pass that produced it (`parse`, `ds-uncurry`, `dsi-resolve`, `cps-transform`, `cps-optimize`, `asm-resolve`, `asm-peephole`). `run_stages`/`compile_from` resume from any stage. See `IR.md`.
 
 ### Crate Overview
 
@@ -78,6 +83,7 @@ All passes are individually toggleable via CLI flags (e.g. `--cps-optimize-rewri
 
 - `FLECHE.md` — language syntax, keywords, data constructors
 - `SCHEME.md` — Scheme frontend, extracting from Rocq via `rocq/`, trust assumptions
+- `IR.md` — IR text formats, `--emit` / `--from` stages
 - `VM.md` — value encoding, opcodes, binary format
 - `OPTIMIZER.md` — CPS pass descriptions and tuning
 - `STATS.md` — `stats` feature: runtime statistics, clock, zero-overhead rules (`stat!` macro)

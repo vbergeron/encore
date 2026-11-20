@@ -13,6 +13,8 @@ pub enum CompileError {
     TooManyCaptures { count: usize, max: usize },
     /// A constructor has more fields than a heap object can hold.
     CtorTooWide { tag: u8, arity: usize, max: usize },
+    /// The module given to a pipeline stage is written in the wrong IR.
+    StageMismatch { stage: &'static str, expected: &'static str, found: &'static str },
 }
 
 impl fmt::Display for CompileError {
@@ -28,6 +30,8 @@ impl fmt::Display for CompileError {
                 write!(f, "closure captures too many values: {count} (max {max})"),
             CompileError::CtorTooWide { tag, arity, max } =>
                 write!(f, "constructor tag {tag} has too many fields: {arity} (max {max})"),
+            CompileError::StageMismatch { stage, expected, found } =>
+                write!(f, "stage {stage} produces {expected}, but the module is {found}"),
         }
     }
 }
