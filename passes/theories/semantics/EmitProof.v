@@ -786,4 +786,150 @@ Section Sim.
       + apply msteps_one. eapply Machine.s_extern_fail; [exact Hx | exact Hh2].
       + constructor; [constructor; reflexivity | exact HH'].
   Qed.
+
+  (** ** Whole runs *)
+
+  Definition mexec := Machine.exec C ar mem entries (h Machine.label).
+  Definition aexec := AsmSem.exec mem prog (h AsmSem.alabel).
+
+  Lemma msteps_exec s r o H2 hp :
+    msteps s r ->
+    (r = Machine.Stop o H2 hp \/ exists s', r = Machine.Run s' /\ mexec s' o H2 hp) ->
+    mexec s o H2 hp.
+  Proof.
+    induction 1 as [s r Hs | s s' r Hs _ IH]; intros [-> | (s'' & -> & He)].
+    - apply Machine.exec_stop. exact Hs.
+    - eapply Machine.exec_run; [exact Hs | exact He].
+    - eapply Machine.exec_run; [exact Hs | apply IH; left; reflexivity].
+    - eapply Machine.exec_run; [exact Hs | apply IH; right; eauto].
+  Qed.
+
+  Lemma exec_sim s1 o1 H1 hp :
+    aexec s1 o1 H1 hp -> forall s2, match_states s1 s2 ->
+    exists o2 H2, mexec s2 o2 H2 hp /\ outcome_rel lab o1 o2 /\ heap_rel lab H1 H2.
+  Proof.
+    induction 1 as [s1 o1 H1 hp Hs | s1 s1' o1 H1 hp Hs _ IH]; intros s2 Hm.
+    - destruct (step_sim _ _ _ Hs Hm) as (r2 & Hms & Hr). inversion Hr as [| ? o2 ? H2 ? Ho HH]; subst.
+      exists o2, H2. split; [eapply msteps_exec; [exact Hms | left; reflexivity] | auto].
+    - destruct (step_sim _ _ _ Hs Hm) as (r2 & Hms & Hr). inversion Hr as [? s2' Hm' | ]; subst.
+      destruct (IH s2' Hm') as (o2 & H2 & He & Ho & HH).
+      exists o2, H2. split; [eapply msteps_exec; [exact Hms | right; eauto] | auto].
+  Qed.
+
+  (** The program's defines and their entry points. *)
+  Hypothesis Hdefs : Forall2 (fun d l => lab (AsmSem.Body (Asm.def_body d)) l) prog entries.
+
+  Definition vm_rel (m1 : AsmSem.vm) (m2 : Machine.vm) : Prop :=
+    heap_rel lab (AsmSem.vheap m1) (Machine.vheap m2) /\ AsmSem.vhp m1 = Machine.vhp m2 /\
+    Forall2 (word_rel lab) (AsmSem.vglobals m1) (Machine.vglobals m2).
+
+  Inductive err_rel : option (error AsmSem.alabel) -> option (error Machine.label) -> Prop :=
+  | err_none : err_rel None None
+  | err_some e1 e2 : kind e1 = kind e2 -> err_rel (Some e1) (Some e2).
+
+  Lemma entry_regs_rel l1 l2 :
+    lab l1 l2 ->
+    regs_rel lab (AsmSem.entry_regs (WFunc l1) [AsmSem.thunk_arg])
+                 (Machine.entry_regs (WFunc l2) [Machine.thunk_arg]).
+  Proof.
+    intros Hl. unfold AsmSem.entry_regs, Machine.entry_regs.
+    apply upd_from_rel; [| repeat constructor].
+    apply upd_rel; [apply upd_rel |].
+    - apply clear_regs_rel. constructor.
+    - constructor. exact Hl.
+    - constructor. constructor.
+  Qed.
+
+  Lemma call_define_sim m1 m2 body l o1 m1' :
+    AsmSem.call_define mem prog (h AsmSem.alabel) m1 body o1 m1' -> vm_rel m1 m2 ->
+    lab (AsmSem.Body body) l ->
+    exists o2 m2', Machine.call_address C ar mem entries (h Machine.label) m2 l o2 m2' /\
+                   outcome_rel lab o1 o2 /\ vm_rel m1' m2'.
+  Proof.
+    intros Hc [HH [Hhp HG]] Hl. inversion Hc as [o H1' hp' He]; subst.
+    assert (Hm : match_states
+                   (AsmSem.St (AsmSem.Body body) (AsmSem.entry_regs (WFunc (AsmSem.Body body)) [AsmSem.thunk_arg])
+                              (AsmSem.vheap m1) (AsmSem.vhp m1) (AsmSem.vglobals m1))
+                   (Machine.St l (Machine.entry_regs (WFunc l) [Machine.thunk_arg])
+                               (Machine.vheap m2) (Machine.vhp m2) (Machine.vglobals m2))).
+    { constructor; simpl; auto. apply entry_regs_rel. exact Hl. }
+    destruct (exec_sim _ _ _ _ He _ Hm) as (o2 & H2' & He2 & Ho & HH').
+    exists o2, (Machine.Vm H2' hp' (Machine.vglobals m2)). split; [| split; [exact Ho |]].
+    - apply Machine.call_address_run. exact He2.
+    - split; [exact HH' | split; [reflexivity | exact HG]].
+  Qed.
+
+  Lemma Forall2_skipn {A B} (P : A -> B -> Prop) n l1 l2 :
+    Forall2 P l1 l2 -> Forall2 P (skipn n l1) (skipn n l2).
+  Proof.
+    intros H. revert n. induction H as [| x y l1 l2 Hxy Hl IH]; intros [| n]; simpl; try constructor; auto.
+  Qed.
+
+  Lemma set_global_rel m1 m2 i w1 w2 :
+    vm_rel m1 m2 -> word_rel lab w1 w2 ->
+    vm_rel (AsmSem.set_global m1 i w1) (Machine.set_global m2 i w2).
+  Proof.
+    intros [HH [Hhp HG]] Hw. unfold AsmSem.set_global, Machine.set_global, vm_rel. simpl.
+    split; [exact HH | split; [exact Hhp |]].
+    apply Forall2_app; [apply Forall2_firstn; exact HG | constructor; [exact Hw | exact (Forall2_skipn _ (S i) _ _ HG)]].
+  Qed.
+
+  Lemma load_defines_sim i ds m1 r1 m1' :
+    AsmSem.load_defines mem prog (h AsmSem.alabel) i ds m1 r1 m1' ->
+    forall es m2, Forall2 (fun d l => lab (AsmSem.Body (Asm.def_body d)) l) ds es -> vm_rel m1 m2 ->
+    exists r2 m2', Machine.load_defines C ar mem entries (h Machine.label) i es m2 r2 m2' /\
+                   err_rel r1 r2 /\ vm_rel m1' m2'.
+  Proof.
+    induction 1 as [i m1 | i d ds m1 w m1' r m1'' Hc _ IH | i d ds m1 e m1' Hc];
+      intros es m2 Hds Hm.
+    - inversion Hds; subst. exists None, m2. split; [apply Machine.load_done | split; [constructor | exact Hm]].
+    - inversion Hds as [| ? l ? es' Hl Hds']; subst.
+      destruct (call_define_sim _ _ _ _ _ _ Hc Hm Hl) as (o2 & m2' & Hc2 & Ho & Hm').
+      inversion Ho as [? w2 Hw |]; subst.
+      destruct (IH es' _ Hds' (set_global_rel _ _ i _ _ Hm' Hw)) as (r2 & m2'' & Hl2 & Hr & Hm'').
+      exists r2, m2''. split; [eapply Machine.load_next; [exact Hc2 | exact Hl2] | auto].
+    - inversion Hds as [| ? l ? es' Hl Hds']; subst.
+      destruct (call_define_sim _ _ _ _ _ _ Hc Hm Hl) as (o2 & m2' & Hc2 & Ho & Hm').
+      inversion Ho as [| ? e2 Hk]; subst.
+      exists (Some e2), m2'. split; [eapply Machine.load_fail; exact Hc2 | split; [constructor; exact Hk | exact Hm']].
+  Qed.
+
+  Lemma repeat_rel n : Forall2 (word_rel lab) (repeat (WInt 0) n) (repeat (WInt 0) n).
+  Proof. induction n; simpl; constructor; auto. constructor. Qed.
+
+  Lemma load_sim r1 m1 :
+    AsmSem.load mem prog (h AsmSem.alabel) r1 m1 ->
+    exists r2 m2, Machine.load C ar mem entries (h Machine.label) r2 m2 /\ err_rel r1 r2 /\ vm_rel m1 m2.
+  Proof.
+    destruct 1 as [Hlt | r m Hle Hl].
+    - exists (Some (GlobalsOverflow (length entries) mem)), Machine.init. split.
+      + apply Machine.load_overflow. rewrite Hent. exact Hlt.
+      + split; [constructor; simpl; rewrite Hent; reflexivity |].
+        split; [constructor | split; [reflexivity | constructor]].
+    - destruct (load_defines_sim _ _ _ _ _ Hl entries (Machine.Vm [] 0 (repeat (WInt 0) (length entries))) Hdefs)
+        as (r2 & m2 & Hl2 & Hr & Hm).
+      + split; [constructor | split; [reflexivity |]]. simpl. rewrite Hent. apply repeat_rel.
+      + exists r2, m2. split; [| auto]. apply Machine.load_run; [rewrite Hent; exact Hle | exact Hl2].
+  Qed.
+
+  Lemma observe_globals_rel H1 H2 G1 G2 gs :
+    heap_rel lab H1 H2 -> Forall2 (word_rel lab) G1 G2 ->
+    Forall2 (fun w o => observe H1 (Halt w) o) G1 gs -> Forall2 (fun w o => observe H2 (Halt w) o) G2 gs.
+  Proof.
+    intros HH HG Hob. revert G2 HG. induction Hob as [| w o G1 gs Ho _ IH]; intros G2 HG;
+      inversion HG as [| ? w2 ? G2' Hw HG']; subst; constructor.
+    - eapply observe_rel; [exact HH | constructor; exact Hw | exact Ho].
+    - apply IH. exact HG'.
+  Qed.
+
+  Lemma behaves_sim lo :
+    AsmSem.behaves (h AsmSem.alabel) prog mem lo ->
+    Machine.behaves (h Machine.label) (Machine.Program C ar entries) mem lo.
+  Proof.
+    destruct 1 as [m gs Hl Hob | e m Hl].
+    - destruct (load_sim _ _ Hl) as (r2 & m2 & Hl2 & Hr & [HH [_ HG]]). inversion Hr; subst.
+      eapply Machine.behaves_loaded; [exact Hl2 |]. eapply observe_globals_rel; eauto.
+    - destruct (load_sim _ _ Hl) as (r2 & m2 & Hl2 & Hr & _). inversion Hr as [| ? e2 Hk]; subst.
+      rewrite Hk. eapply Machine.behaves_trap. exact Hl2.
+  Qed.
 End Sim.
