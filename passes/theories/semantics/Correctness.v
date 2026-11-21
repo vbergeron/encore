@@ -3,7 +3,14 @@
 
   A semantics is a relation [sem p i o]: program [p], run on input [i],
   can be observed as [o]. A transformation is a partial function
-  [t : P1 -> result P2], the shape of every pass in theories/pass. *)
+  [t : P1 -> result P2], the shape of every pass in theories/pass.
+
+  Correctness compares observable behaviour, as in CompCert, not machine
+  states: a transformation changes code positions, register assignment,
+  allocation and the number of steps, so the states of a program and of
+  its transformed version are not equal. How states correspond during a
+  run is part of each pass's proof (a simulation relation), not of the
+  statement. *)
 
 From EncorePasses Require Import Result.
 From EncorePasses Require Import Runtime.
