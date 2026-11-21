@@ -32,6 +32,8 @@ Definition SELF : reg := 0.
 Definition CONT : reg := 1.
 Definition A1 : reg := 2.
 Definition NULL : reg := 255.
+(** The first local register; the compiler's extern stubs use it as scratch. *)
+Definition X01 : reg := 10.
 Definition n_regs : nat := 256.
 
 Definition int_min : Z := (- 2 ^ 23)%Z.
@@ -309,3 +311,51 @@ Arguments error : clear implicits.
 Arguments outcome : clear implicits.
 Arguments host_result : clear implicits.
 Arguments alloc_result : clear implicits.
+
+(** ** Hosts
+
+    Extern functions see words, so their type depends on [label]. A host
+    family gives one host per label type; a semantics uses the member for
+    its own labels. Relating two semantics needs the host to treat related
+    words, registers and heaps alike: [host_parametric]. *)
+
+Section Related.
+  Context {L1 L2 : Type} (rho : L1 -> L2 -> Prop).
+
+  (** Words equal up to code addresses related by [rho]. *)
+  Inductive word_rel : word L1 -> word L2 -> Prop :=
+  | wr_int n : word_rel (WInt n) (WInt n)
+  | wr_func l1 l2 : rho l1 l2 -> word_rel (WFunc l1) (WFunc l2)
+  | wr_clos a : word_rel (WClos a) (WClos a)
+  | wr_con t a : word_rel (WCon t a) (WCon t a)
+  | wr_bytes a : word_rel (WBytes a) (WBytes a).
+
+  Inductive obj_rel : obj L1 -> obj L2 -> Prop :=
+  | or_closure l1 l2 env1 env2 :
+      rho l1 l2 -> Forall2 word_rel env1 env2 -> obj_rel (OClosure l1 env1) (OClosure l2 env2)
+  | or_fields ws1 ws2 : Forall2 word_rel ws1 ws2 -> obj_rel (OFields ws1) (OFields ws2)
+  | or_bytes s : obj_rel (OBytes s) (OBytes s).
+
+  Definition heap_rel (H1 : heap L1) (H2 : heap L2) : Prop :=
+    Forall2 (fun p1 p2 => fst p1 = fst p2 /\ obj_rel (snd p1) (snd p2)) H1 H2.
+
+  Definition regs_rel (R1 : regs L1) (R2 : regs L2) : Prop := forall r, word_rel (R1 r) (R2 r).
+
+  Inductive host_result_rel : host_result L1 -> host_result L2 -> Prop :=
+  | hr_ok w1 w2 R1 R2 H1 H2 hp :
+      word_rel w1 w2 -> regs_rel R1 R2 -> heap_rel H1 H2 ->
+      host_result_rel (HostOk w1 R1 H1 hp) (HostOk w2 R2 H2 hp)
+  | hr_err H1 H2 hp : heap_rel H1 H2 -> host_result_rel (HostErr H1 hp) (HostErr H2 hp).
+End Related.
+
+(** [h L j w R H hp res]: extern slot [j] called on [w] returns [res]. *)
+Definition host_family : Type :=
+  forall L : Type, nat -> word L -> regs L -> heap L -> nat -> host_result L -> Prop.
+
+(** A host does not look at code addresses: on related inputs, it can
+    return related results. *)
+Definition host_parametric (h : host_family) : Prop :=
+  forall (L1 L2 : Type) (rho : L1 -> L2 -> Prop) j w1 w2 R1 R2 H1 H2 hp res1,
+    word_rel rho w1 w2 -> regs_rel rho R1 R2 -> heap_rel rho H1 H2 ->
+    h L1 j w1 R1 H1 hp res1 ->
+    exists res2, h L2 j w2 R2 H2 hp res2 /\ host_result_rel rho res1 res2.
