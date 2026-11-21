@@ -36,7 +36,9 @@ input.
 | `theories/ir/{Ds,Dsi,Cps,Asm}.v` | Rocq | Each IR as a Rocq type, with `encode : module -> list sexp` and `decode : list sexp -> result module` |
 | `theories/pass/*.v` | Rocq | One file per pass, `run : <IR>.module -> result <IR>.module` |
 | `theories/Pipeline.v` | Rocq | Stages, the `ir` sum type, `compile from to` |
-| `theories/semantics/Machine.v` | Rocq | Semantics of the VM, transcribed from `crates/encore_vm/src/vm.rs`: instructions, step relation with traps, allocation and collection, `load` and calls |
+| `theories/semantics/Runtime.v` | Rocq | What every machine-level semantics shares, parameterized by the type of code addresses: words, heap, allocation, the collector specification (assumed correct), primitives, errors, and observations (`obs`, `load_obs`, `refines`) |
+| `theories/semantics/Machine.v` | Rocq | Semantics of the bytecode VM, transcribed from `crates/encore_vm/src/vm.rs`: instructions, step relation with traps, `load` and calls, and `behaves`, the observed behaviour of a program |
+| `theories/semantics/Correctness.v` | Rocq | `correct`: a transformation preserves behaviour relative to a source and a target semantics; `preserves` for Encore's load observations; identity and composition lemmas |
 | `extraction/Extract.v` | Rocq | Extracts `Pipeline` to `encore_passes.ml`, an OCaml library |
 | `bin/sexp_text.ml` | OCaml | Text to `sexp` and back. Matches the Rust reader and printer byte for byte |
 | `bin/main.ml` | OCaml | The `encore-passes` command line |
