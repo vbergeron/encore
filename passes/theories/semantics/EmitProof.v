@@ -933,3 +933,101 @@ Section Sim.
       rewrite Hk. eapply Machine.behaves_trap. exact Hl2.
   Qed.
 End Sim.
+
+(** ** What [emit] produces *)
+
+Lemma code_at_shift C x p cs : code_at C p cs -> code_at (x :: C) (S p) cs.
+Proof. intros H i y Hy. simpl. apply H. exact Hy. Qed.
+
+Lemma code_at_prefix C1 C2 p cs : code_at C1 p cs -> code_at (C1 ++ C2) p cs.
+Proof.
+  intros H i y Hy. specialize (H i y Hy). rewrite nth_error_app1; [exact H |].
+  apply nth_error_Some. congruence.
+Qed.
+
+Lemma code_at_suffix C1 C2 p cs : code_at C2 p cs -> code_at (C1 ++ C2) (length C1 + p) cs.
+Proof.
+  intros H i y Hy. specialize (H i y Hy). rewrite nth_error_app2 by lia.
+  replace (length C1 + p + i - length C1) with (p + i) by lia. exact H.
+Qed.
+
+Lemma code_at_whole C : code_at C 0 C.
+Proof. intros i y Hy. exact Hy. Qed.
+
+Lemma stub_code slots j k :
+  AsmEmit.index_of j slots = Some k -> code_at (flat_map AsmEmit.stub slots) (3 * k) (AsmEmit.stub j).
+Proof.
+  revert k. induction slots as [| j' slots IH]; intros k Hk; simpl in Hk; [discriminate |].
+  destruct (Nat.eqb_spec j j') as [-> | _].
+  - injection Hk as <-.
+    change (code_at (AsmEmit.stub j' ++ flat_map AsmEmit.stub slots) (3 * 0) (AsmEmit.stub j')).
+    apply code_at_prefix. apply code_at_whole.
+  - destruct (AsmEmit.index_of j slots) as [k' |] eqn:E; [| discriminate]. injection Hk as <-.
+    replace (3 * S k') with (length (AsmEmit.stub j') + 3 * k') by (simpl; lia).
+    change (code_at (AsmEmit.stub j' ++ flat_map AsmEmit.stub slots)
+                    (length (AsmEmit.stub j') + 3 * k') (AsmEmit.stub j)).
+    apply code_at_suffix. apply IH. reflexivity.
+Qed.
+
+Lemma emit_defines_spec ng sa C ds : forall pc out,
+  AsmEmit.emit_defines ng sa pc ds = Ok out -> code_at C pc (fst out) ->
+  Forall2 (fun d l => exists cs, AsmEmit.emit_expr ng sa l (Asm.def_body d) = Ok cs /\ code_at C l cs)
+          ds (snd out).
+Proof.
+  induction ds as [| d ds IH]; intros pc out He Hc; cbn [AsmEmit.emit_defines] in He.
+  - injection He as <-. constructor.
+  - apply bind_ok in He as (c & Hd & He). apply bind_ok in He as (rest & Hr & He). injection He as <-.
+    simpl in Hc |- *. apply code_at_app in Hc as [Hc1 Hc2].
+    constructor; [eauto | apply (IH _ _ Hr Hc2)].
+Qed.
+
+Lemma Forall2_and_In {A B} (P : A -> B -> Prop) (Q : A -> Prop) l1 l2 :
+  Forall2 P l1 l2 -> (forall x, In x l1 -> Q x) -> Forall2 (fun x y => P x y /\ Q x) l1 l2.
+Proof.
+  induction 1 as [| x y l1 l2 Hxy _ IH]; intros HQ; constructor.
+  - split; [exact Hxy | apply HQ; left; reflexivity].
+  - apply IH. intros z Hz. apply HQ. right. exact Hz.
+Qed.
+
+(** ** The theorem *)
+
+(** [emit] preserves the observable behaviour of every asm program, for
+    any host that does not look at code addresses: the statement
+    [AsmEmit.emit_correct], proved. *)
+Theorem emit_correct_holds : AsmEmit.emit_correct.
+Proof.
+  intros h Hh m p He mem lo Hb.
+  unfold AsmEmit.emit in He. cbv zeta in He.
+  set (slots := nodup Nat.eq_dec (flat_map (fun d => AsmEmit.ext_slots_expr (Asm.def_body d)) m)) in He.
+  set (sa := fun j => option_map (fun k => 1 + 3 * k) (AsmEmit.index_of j slots)) in He.
+  set (pairs := flat_map (fun d => AsmEmit.arities_expr (Asm.def_body d)) m) in He.
+  destruct (AsmEmit.arities_consistent pairs) eqn:Hcons; [| discriminate].
+  cbn [negb] in He. apply bind_ok in He as (out & Hout & He).
+  set (code := Machine.Fin A1 :: flat_map AsmEmit.stub slots ++ fst out) in He.
+  destruct (Nat.leb (length code) Machine.null_label) eqn:Hlen; [| discriminate].
+  injection He as <-.
+  assert (Hbody : code_at code (1 + length (flat_map AsmEmit.stub slots)) (fst out)).
+  { unfold code. change (Machine.Fin A1 :: flat_map AsmEmit.stub slots ++ fst out)
+      with ([Machine.Fin A1] ++ (flat_map AsmEmit.stub slots ++ fst out)).
+    replace (1 + length (flat_map AsmEmit.stub slots))
+      with (length [Machine.Fin A1] + (length (flat_map AsmEmit.stub slots) + 0)) by (simpl; lia).
+    apply code_at_suffix. apply code_at_suffix. apply code_at_whole. }
+  pose proof (emit_defines_spec _ _ _ _ _ _ Hout Hbody) as Hd.
+  assert (Hdefs : Forall2 (fun d l => lab code (length m) sa pairs (AsmSem.Body (Asm.def_body d)) l) m (snd out)).
+  { apply Forall2_impl with (P := fun d l =>
+      (exists cs, AsmEmit.emit_expr (length m) sa l (Asm.def_body d) = Ok cs /\ code_at code l cs) /\
+      incl (AsmEmit.arities_expr (Asm.def_body d)) pairs).
+    - intros d l [(cs & He & Hc) Hi]. econstructor; eauto.
+    - apply Forall2_and_In; [exact Hd |]. intros d Hin x Hx. unfold pairs. apply in_flat_map. eauto. }
+  assert (Hent : length (snd out) = length m) by (symmetry; exact (Forall2_length Hd)).
+  assert (Hstubs : forall j a, sa j = Some a -> code_at code a (AsmEmit.stub j)).
+  { intros j a Hsa. unfold sa in Hsa. destruct (AsmEmit.index_of j slots) as [k |] eqn:Ek; [| discriminate].
+    injection Hsa as <-. unfold code.
+    change (Machine.Fin A1 :: flat_map AsmEmit.stub slots ++ fst out)
+      with ([Machine.Fin A1] ++ (flat_map AsmEmit.stub slots ++ fst out)).
+    change (1 + 3 * k) with (length [Machine.Fin A1] + 3 * k).
+    apply code_at_suffix. apply code_at_prefix. apply stub_code. exact Ek. }
+  exists lo. split; [| apply load_refines_refl].
+  eapply (behaves_sim code (length m) sa pairs Hcons Hstubs eq_refl (proj1 (Nat.leb_le _ _) Hlen)
+            mem m (snd out) Hent h Hh Hdefs lo Hb).
+Qed.

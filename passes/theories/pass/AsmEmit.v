@@ -263,10 +263,10 @@ Definition emit (m : Asm.module) : result Machine.program :=
 
 (** ** Correctness
 
-    The statement, not yet proved: for any host that does not look at
-    code addresses, [emit] preserves the observable behaviour of every asm
-    program, observations compared by [load_refines]. It is a [Definition]
-    rather than an admitted theorem, so that nothing unproved is assumed. *)
+    For any host that does not look at code addresses, [emit] preserves
+    the observable behaviour of every asm program, observations compared
+    by [load_refines]. Proved in semantics/EmitProof.v
+    ([emit_correct_holds]), with no axioms. *)
 Definition emit_correct : Prop :=
   forall h : host_family, host_parametric h ->
     preserves (AsmSem.behaves (h AsmSem.alabel)) (Machine.behaves (h Machine.label)) emit.

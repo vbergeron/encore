@@ -39,7 +39,9 @@ input.
 | `theories/semantics/Runtime.v` | Rocq | What every machine-level semantics shares, parameterized by the type of code addresses: words, heap, allocation, the collector specification (assumed correct), primitives, errors, and observations (`obs`, `load_obs`, `refines`) |
 | `theories/semantics/Machine.v` | Rocq | Semantics of the bytecode VM, transcribed from `crates/encore_vm/src/vm.rs`: instructions, step relation with traps, `load` and calls, and `behaves`, the observed behaviour of a program |
 | `theories/semantics/AsmSem.v` | Rocq | Semantics of the asm IR on the same runtime: `encore` is a parallel assignment, a `match` on a tag with no case is undefined behaviour (stuck), and `behaves` mirrors the bytecode one |
-| `theories/pass/AsmEmit.v` | Rocq | `emit`: asm to bytecode, as `asm_emit` does it, returning `Err` when an argument move would overwrite a register read later (`no_clobber`), on conflicting arities, and on the emitter's limits. `emit_correct` states its correctness (not yet proved) |
+| `theories/pass/AsmEmit.v` | Rocq | `emit`: asm to bytecode, as `asm_emit` does it, returning `Err` when an argument move would overwrite a register read later (`no_clobber`), on conflicting arities, and on the emitter's limits. `emit_correct` states its correctness |
+| `theories/semantics/RuntimeRel.v` | Rocq | Runtime operations (heap lookup, reachability, collection, allocation, observation) give related results on machines equal up to related code addresses |
+| `theories/semantics/EmitProof.v` | Rocq | Proof of `emit_correct` (`emit_correct_holds`, no axioms): a lockstep simulation of asm by the emitted bytecode, lifted to `load` and `behaves` |
 | `theories/semantics/Correctness.v` | Rocq | `correct`: a transformation preserves behaviour relative to a source and a target semantics; `preserves` for Encore's load observations; identity and composition lemmas |
 | `extraction/Extract.v` | Rocq | Extracts `Pipeline` to `encore_passes.ml`, an OCaml library |
 | `bin/sexp_text.ml` | OCaml | Text to `sexp` and back. Matches the Rust reader and printer byte for byte |
