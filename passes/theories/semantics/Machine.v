@@ -1,5 +1,8 @@
-(** Semantics of the Encore VM, transcribed from crates/encore_vm/src/vm.rs
-    (with int.rs, arena.rs, gc.rs, registers.rs and value.rs).
+(** Semantics of the Encore bytecode machine, transcribed from
+    crates/encore_vm/src/vm.rs. The run-time structures it shares with
+    other machine-level semantics (words, heap, collector, primitives,
+    errors, observation) are in Runtime.v, which also states the
+    assumption that the garbage collector is correct.
 
     Abstractions, each invisible to a running program:
     - Code is a list of decoded instructions and a code address is an index
@@ -10,19 +13,9 @@
       targets on instructions, no fall-through).
     - Words are tagged values, not packed 32-bit words; integers are [Z]
       kept in the 24-bit range by the instructions that build them.
-    - The heap maps abstract addresses to objects. The collector keeps the
-      objects reachable from the 256 registers and the globals, without
-      moving them: no instruction can observe an address, so compaction is
-      invisible. Sizes in words and the bump pointer [hp] are those of the
-      VM, so [HeapOverflow] happens exactly when it does in the VM.
-
-    Assumption: the garbage collector is correct. [collect] specifies what
-    gc.rs must do (keep exactly the reachable objects, up to renaming of
-    addresses, and reset [hp] to their total size). That gc.rs implements
-    this specification is trusted, not proved. In particular, this model
-    gives every object its intended size, while the VM currently corrupts
-    the GC header of objects of 128 words or more, i.e. byte strings over
-    500 bytes built at run time (issue #28).
+    - The heap maps abstract addresses to objects (see Runtime.v). Sizes in
+      words and the bump pointer [hp] are those of the VM, so
+      [HeapOverflow] happens exactly when it does in the VM.
 
     A read the VM performs without a check (e.g. [FIELD] on a non-constructor,
     [BYTES_GET] past the end) has no rule: the state is stuck. Every error
@@ -31,29 +24,19 @@
 From Stdlib Require Import List ZArith NArith PeanoNat Bool Strings.Byte.
 Import ListNotations.
 
-Definition reg := nat.
+From EncorePasses Require Import Runtime.
+
+(** A code address is an instruction index. *)
 Definition label := nat.
-Definition addr := nat.
-Definition tag := nat.
 
-(** ** Values (value.rs) *)
-
-Definition SELF : reg := 0.
-Definition CONT : reg := 1.
-Definition A1 : reg := 2.
-Definition NULL : reg := 255.
-Definition n_regs : nat := 256.
-
-Definition int_min : Z := (- 2 ^ 23)%Z.
-Definition int_max : Z := (2 ^ 23 - 1)%Z.
-Definition in_range (n : Z) : bool := (int_min <=? n)%Z && (n <=? int_max)%Z.
-
-Inductive word : Type :=
-| WInt (n : Z)
-| WFunc (l : label)
-| WClos (a : addr)
-| WCon (t : tag) (a : option addr)        (** [None]: nullary, [HeapAddress::NULL] *)
-| WBytes (a : addr).
+Notation word := (Runtime.word label).
+Notation obj := (Runtime.obj label).
+Notation heap := (Runtime.heap label).
+Notation regs := (Runtime.regs label).
+Notation error := (Runtime.error label).
+Notation outcome := (Runtime.outcome label).
+Notation host_result := (Runtime.host_result label).
+Notation alloc_result := (Runtime.alloc_result label).
 
 (** [HeapAddress::NULL] as a code address: the [NULL] register's sentinel. *)
 Definition null_label : label := Nat.pow 2 16 - 1.
@@ -64,86 +47,6 @@ Definition return_cont : word := WFunc 0.
 (** [Value::int(0)], the argument [load] passes to every define's thunk.
     It is not a heap pointer, so it keeps nothing alive. *)
 Definition thunk_arg : word := WInt 0.
-
-Definition bool_word (b : bool) : word := WCon (if b then 1 else 0) None.
-
-(** ** Heap objects (arena.rs, VM.md "Heap objects") *)
-
-Inductive obj : Type :=
-| OClosure (l : label) (env : list word)
-| OFields (ws : list word)
-| OBytes (s : list Byte.byte).
-
-(** Size in words, GC header included. *)
-Definition size (o : obj) : nat :=
-  match o with
-  | OClosure _ env => 2 + length env
-  | OFields ws => 1 + length ws
-  | OBytes s => 2 + (length s + 3) / 4
-  end.
-
-Definition heap := list (addr * obj).
-
-Fixpoint hget (H : heap) (a : addr) : option obj :=
-  match H with
-  | [] => None
-  | (b, o) :: H => if Nat.eqb a b then Some o else hget H a
-  end.
-
-Definition live_size (H : heap) : nat := fold_right (fun p n => size (snd p) + n) 0 H.
-
-(** ** Registers (registers.rs) *)
-
-Definition regs := reg -> word.
-
-Definition upd (R : regs) (r : reg) (w : word) : regs :=
-  fun r' => if Nat.eqb r' r then w else R r'.
-
-(** [R[d+i ↦ wᵢ]] *)
-Fixpoint upd_from (R : regs) (d : reg) (ws : list word) : regs :=
-  match ws with
-  | [] => R
-  | w :: ws => upd_from (upd R d w) (S d) ws
-  end.
-
-(** [Registers::new()]: every register [int(0)], [NULL] the sentinel. *)
-Definition clear_regs : regs :=
-  fun r => if Nat.eqb r NULL then WFunc null_label else WInt 0.
-
-(** ** Integer operations (int.rs) *)
-
-Inductive binop : Type :=
-| Add | Sub | Mul | Eq | Lt | Le | Div | Mod | SubSat | And | Or | Xor | Shl | Shr.
-
-Definition checked (n : Z) : option Z := if in_range n then Some n else None.
-
-(** [Value::int] keeps the low 24 bits and [int_value] sign-extends them. *)
-Definition wrap24 (n : Z) : Z :=
-  let m := (n mod 2 ^ 24)%Z in if (m <=? int_max)%Z then m else (m - 2 ^ 24)%Z.
-
-(** [None] is [IntOverflow]. *)
-Definition binop_sem (o : binop) (a b : Z) : option word :=
-  match o with
-  | Add => option_map WInt (checked (a + b))
-  | Sub => option_map WInt (checked (a - b))
-  | Mul => option_map WInt (checked (a * b))
-  | Eq => Some (bool_word (a =? b)%Z)
-  | Lt => Some (bool_word (a <? b)%Z)
-  | Le => Some (bool_word (a <=? b)%Z)
-  | Div => if (b =? 0)%Z then Some (WInt 0) else option_map WInt (checked (Z.quot a b))
-  | Mod => Some (WInt (if (b =? 0)%Z then a else Z.rem a b))
-  | SubSat => if (a <=? b)%Z then Some (WInt 0) else option_map WInt (checked (a - b))
-  | And => Some (WInt (Z.land a b))
-  | Or => Some (WInt (Z.lor a b))
-  | Xor => Some (WInt (Z.lxor a b))
-  | Shl =>
-      if (b <? 0)%Z || (a =? 0)%Z then Some (WInt 0)
-      else if (24 <=? b)%Z then None
-      else option_map WInt (checked (a * 2 ^ b))
-  | Shr =>
-      if (b <? 0)%Z || (24 <=? b)%Z then Some (WInt 0)
-      else Some (WInt (wrap24 (Z.shiftr (a mod 2 ^ 24) b)))
-  end.
 
 (** ** Instructions (opcode.rs; one constructor per opcode) *)
 
@@ -173,23 +76,6 @@ Inductive instr : Type :=
 | Extern (d r : reg) (j : nat)
 | Fin (r : reg).
 
-(** ** Errors (error.rs), those raised after validation *)
-
-Inductive error : Type :=
-| HeapOverflow
-| MatchFail (t : tag) (pc : label)
-| ByteRange (v : Z) (pc : label)
-| IntOverflow (pc : label)
-| ExternFail (slot : nat) (pc : label)
-| TypeError                                (** [int_value] on a non-integer *)
-| CallOutsideCode (pc : label)             (** [Invalid "call target outside code"] *)
-| GlobalOutOfRange                         (** [Invalid "global index out of range"] *)
-| GlobalsOverflow (needed available : nat).
-
-Inductive outcome : Type :=
-| Halt (w : word)
-| Trap (e : error).
-
 (** ** Machine state *)
 
 Record state : Type := St {
@@ -201,46 +87,9 @@ Record state : Type := St {
 }.
 
 (** A step either continues or stops; a stopped run keeps its heap. *)
-Inductive result : Type :=
+Inductive step_result : Type :=
 | Run (s : state)
 | Stop (o : outcome) (H : heap) (hp : nat).
-
-(** What a host function returns. A host may allocate, read the heap and
-    call back into the VM, which changes registers, so it returns all of
-    them. *)
-Inductive host_result : Type :=
-| HostOk (w : word) (R : regs) (H : heap) (hp : nat)
-| HostErr (H : heap) (hp : nat).
-
-(** ** Garbage collection (gc.rs) *)
-
-(** [has_heap_addr]: the words the collector traces. *)
-Definition points (w : word) (a : addr) : Prop :=
-  match w with
-  | WClos b | WBytes b | WCon _ (Some b) => a = b
-  | _ => False
-  end.
-
-Definition obj_words (o : obj) : list word :=
-  match o with
-  | OClosure _ env => env
-  | OFields ws => ws
-  | OBytes _ => []
-  end.
-
-(** Roots: the whole register file and every global. *)
-Inductive reachable (R : regs) (G : list word) (H : heap) : addr -> Prop :=
-| reach_reg r a : r < n_regs -> points (R r) a -> reachable R G H a
-| reach_global w a : In w G -> points w a -> reachable R G H a
-| reach_heap a o w b :
-    reachable R G H a -> hget H a = Some o -> In w (obj_words o) -> points w b ->
-    reachable R G H b.
-
-(** [collect]: [H'] is [H] restricted to its reachable objects. This is
-    the specification gc.rs is assumed to meet (see the header). *)
-Definition collect (R : regs) (G : list word) (H H' : heap) : Prop :=
-  NoDup (map fst H') /\
-  forall a o, hget H' a = Some o <-> (hget H a = Some o /\ reachable R G H a).
 
 Section Machine.
   (** The validated code. *)
@@ -257,39 +106,20 @@ Section Machine.
   (** [load] carves one word per global off the top of the buffer. *)
   Definition cap : nat := mem_words - length entries.
 
-  (** ** Allocation ([Vm::alloc], [Arena::try_alloc], [alloc_slow]) *)
-
-  Inductive alloc_result : Type :=
-  | Allocated (H : heap) (hp : nat) (a : addr)
-  | OutOfMemory (H : heap) (hp : nat).
-
-  Inductive alloc (R : regs) (G : list word) (H : heap) (hp : nat) (o : obj)
-      : alloc_result -> Prop :=
-  | alloc_fast a :
-      hp + size o <= cap -> hget H a = None ->
-      alloc R G H hp o (Allocated ((a, o) :: H) (hp + size o) a)
-  | alloc_after_gc H' a :
-      cap < hp + size o -> collect R G H H' ->
-      live_size H' + size o <= cap -> hget H' a = None ->
-      alloc R G H hp o (Allocated ((a, o) :: H') (live_size H' + size o) a)
-  | alloc_overflow H' :
-      cap < hp + size o -> collect R G H H' -> cap < live_size H' + size o ->
-      alloc R G H hp o (OutOfMemory H' (live_size H')).
-
   Definition fetch (s : state) : option instr := nth_error code (pc s).
 
-  Definition next (s : state) (R' : regs) : result :=
+  Definition next (s : state) (R' : regs) : step_result :=
     Run (St (S (pc s)) R' (H s) (hp s) (G s)).
 
-  Definition trap (s : state) (e : error) : result := Stop (Trap e) (H s) (hp s).
+  Definition trap (s : state) (e : error) : step_result := Stop (Trap e) (H s) (hp s).
 
   (** Allocate [o] and put [mk a] in [d], or trap with [HeapOverflow]. *)
-  Inductive allocate (s : state) (o : obj) (d : reg) (mk : addr -> word) : result -> Prop :=
+  Inductive allocate (s : state) (o : obj) (d : reg) (mk : addr -> word) : step_result -> Prop :=
   | allocate_ok H' hp' a :
-      alloc (R s) (G s) (H s) (hp s) o (Allocated H' hp' a) ->
+      alloc cap (R s) (G s) (H s) (hp s) o (Allocated H' hp' a) ->
       allocate s o d mk (Run (St (S (pc s)) (upd (R s) d (mk a)) H' hp' (G s)))
   | allocate_oom H' hp' :
-      alloc (R s) (G s) (H s) (hp s) o (OutOfMemory H' hp') ->
+      alloc cap (R s) (G s) (H s) (hp s) o (OutOfMemory H' hp') ->
       allocate s o d mk (Stop (Trap HeapOverflow) H' hp').
 
   Definition as_int (w : word) : option Z :=
@@ -311,7 +141,7 @@ Section Machine.
 
   (** ** One instruction ([Vm::run]) *)
 
-  Inductive step (s : state) : result -> Prop :=
+  Inductive step (s : state) : step_result -> Prop :=
   | s_mov d r :
       fetch s = Some (Mov d r) -> step s (next s (upd (R s) d (R s r)))
   | s_capture d i a l env w :
@@ -371,7 +201,7 @@ Section Machine.
   | s_int2 d : fetch s = Some (Int2 d) -> step s (next s (upd (R s) d (WInt 2)))
   | s_intbin o d a b x y w :
       fetch s = Some (IntBin o d a b) -> as_int (R s a) = Some x -> as_int (R s b) = Some y ->
-      binop_sem o x y = Some w -> step s (next s (upd (R s) d w))
+      binop_sem o x y = Some w -> step s (next s (upd (R s) d (prim_word w)))
   | s_intbin_overflow o d a b x y :
       fetch s = Some (IntBin o d a b) -> as_int (R s a) = Some x -> as_int (R s b) = Some y ->
       binop_sem o x y = None -> step s (trap s (IntOverflow (pc s)))
@@ -410,7 +240,7 @@ Section Machine.
   | s_bytes_slice_oom d r i n st len H' hp' :
       (* the VM allocates before it reads the source *)
       fetch s = Some (BytesSlice d r i n) -> R s i = WInt st -> R s n = WInt len -> (0 <= len)%Z ->
-      alloc (R s) (G s) (H s) (hp s) (OBytes (repeat Byte.x00 (Z.to_nat len))) (OutOfMemory H' hp') ->
+      alloc cap (R s) (G s) (H s) (hp s) (OBytes (repeat Byte.x00 (Z.to_nat len))) (OutOfMemory H' hp') ->
       step s (Stop (Trap HeapOverflow) H' hp')
   | s_bytes_slice_type d r i n :
       fetch s = Some (BytesSlice d r i n) -> as_int (R s i) = None \/ as_int (R s n) = None ->
@@ -443,7 +273,7 @@ Section Machine.
 
   (** [call_raw]: SELF, CONT and A1.. on cleared registers. *)
   Definition entry_regs (f : word) (args : list word) : regs :=
-    upd_from (upd (upd clear_regs SELF f) CONT return_cont) A1 args.
+    upd_from (upd (upd (clear_regs null_label) SELF f) CONT return_cont) A1 args.
 
   Inductive call_value (m : vm) (f : word) (args : list word) : outcome -> vm -> Prop :=
   | call_ok l i o H' hp' :
@@ -492,3 +322,24 @@ Section Machine.
       load_defines 0 entries (Vm [] 0 (repeat (WInt 0) (length entries))) r m ->
       load r m.
 End Machine.
+
+(** ** Behaviour of a program *)
+
+(** A validated bytecode program. *)
+Record program : Type := Program {
+  p_code : list instr;
+  p_arity : tag -> nat;
+  p_entries : list label
+}.
+
+(** [behaves host p mem lo]: loading [p] in a buffer of [mem] words, with
+    extern functions [host], is observed as [lo]. *)
+Inductive behaves (host : nat -> word -> regs -> heap -> nat -> host_result -> Prop)
+    (p : program) (mem : nat) : load_obs -> Prop :=
+| behaves_loaded m gs :
+    load (p_code p) (p_arity p) mem (p_entries p) host None m ->
+    Forall2 (fun w o => observe (vheap m) (Halt w) o) (vglobals m) gs ->
+    behaves host p mem (Loaded gs)
+| behaves_trap e m :
+    load (p_code p) (p_arity p) mem (p_entries p) host (Some e) m ->
+    behaves host p mem (LoadTrap (kind e)).
