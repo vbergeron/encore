@@ -10,7 +10,8 @@
       only when no move overwrites a register read later; Emit.v checks
       that condition ([no_clobber]).
     - A [match] whose tag has no case is undefined behaviour: there is no
-      rule, the program is stuck, so the emitter owes it nothing. The
+      rule, the program is stuck, so the emitter owes it nothing. So is a
+      tag of 256 or more, which no VM word can carry (tags are bytes). The
       emitter's [BRANCH] (any tag other than [base] goes to the second
       case) is then a correct lowering. Only the compiler produces asm, and
       its matches never see an out-of-range tag.
@@ -221,11 +222,11 @@ Section Asm.
       step s (trap s (CallOutsideCode (ctl s)))
   | s_match r b cases t oa ub e :
       (* a tag with no case has no rule: undefined behaviour *)
-      ctl s = Body (Asm.Match r b cases) -> R s r = WCon t oa -> b <= t ->
+      ctl s = Body (Asm.Match r b cases) -> R s r = WCon t oa -> b <= t -> t < 256 ->
       nth_error cases (t - b) = Some (0, ub, e) ->
       step s (goto s e (R s))
   | s_match_unpack r b cases t a n ub e ws :
-      ctl s = Body (Asm.Match r b cases) -> R s r = WCon t (Some a) -> b <= t ->
+      ctl s = Body (Asm.Match r b cases) -> R s r = WCon t (Some a) -> b <= t -> t < 256 ->
       nth_error cases (t - b) = Some (n, ub, e) -> n > 0 ->
       hget (H s) a = Some (OFields ws) -> n <= length ws ->
       step s (goto s e (upd_from (R s) ub (firstn n ws)))

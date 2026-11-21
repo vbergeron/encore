@@ -74,6 +74,18 @@ with ext_slots_expr (e : Asm.expr) : list nat :=
   | Asm.Encore _ _ _ | Asm.Fin _ => []
   end.
 
+(** The (tag, arity) pairs of a [match]'s cases that unpack, and of their
+    bodies ([f]). *)
+Section ArityCases.
+  Variable f : Asm.expr -> list (nat * nat).
+  Variable b : nat.
+  Fixpoint arities_cases (i : nat) (cs : list (nat * nat * Asm.expr)) : list (nat * nat) :=
+    match cs with
+    | [] => []
+    | (n, _, body) :: cs => (if Nat.eqb n 0 then [] else [(b + i, n)]) ++ f body ++ arities_cases (S i) cs
+    end.
+End ArityCases.
+
 (** The (tag, arity) pairs the arity table must hold: constructors, and
     the cases that unpack. *)
 Fixpoint arities_val (v : Asm.val) : list (nat * nat) :=
@@ -86,13 +98,7 @@ with arities_expr (e : Asm.expr) : list (nat * nat) :=
   match e with
   | Asm.Let _ v rest => arities_val v ++ arities_expr rest
   | Asm.Letrec _ _ body rest => arities_expr body ++ arities_expr rest
-  | Asm.Match _ b cases =>
-      (fix go (i : nat) (cs : list (nat * nat * Asm.expr)) : list (nat * nat) :=
-         match cs with
-         | [] => []
-         | (n, _, body) :: cs =>
-             (if Nat.eqb n 0 then [] else [(b + i, n)]) ++ arities_expr body ++ go (S i) cs
-         end) 0 cases
+  | Asm.Match _ b cases => arities_cases arities_expr b 0 cases
   | Asm.Encore _ _ _ | Asm.Fin _ => []
   end.
 
@@ -124,6 +130,13 @@ Definition prim_instr (d : nat) (op : Prim.prim) (args : list nat) : result Mach
   | Prim.PBytes Prim.Slice, [x; i; n] => Ok (Machine.BytesSlice d x i n)
   | Prim.PBytes Prim.BEq, [x; y] => Ok (Machine.BytesEq d x y)
   | _, _ => Err ("primitive " ++ Prim.prim_name op ++ ": wrong number of arguments")
+  end.
+
+(** A [match]'s first instruction: [BRANCH] for two cases, else [MATCH]. *)
+Definition header_instr (r b : nat) (ls : list nat) : Machine.instr :=
+  match ls with
+  | [l0; l1] => Machine.Branch r b l0 l1
+  | _ => Machine.Match r b ls
   end.
 
 Section Emit.
@@ -171,6 +184,26 @@ Section Emit.
     | Asm.ContLam _ _ => Err "internal error: continuation handled by emit_expr"
     end.
 
+  (** The code of a [match]'s cases from address [at_]: for case [i],
+      [UNPACK] when it binds fields, then its body ([emit]). *)
+  Section Cases.
+    Variable emit : nat -> Asm.expr -> result (list Machine.instr).
+    Variable r b : nat.
+    Fixpoint emit_cases (at_ : nat) (i : nat) (cs : list (nat * nat * Asm.expr))
+        : result (list (nat * list Machine.instr)) :=
+      match cs with
+      | [] => Ok []
+      | (n, ub, body) :: cs =>
+          let* code :=
+            if Nat.eqb n 0 then emit at_ body
+            else if Nat.leb (ub + n) n_regs then
+              let* cb := emit (S at_) body in Ok (Machine.Unpack ub (b + i) r :: cb)
+            else Err "unpack writes past the register file" in
+          let* rest := emit_cases (at_ + length code) (S i) cs in
+          Ok ((at_, code) :: rest)
+      end.
+  End Cases.
+
   (** The code for [e] placed at address [pc]: its own instructions, then
       the bodies of the functions and continuations it creates. *)
   Fixpoint emit_expr (pc : nat) (e : Asm.expr) : result (list Machine.instr) :=
@@ -195,28 +228,8 @@ Section Emit.
         if no_clobber f k 0 args then Ok (moves 0 args ++ [Machine.Encore f k])
         else Err "encore: an argument move would overwrite a register read later"
     | Asm.Match r b cases =>
-        (* each case: [UNPACK] when it binds fields, then its body *)
-        let* blocks :=
-          (fix go (at_ : nat) (i : nat) (cs : list (nat * nat * Asm.expr))
-               : result (list (nat * list Machine.instr)) :=
-             match cs with
-             | [] => Ok []
-             | (n, ub, body) :: cs =>
-                 let* code :=
-                   if Nat.eqb n 0 then emit_expr at_ body
-                   else if Nat.leb (ub + n) n_regs then
-                     let* cb := emit_expr (S at_) body in Ok (Machine.Unpack ub (b + i) r :: cb)
-                   else Err "unpack writes past the register file" in
-                 let* rest := go (at_ + length code) (S i) cs in
-                 Ok ((at_, code) :: rest)
-             end) (S pc) 0 cases in
-        let labels := map fst blocks in
-        let header :=
-          match labels with
-          | [l0; l1] => Machine.Branch r b l0 l1
-          | _ => Machine.Match r b labels
-          end in
-        Ok (header :: flat_map snd blocks)
+        let* blocks := emit_cases emit_expr r b (S pc) 0 cases in
+        Ok (header_instr r b (map fst blocks) :: flat_map snd blocks)
     | Asm.Fin r => Ok [Machine.Fin r]
     end.
 
